@@ -31,14 +31,14 @@ static NSMutableArray *enumList;
     NSMutableString *m = [[NSMutableString alloc] init];
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     
-    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.h", FILE_NAME]];
-    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.m", FILE_NAME]];
+    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.h", MODEL_NAME]];
+    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.m", MODEL_NAME]];
     [fileManager createFileAtPath:hFilePath contents:nil attributes:nil];
     [fileManager createFileAtPath:mFilePath contents:nil attributes:nil];
     
 //版权信息的导入
-    [h appendString:[Utils createCopyrightByFilename:FILE_NAME]];
-    [m appendString:[Utils createCopyrightByFilename:FILE_NAME]];
+    [h appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
+    [m appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
     
 //头文件的导入 h 文件@class 形式导入  m 文件import
     [m appendString:[self introductionPackages:M_FILE]];
@@ -68,7 +68,7 @@ static NSMutableArray *enumList;
         
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@.h\"", FILE_NAME];
+            [result appendFormat:@"#import \"%@+DB.h\"", MODEL_NAME];
         }
             break;
         default:

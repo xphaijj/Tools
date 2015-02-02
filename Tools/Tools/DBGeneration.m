@@ -24,14 +24,14 @@
     NSMutableString *m = [[NSMutableString alloc] init];
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     
-    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@+DB.h", FILE_NAME]];
-    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@+DB.m", FILE_NAME]];
+    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@+DB.h", MODEL_NAME]];
+    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@+DB.m", MODEL_NAME]];
     [fileManager createFileAtPath:hFilePath contents:nil attributes:nil];
     [fileManager createFileAtPath:mFilePath contents:nil attributes:nil];
     
     //版权信息的导入
-    [h appendString:[Utils createCopyrightByFilename:FILE_NAME]];
-    [m appendString:[Utils createCopyrightByFilename:FILE_NAME]];
+    [h appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
+    [m appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
     
     //头文件的导入
     [h appendString:[self introductionPackages:H_FILE]];
@@ -62,7 +62,7 @@
             
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@.h\"", FILE_NAME];
+            [result appendFormat:@"#import \"%@.h\"", MODEL_NAME];
         }
             break;
         default:
@@ -262,6 +262,7 @@
                 {
                     [result appendString:@"\n- (BOOL)save {\n"];
                     [result appendString:[self dbbaseControl:classname]];
+                    [result appendFormat:@"\tBOOL result = NO;\n"];
                     [result appendFormat:@"\t[db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", classname];
                     if ([keyType isEqualToString:@"int"]) {
                         [result appendFormat:@"%@ INTEGER PRIMARY KEY", key];
@@ -293,6 +294,7 @@
                 {
                     [result appendFormat:@"\n- (BOOL)del {\n"];
                     [result appendString:[self dbbaseControl:classname]];
+                    [result appendFormat:@"\tBOOL result = NO;\n"];
                     if ([keyType isEqualToString:@"int"]) {
                         [result appendFormat:@"\tresult = [db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", [NSNumber numberWithInt:self.%@]];\n", classname, key, keyfieldname];
                     }
@@ -305,6 +307,7 @@
                     
                     [result appendFormat:@"\n+ (BOOL)delByConditions:(NSString *)sender {\n"];
                     [result appendString:[self dbbaseControl:classname]];
+                    [result appendFormat:@"\tBOOL result = NO;\n"];
                     [result appendFormat:@"\tresult = [db executeUpdate:@\"DELETE FROM %@ WHERE %%@\", sender];\n", classname];
                     [result appendFormat:@"\t[db close];\n"];
                     [result appendFormat:@"\treturn result;\n"];
@@ -316,6 +319,7 @@
                 {
                     [result appendString:@"\n- (BOOL)update {\n"];
                     [result appendString:[self dbbaseControl:classname]];
+                    [result appendFormat:@"\tBOOL result = NO;\n"];
                     [result appendFormat:@"\tresult = [db executeUpdate:@\"UPDATE %@ SET ", classname];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
                     [result deleteCharactersInRange:NSMakeRange(result.length-1, 1)];
@@ -331,10 +335,42 @@
                     [result appendFormat:@"\t[db close];\n"];
                     [result appendFormat:@"\treturn result;\n"];
                     [result appendFormat:@"}\n"];
+                    
+                    
+                    [result appendString:@"\n+ (BOOL)updateByConditions:(NSString *)sender {\n"];
+                    [result appendString:[self dbbaseControl:classname]];
+                    [result appendFormat:@"\tBOOL result = NO;\n"];
+                    [result appendString:@"\tresult = [db executeUpdate:@\"UPDATE Product SET \", sender];\n"];
+                    [result appendString:@"\t[db close];\n"];
+                    [result appendString:@"\treturn result;\n"];
+                    [result appendString:@"}\n"];
                 }
                     break;
                 case TYPE_SEL:
                 {
+                    [result appendString:@"\n+ (NSArray *)findByConditions:(NSString *)sender {\n"];
+                    [result appendString:[self dbbaseControl:classname]];
+                    [result appendString:@"\tNSMutableArray *result = [[NSMutableArray alloc] init];\n"];
+                    [result appendString:@"\tFMResultSet* set;\n"];
+                    [result appendString:@"\tif (sender.length == 0) {\n"];
+                    [result appendFormat:@"\t\tset = [db executeQuery:@\"SELECT * FROM %@\"];\n", classname];
+                    [result appendFormat:@"\t}\n"];
+                    [result appendFormat:@"\telse {\n"];
+                    [result appendFormat:@"\t\tset = [db executeQuery:@\"SELECT * FROM %@ WHERE %%@\", sender];\n", classname];
+                    [result appendFormat:@"\t}\n"];
+                    [result appendFormat:@"\twhile ([set next]) {\n"];
+                    [result appendFormat:@"\t\t%@ *item = [[%@ alloc] init];\n", classname, classname];
+                    if ([keyType isEqualToString:@"int"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set intForForColumn:@\"%@\"];\n", keyfieldname, key];
+                    }
+                    else if ([keyType isEqualToString:@"string"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set stringForForColumn:@\"%@\"];\n", keyfieldname, key];
+                    }
+                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
+                    [result appendString:@"\t\t[result addObject:item];\n"];
+                    [result appendFormat:@"\t}\n"];
+                    [result appendString:@"\treturn result;\n"];
+                    [result appendString:@"}\n"];
                 }
                     break;
                     
@@ -364,7 +400,6 @@
     [result appendFormat:@"\t\tSHOW_DB_ERROR(@\"数据库打开失败\");\n"];
     [result appendFormat:@"\t\treturn NO;\n"];
     [result appendFormat:@"\t}\n"];
-    [result appendFormat:@"\tBOOL result = NO;\n"];
     return result;
 }
 
@@ -465,32 +500,6 @@
     NSString *defaultValue = [fields objectAtIndex:4];//默认值
     NSString *notes = [fields objectAtIndex:5];//注释
     
-    NSString *typeValue = @"INTEGER";//默认整形
-    if ([type isEqualToString:@"int"]) {
-        typeValue = @"INTEGER";
-    }
-    else if ([type isEqualToString:@"short"]) {
-        typeValue = @"SMALLINT";
-    }
-    else if ([type isEqualToString:@"bool"]) {
-        typeValue = @"TINYINT";
-    }
-    else if ([type isEqualToString:@"long"]) {
-        typeValue = @"BIGINT";
-    }
-    else if ([type isEqualToString:@"float"]) {
-        typeValue = @"FLOAT";
-    }
-    else if ([type isEqualToString:@"double"]) {
-        typeValue = @"DOUBLE";
-    }
-    else if ([type isEqualToString:@"char"]) {
-        typeValue = @"CHAR";
-    }
-    else {
-        typeValue = @"TEXT";
-    }
-    
     switch (fileType) {
         case H_FILE:
         {
@@ -524,8 +533,33 @@
                 case TYPE_ADD:
                 {
                     switch (index) {
-                        case INDEX_ONE:
+                        case INDEX_ONE://创建
                         {
+                            NSString *typeValue = @"INTEGER";//默认整形
+                            if ([type isEqualToString:@"int"]) {
+                                typeValue = @"INTEGER";
+                            }
+                            else if ([type isEqualToString:@"short"]) {
+                                typeValue = @"SMALLINT";
+                            }
+                            else if ([type isEqualToString:@"bool"]) {
+                                typeValue = @"TINYINT";
+                            }
+                            else if ([type isEqualToString:@"long"]) {
+                                typeValue = @"BIGINT";
+                            }
+                            else if ([type isEqualToString:@"float"]) {
+                                typeValue = @"FLOAT";
+                            }
+                            else if ([type isEqualToString:@"double"]) {
+                                typeValue = @"DOUBLE";
+                            }
+                            else if ([type isEqualToString:@"char"]) {
+                                typeValue = @"CHAR";
+                            }
+                            else {
+                                typeValue = @"TEXT";
+                            }
                             [result appendFormat:@", %@ %@", keyname, typeValue];
                         }
                             break;
@@ -621,6 +655,30 @@
                     break;
                 case TYPE_SEL:
                 {
+                    if ([type isEqualToString:@"int"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set intForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else if ([type isEqualToString:@"short"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set intForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else if ([type isEqualToString:@"bool"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set boolForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else if ([type isEqualToString:@"long"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set longForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else if ([type isEqualToString:@"float"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set doubleForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else if ([type isEqualToString:@"double"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set doubleForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else if ([type isEqualToString:@"char"]) {
+                        [result appendFormat:@"\t\titem.%@ = [set stringForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else {
+                        [result appendFormat:@"\t\titem.%@ = [set stringForForColumn:@\"%@\"];\n", fieldname, keyname];
+                    }
                 }
                     break;
                     

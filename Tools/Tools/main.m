@@ -11,15 +11,47 @@
 #import "DBGeneration.h"
 #import "RequestGeneration.h"
 
+void generation(NSString *sourcePath, NSString *outputPath);
+
+//     /Users/Alex/Desktop/
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        NSString *sourcePath = [NSString stringWithUTF8String:argv[1]];
-        NSString *outputPath = [NSString stringWithUTF8String:argv[2]];
-        [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath];
-        [DBGeneration generationSourcePath:sourcePath outputPath:outputPath];
-        
-        NSLog(@"\n%@ \n outputPath = %@\n", sourcePath, outputPath);
-        
+        NSString *sourcePath;
+        NSString *outputPath;
+        switch (argc) {
+            case 0:
+            case 1:
+            {
+            }
+                break;
+            case 2:
+            {
+                sourcePath = [NSString stringWithUTF8String:argv[1]];
+                outputPath = [[NSMutableString alloc] initWithUTF8String:argv[1]];
+                outputPath = [outputPath substringToIndex:([outputPath rangeOfString:@"/" options:NSBackwardsSearch].location+1)];
+                generation(sourcePath, outputPath);
+            }
+                break;
+            case 3:
+            {
+                sourcePath = [NSString stringWithUTF8String:argv[1]];
+                outputPath = (NSMutableString *)[NSString stringWithUTF8String:argv[2]];
+                generation(sourcePath, outputPath);
+            }
+                break;
+                
+            default:
+                break;
+        }
     }
     return 0;
+}
+
+void generation(NSString *sourcePath, NSString *outputPath)
+{
+    NSLog(@"\n\tsourcePath = %@ \n\toutputPath = %@\n", sourcePath, outputPath);
+    [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath];
+    [DBGeneration generationSourcePath:sourcePath outputPath:outputPath];
+    [RequestGeneration generationSourcePath:sourcePath outputPath:outputPath];
 }

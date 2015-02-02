@@ -10,7 +10,8 @@
 
 #import "RegexKitLite.h"
 
-#define FILE_NAME @"Model"   //生成Model的名称
+#define MODEL_NAME @"Model"   //生成Model的名称
+#define REQUEST_NAME @"Request" //网络文件名称
 #define CopyRightVersion 1.0
 
 #define KEY @"KEY"
