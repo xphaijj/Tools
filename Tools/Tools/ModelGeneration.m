@@ -8,7 +8,7 @@
 
 #import "ModelGeneration.h"
 
-#define FILE_NAME @"Model"
+
 #define IS_BASE_TYPE(type) [[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"] || [[type lowercaseString] isEqualToString:@"bool"] || [[type lowercaseString] isEqualToString:@"short"] || [[type lowercaseString] isEqualToString:@"byte"] || [[type lowercaseString] isEqualToString:@"long"] || [[type lowercaseString] isEqualToString:@"char"]
 
 
@@ -164,14 +164,29 @@ static NSMutableArray *enumList;
     switch (fileType) {
         case H_FILE:
         {
+            [result appendString:@"static NSString *dbPath;\n\n"];
             [result appendString:@"\n\n@interface OObject : NSObject {\n"];
             [result appendString:@"}\n"];
+            [result appendString:@"+(NSString *)initialDB;\n"];
             [result appendString:@"\n@end\n"];
         }
             break;
         case M_FILE:
         {
             [result appendString:@"\n\n@implementation OOject \n"];
+            [result appendString:@"\n+(NSString *)initialDB {\n"];
+            [result appendString:@"\tstatic dispatch_once_t onceToken;\n"];
+            [result appendString:@"\tdispatch_once(&onceToken, ^{\n"];
+            [result appendString:@"\t\tNSString *dirPath = [NSString stringWithFormat:@\"%@/%@\", [NSSearchPathForDirectoriesInDomains(NSCachesDirectory , NSUserDomainMask , YES) lastObject], @\"DB\"];\n"];
+            [result appendString:@"\t\tBOOL isDir = NO;\n"];
+            [result appendString:@"\t\tbool existed = [[NSFileManager defaultManager] fileExistsAtPath:dirPath isDirectory:&isDir];\n"];
+            [result appendString:@"\t\tif (!(isDir == YES && existed == YES)) {\n"];
+            [result appendString:@"\t\t\t[[NSFileManager defaultManager] createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:nil];\n"];
+            [result appendString:@"\t\t}\n"];
+            [result appendString:@"\t\tdbPath = [NSString stringWithFormat:@\"%%@/database.sqlite\", dirPath];\n"];
+            [result appendString:@"\t});\n"];
+            [result appendString:@"\treturn dbPath;\n"];
+            [result appendString:@"}\n"];
             [result appendString:@"\n\n@end\n\n"];
         }
             break;
@@ -230,6 +245,8 @@ static NSMutableArray *enumList;
     [result appendString:[self propertyFromContents:modelClass fileType:fileType]]; //属性的生成
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_INIT]];//初始化方法
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_PARSE]];//解析方法
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DICTIONARY]];//字典化
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_SAVE]];//存取
     
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
@@ -338,6 +355,10 @@ static NSMutableArray *enumList;
                 {
                 }
                     break;
+                case TYPE_SAVE:
+                {
+                }
+                    break;
                     
                 default:
                     break;
@@ -435,6 +456,32 @@ static NSMutableArray *enumList;
                     break;
                 case TYPE_DICTIONARY:
                 {
+                    if ([[style lowercaseString] isEqualToString:@"repeated"]) {
+                        if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
+                            [result appendFormat:@"\t[dictionaryValue setObject:self.%@List forKey:@\"%@\"];\n", fieldname, keyname];
+                        }
+                        else {
+                            
+                            [result appendFormat:@"\tNSMutableArray *%@Items = [[NSMutableArray alloc] init];\n", fieldname];
+                            [result appendFormat:@"\tfor (%@ *item in self.%@List) {\n", type, fieldname];
+                            [result appendFormat:@"\t\t[%@Items addObject:[item dictionaryValue]];\n", fieldname];
+                            [result appendFormat:@"\t}\n"];
+                            [result appendFormat:@"\t[dictionaryValue setObject:%@Items forKey:@\"%@\"];\n", fieldname, keyname];
+                        }
+                    }
+                    else if (IS_BASE_TYPE(type) || [enumList containsObject:type]) {
+                        [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWith%@:self.%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                    }
+                    else if ([[type lowercaseString] isEqualToString:@"string"]) {
+                        [result appendFormat:@"\t[dictionaryValue setObject:self.%@ forKey:@\"%@\"];\n", fieldname, keyname];
+                    }
+                    else {
+                        [result appendFormat:@"\t[dictionaryValue setObject:[self.%@ dictionaryValue] forKey:@\"%@\"];\n", fieldname, keyname];
+                    }
+                }
+                    break;
+                case TYPE_SAVE:
+                {
                 }
                     break;
                     
@@ -490,6 +537,12 @@ static NSMutableArray *enumList;
                     [result appendFormat:@"- (NSDictionary *)dictionaryValue;\n"];
                 }
                     break;
+                case TYPE_SAVE:
+                {
+                    [result appendFormat:@"- (BOOL)saveForKey:(NSString *)sender;\n"];
+                    [result appendFormat:@"+ (%@ *)findForKey:(NSString *)sender;\n", classname];
+                }
+                    break;
                     
                 default:
                     break;
@@ -540,6 +593,26 @@ static NSMutableArray *enumList;
                     [result appendFormat:@"\tNSMutableDictionary *dictionaryValue = [[NSMutableDictionary alloc] init];\n"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
                     [result appendFormat:@"\treturn dictionaryValue;\n"];
+                    [result appendFormat:@"}\n"];
+                }
+                    break;
+                case TYPE_SAVE:
+                {
+                    [result appendFormat:@"\n- (BOOL)saveForKey:(NSString *)sender {\n"];
+                    [result appendFormat:@"\tNSDictionary *dictionaryValue = [self dictionaryValue];\n"];
+                    [result appendFormat:@"\t[[NSUserDefaults standardUserDefaults] setObject:dictionaryValue forKey:sender];\n"];
+                    [result appendFormat:@"\tBOOL saveResult = [[NSUserDefaults standardUserDefaults] synchronize];\n"];
+                    [result appendFormat:@"return saveResult;\n"];
+                    [result appendFormat:@"}\n"];
+                    
+                    [result appendFormat:@"\n+ (%@ *)findForKey:(NSString *)sender {\n", classname];
+                    [result appendFormat:@"\tNSDictionary *findDictionary = [[NSUserDefaults standardUserDefaults] objectForKey:sender];\n"];
+                    [result appendFormat:@"\tif (![findDictionary isKindOfClass:[NSDictionary class]]) {\n"];
+                    [result appendFormat:@"\t\t[[[UIAlertView alloc] initWithTitle:@\"FindForKey 出现错误\" message:nil delegate:nil cancelButtonTitle:@\"好的\" otherButtonTitles:nil, nil] show];\n"];
+                    [result appendFormat:@"\t\treturn nil;\n"];
+                    [result appendFormat:@"\t}\n"];
+                    [result appendFormat:@"\t%@ *findResult = [%@ parseFromDictionary:findDictionary];\n", classname, classname];
+                    [result appendFormat:@"\treturn findResult;\n"];
                     [result appendFormat:@"}\n"];
                 }
                     break;

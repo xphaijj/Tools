@@ -16,7 +16,7 @@ int main(int argc, const char * argv[]) {
         NSString *sourcePath = [NSString stringWithUTF8String:argv[1]];
         NSString *outputPath = [NSString stringWithUTF8String:argv[2]];
         [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath];
-        
+        [DBGeneration generationSourcePath:sourcePath outputPath:outputPath];
         
         NSLog(@"\n%@ \n outputPath = %@\n", sourcePath, outputPath);
         
