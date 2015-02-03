@@ -18,6 +18,8 @@
 #define KEY_TYPE @"KEY_TYPE"
 #define KEY_FIELDNAME @"KEY_FIELDNAME"
 
+#define IS_BASE_TYPE(type) [[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"] || [[type lowercaseString] isEqualToString:@"bool"] || [[type lowercaseString] isEqualToString:@"short"] || [[type lowercaseString] isEqualToString:@"byte"] || [[type lowercaseString] isEqualToString:@"long"] || [[type lowercaseString] isEqualToString:@"char"]
+
 typedef enum FileType { //文件类型
     H_FILE,
     M_FILE
@@ -33,7 +35,11 @@ typedef enum MethodType {//方法类型
     TYPE_ADD,//增加
     TYPE_DEL,//删除
     TYPE_UPDATE,//更新
-    TYPE_SEL//查询
+    TYPE_SEL,//查询
+    
+#pragma mark ++ Request
+    TYPE_NOTES,//获取注释
+    TYPE_METHOD,//获取方法名
 }MethodType;
 
 typedef enum TypeIndex {//增删改查 的选择索引
@@ -42,6 +48,7 @@ typedef enum TypeIndex {//增删改查 的选择索引
     INDEX_THREE,
     INDEX_FOUR
 }TypeIndex;
+
 
 
 

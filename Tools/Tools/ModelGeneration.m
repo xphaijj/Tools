@@ -9,7 +9,7 @@
 #import "ModelGeneration.h"
 
 
-#define IS_BASE_TYPE(type) [[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"] || [[type lowercaseString] isEqualToString:@"bool"] || [[type lowercaseString] isEqualToString:@"short"] || [[type lowercaseString] isEqualToString:@"byte"] || [[type lowercaseString] isEqualToString:@"long"] || [[type lowercaseString] isEqualToString:@"char"]
+
 
 
 
