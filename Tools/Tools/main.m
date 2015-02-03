@@ -10,6 +10,7 @@
 #import "ModelGeneration.h"
 #import "DBGeneration.h"
 #import "RequestGeneration.h"
+#import "ConfigGeneration.h"
 
 void generation(NSString *sourcePath, NSString *outputPath);
 
@@ -54,4 +55,5 @@ void generation(NSString *sourcePath, NSString *outputPath)
     [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath];
     [DBGeneration generationSourcePath:sourcePath outputPath:outputPath];
     [RequestGeneration generationSourcePath:sourcePath outputPath:outputPath];
+    [ConfigGeneration generationOutputPath:outputPath];
 }

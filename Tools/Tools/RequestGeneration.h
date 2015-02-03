@@ -38,20 +38,22 @@
 
 /**
  * @brief  生成方法名
+ * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  requestType:接口类型 get | post | upload
  * @prama  interface:接口名称
  * @prama  returnType:返回类型
  * @prama  methodType:方法类型
  * @prama  contents:接口参数
  */
-+ (NSString *)generationRequestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType;
++ (NSString *)generationFileType:(FileType)fileType requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType;
 
 /**
  * @brief  request请求的所有参数
  * @prama  contents:参数列表
  * @prama  methodType:方法类型
+ * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType;
++ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType;
 
 
 

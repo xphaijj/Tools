@@ -139,8 +139,9 @@
             NSString *returnType = [items objectAtIndex:3];
             NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
             
-            [result appendString:[self generationRequestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES]];
-            [result appendString:[self generationRequestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD]];
+            [result appendString:[self generationFileType:fileType requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES]];
+            [result appendString:[self generationFileType:fileType requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD]];
+            [result appendString:[self generationFileType:fileType requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST]];
             
         }
     }
@@ -150,24 +151,28 @@
 
 /**
  * @brief  生成方法名
+ * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  requestType:接口类型 get | post | upload
  * @prama  interface:接口名称
  * @prama  returnType:返回类型
  * @prama  methodType:方法类型
  * @prama  contents:接口参数
  */
-+ (NSString *)generationRequestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType
++ (NSString *)generationFileType:(FileType)fileType requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
+
+    // h m 文件中均需导入的
     switch (methodType) {
         case TYPE_NOTES:
         {
             [result appendFormat:@"/**\n"];
-            [self allPramaFromContents:contents withType:methodType];
-            [result appendFormat:@"**/\n"];
+            [result appendFormat:@" * @brief %@\n", [contents firstObject]];
+            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+            [result appendFormat:@" **/\n"];
         }
             break;
-        
+            
         case TYPE_METHOD:
         {
             [result appendFormat:@"+(AFHTTPRequestOperation *)%@RequestUrl:(NSString *)baseurl", interface];
@@ -200,7 +205,7 @@
                     NSString *defaultValue = [fields objectAtIndex:4];
                     NSString *notes = [fields objectAtIndex:5];
                     
-                    [result appendFormat:@"%@:(NSArray *)%@", fieldname, @"pic"];
+                    [result appendFormat:@" %@:(NSArray *)%@", fieldname, @"pic"];
                 }
             }
             else if ([requestType isEqualToString:@"get"]) {
@@ -210,15 +215,83 @@
             else {
                 NSLog(@"ERROR -- 网络请求接口参数有误");
             }
-            [self allPramaFromContents:contents withType:methodType];
-            [result appendFormat:@";\n\n"];
+            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+            [result appendFormat:@" success:(void (^)(AFHTTPRequestOperation *operation, %@ *result))success  failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;", returnType];
+            
+            
         }
             break;
         default:
             break;
     }
     
-
+    
+    //区分 h m 文件导入的
+    switch (fileType) {
+        case H_FILE:
+        {
+            switch (methodType) {
+                case TYPE_REQUEST:
+                {
+                    [result appendFormat:@"\n\n"];
+                }
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+            break;
+        case M_FILE:
+        {
+            switch (methodType) {
+                case TYPE_REQUEST:
+                {
+                    [result appendString:@"{\n"];
+                    [result appendString:@"\t[SVProgressHUD showWithStatus:@\"正在加载...\"];\n"];
+                    [result appendString:@"\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
+                    [result appendString:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] init];\n"];
+                    [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+                    
+                    if ([requestType isEqualToString:@"get"]) {
+                        [result appendString:@"\tAFHTTPRequestOperation *op = [[Request sharedClient] GET:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params success:^(AFHTTPRequestOperation *operation, id result) {\n"];
+                    }
+                    else if ([requestType isEqualToString:@"post"]) {
+                        [result appendString:@"\tAFHTTPRequestOperation *op = [[Request sharedClient] POST:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params success:^(AFHTTPRequestOperation *operation, id result) {\n"];
+                    }
+                    else if ([requestType isEqualToString:@"upload"]){
+                        [result appendString:@"\tAFHTTPRequestOperation *op = [[Request sharedClient] POST:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n"];
+                        [result appendFormat:@"\t\tfor (int i = 0; i < pic.count; i++) {\n"];
+                        [result appendFormat:@"\t\t\tUIImage *image = [pic objectAtIndex:i];\n"];
+                        [result appendFormat:@"\t\t\t[formData appendPartWithFileData:UIImageJPEGRepresentation(image, 1.0) name:[NSString stringWithFormat:@\"%%i.png\", i] fileName:[NSString stringWithFormat:@\"%%i.png\", i] mimeType:@\"image/png\"];\n"];
+                        [result appendFormat:@"\t\t}\n"];
+                        [result appendFormat:@"\t} success:^(AFHTTPRequestOperation *operation, id responseObject) {\n"];
+                    }
+                    
+                    [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
+                    [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
+                    [result appendFormat:@"\t\t%@ *info = [%@ parseFromDictionary:result];\n", returnType, returnType];
+                    [result appendString:@"\t\tsuccess(operation, result);\n"];
+                    [result appendString:@"\t} failure:^(AFHTTPRequestOperation *operation, NSError *error) {\n"];
+                    [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
+                    [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
+                    [result appendFormat:@"\t\tfailure(operation, error);\n"];
+                    [result appendString:@"\t}];\n"];
+                    [result appendString:@"\treturn op;\n"];
+                    [result appendString:@"}\n\n\n"];
+                }
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+            
+        default:
+            break;
+    }
+    
+    
     
     return result;
 }
@@ -227,8 +300,9 @@
  * @brief  request请求的所有参数
  * @prama  contents:参数列表
  * @prama  methodType:方法类型
+ * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType
++ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {
@@ -256,16 +330,15 @@
         }
         NSString *defaultValue = [fields objectAtIndex:4];
         NSString *notes = [fields objectAtIndex:5];
+        
+        //h m 文件都需要导入的文件
         switch (methodType) {
             case TYPE_NOTES:
             {
-                if (i == 0) {
-                    [result appendFormat:@" * @brief %@", [contents firstObject]];
-                }
-                [result appendFormat:@" * @prama %@:%@", fieldname, notes];
+                [result appendFormat:@" * @prama %@:%@\n", fieldname, notes];
             }
                 break;
-            
+                
             case TYPE_METHOD:
             {
                 if ([style isEqualToString:@"repeated"]) {
@@ -285,9 +358,55 @@
                 }
             }
                 break;
+                
+            case TYPE_REQUEST:
+            {
+            }
+                break;
+                
             default:
                 break;
         }
+        
+        switch (fileType) {
+            case H_FILE:
+            {
+                
+            }
+                break;
+            case M_FILE:
+            {
+                switch (methodType) {
+                    case TYPE_REQUEST:
+                    {
+                        if ([style isEqualToString:@"repeated"]) {
+#warning 上传数组的处理
+                        }
+                        else {
+                            if (IS_BASE_TYPE(type)) {
+                                [result appendFormat:@"\t[params setObject:[NSNumber numberWith%@:%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                            }
+                            else if ([type isEqualToString:@"string"]){
+                                [result appendFormat:@"\t[params setObject:%@ forKey:@\"%@\"];\n", fieldname, keyname];
+                            }
+                            else {
+#warning 非简单数据类型的处理 包含枚举类型和model类型
+                                //result appendString:@"%@:(%@)"
+                            }
+                        }
+                    }
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+                break;
+                
+            default:
+                break;
+        }
+        
     }
     
     

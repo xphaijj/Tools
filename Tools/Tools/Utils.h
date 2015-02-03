@@ -12,6 +12,8 @@
 
 #define MODEL_NAME @"Model"   //生成Model的名称
 #define REQUEST_NAME @"Request" //网络文件名称
+#define CONFIG_NAME @"Config" //配置文件
+
 #define CopyRightVersion 1.0
 
 #define KEY @"KEY"
@@ -40,6 +42,7 @@ typedef enum MethodType {//方法类型
 #pragma mark ++ Request
     TYPE_NOTES,//获取注释
     TYPE_METHOD,//获取方法名
+    TYPE_REQUEST,//网络请求的实现
 }MethodType;
 
 typedef enum TypeIndex {//增删改查 的选择索引
