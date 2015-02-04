@@ -1,0 +1,43 @@
+{
+  'version': 0,
+  'case-sensitive': 'false',
+  'roots': [
+    {
+      'type': 'directory',
+      'name': "/Users/Alex/Code/Tools/XXUtils/Build/Products/Debug-iphoneos/XXUtils.framework/Headers",
+      'contents': [
+        {
+          'type': 'file',
+          'name': "Utils.h",
+          'external-contents': "/Users/Alex/Code/Tools/XXUtils/XXUtils/Utils.h"
+        },
+        {
+          'type': 'file',
+          'name': "XXConfig.h",
+          'external-contents': "/Users/Alex/Code/Tools/XXUtils/XXUtils/XXConfig.h"
+        },
+        {
+          'type': 'file',
+          'name': "XXUtils-Swift.h",
+          'external-contents': "/Users/Alex/Code/Tools/XXUtils/Build/Products/Debug-iphoneos/XXUtils.framework/Headers/XXUtils-Swift.h"
+        },
+        {
+          'type': 'file',
+          'name': "XXUtils.h",
+          'external-contents': "/Users/Alex/Code/Tools/XXUtils/XXUtils/XXUtils.h"
+        }
+      ]
+    },
+    {
+      'type': 'directory',
+      'name': "/Users/Alex/Code/Tools/XXUtils/Build/Products/Debug-iphoneos/XXUtils.framework/Modules",
+      'contents': [
+        {
+          'type': 'file',
+          'name': "module.modulemap",
+          'external-contents': "/Users/Alex/Code/Tools/XXUtils/Build/Products/Debug-iphoneos/XXUtils.framework/Modules/module.modulemap"
+        }
+      ]
+    }
+  ]
+}

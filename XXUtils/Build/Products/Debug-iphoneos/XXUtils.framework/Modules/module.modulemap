@@ -1,0 +1,6 @@
+framework module XXUtils {
+  umbrella header "XXUtils.h"
+
+  export *
+  module * { export * }
+}
