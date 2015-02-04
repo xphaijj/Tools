@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>C6F992A4-6984-4310-89E8-964228C35A02</string>
+	<key>IDESourceControlProjectName</key>
+	<string>XXUtils</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>AE20233CD4310A26B80E16E2446BA0A7B753286E</key>
+		<string>https://git.oschina.net/phxiang/Tools.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>XXUtils/XXUtils.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>AE20233CD4310A26B80E16E2446BA0A7B753286E</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://git.oschina.net/phxiang/Tools.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>AE20233CD4310A26B80E16E2446BA0A7B753286E</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>AE20233CD4310A26B80E16E2446BA0A7B753286E</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Tools</string>
+		</dict>
+	</array>
+</dict>
+</plist>
