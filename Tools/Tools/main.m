@@ -55,5 +55,5 @@ void generation(NSString *sourcePath, NSString *outputPath)
     [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath];
     [DBGeneration generationSourcePath:sourcePath outputPath:outputPath];
     [RequestGeneration generationSourcePath:sourcePath outputPath:outputPath];
-    [ConfigGeneration generationOutputPath:outputPath];
+    //[ConfigGeneration generationOutputPath:outputPath];
 }

@@ -15,6 +15,7 @@
 		FAB0C16D1A7C73DB0032D14E /* ModelGeneration.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB0C16C1A7C73DB0032D14E /* ModelGeneration.m */; };
 		FAB0C1701A7C73E80032D14E /* DBGeneration.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB0C16F1A7C73E80032D14E /* DBGeneration.m */; };
 		FAB0C1731A7C73FA0032D14E /* RequestGeneration.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB0C1721A7C73FA0032D14E /* RequestGeneration.m */; };
+		FAC026F81A8512BD00EE4721 /* CategoryGeneration.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC026F71A8512BD00EE4721 /* CategoryGeneration.m */; };
 		FAC2797A1A80FED8008886F8 /* ConfigGeneration.m in Sources */ = {isa = PBXBuildFile; fileRef = FAC279791A80FED8008886F8 /* ConfigGeneration.m */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,8 @@
 		FAB0C16F1A7C73E80032D14E /* DBGeneration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBGeneration.m; sourceTree = "<group>"; };
 		FAB0C1711A7C73FA0032D14E /* RequestGeneration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RequestGeneration.h; sourceTree = "<group>"; };
 		FAB0C1721A7C73FA0032D14E /* RequestGeneration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RequestGeneration.m; sourceTree = "<group>"; };
+		FAC026F61A8512BD00EE4721 /* CategoryGeneration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CategoryGeneration.h; sourceTree = "<group>"; };
+		FAC026F71A8512BD00EE4721 /* CategoryGeneration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CategoryGeneration.m; sourceTree = "<group>"; };
 		FAC279781A80FED8008886F8 /* ConfigGeneration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConfigGeneration.h; sourceTree = "<group>"; };
 		FAC279791A80FED8008886F8 /* ConfigGeneration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConfigGeneration.m; sourceTree = "<group>"; };
 		FAC2797B1A810053008886F8 /* Config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
@@ -110,6 +113,7 @@
 		FAB0C1601A7C72C90032D14E /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				FAC026F51A85128700EE4721 /* 扩展的生成 */,
 				FA8016631A7CBE3C00F3215A /* Lib */,
 				FAAB911F1A7CAD820018E188 /* 一些公共方法的调用 */,
 				FAB0C1761A7C74310032D14E /* Model生成 */,
@@ -146,6 +150,15 @@
 				FAB0C16C1A7C73DB0032D14E /* ModelGeneration.m */,
 			);
 			name = "Model生成";
+			sourceTree = "<group>";
+		};
+		FAC026F51A85128700EE4721 /* 扩展的生成 */ = {
+			isa = PBXGroup;
+			children = (
+				FAC026F61A8512BD00EE4721 /* CategoryGeneration.h */,
+				FAC026F71A8512BD00EE4721 /* CategoryGeneration.m */,
+			);
+			name = "扩展的生成";
 			sourceTree = "<group>";
 		};
 		FAC279771A80FEA3008886F8 /* Config */ = {
@@ -215,6 +228,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */,
+				FAC026F81A8512BD00EE4721 /* CategoryGeneration.m in Sources */,
 				FAC2797A1A80FED8008886F8 /* ConfigGeneration.m in Sources */,
 				FAB0C1621A7C72C90032D14E /* main.m in Sources */,
 				FAB0C16D1A7C73DB0032D14E /* ModelGeneration.m in Sources */,

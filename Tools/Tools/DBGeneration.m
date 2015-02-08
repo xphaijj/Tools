@@ -56,13 +56,14 @@
     switch (fileType) {
         case H_FILE:
         {
-            [result appendFormat:@"#import <FMDatabase/FMDatabase.h>\n"];
+            [result appendFormat:@"#import <FMDB/FMDatabase.h>\n"];
+            [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
         }
             break;
             
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@.h\"", MODEL_NAME];
+            [result appendFormat:@"#import \"%@+DB.h\"", MODEL_NAME];
         }
             break;
         default:
@@ -115,8 +116,8 @@
             break;
         case M_FILE:
         {
-            [result appendString:@"@interface OObject(DB) {\n"];
-            [result appendString:@"}\n"];
+            [result appendString:@"#define SHOW_DB_ERROR(msg) [[[UIAlertView alloc] initWithTitle:msg message:nil delegate:nil cancelButtonTitle:@\"好的\" otherButtonTitles:nil, nil] show];\n\n"];
+            [result appendString:@"@implementation OObject(DB) \n"];
             [result appendString:@"- (BOOL)save {\n"];
             [result appendString:@"\treturn NO;\n"];
             [result appendString:@"}\n"];
@@ -361,10 +362,10 @@
                     [result appendFormat:@"\twhile ([set next]) {\n"];
                     [result appendFormat:@"\t\t%@ *item = [[%@ alloc] init];\n", classname, classname];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set intForForColumn:@\"%@\"];\n", keyfieldname, key];
+                        [result appendFormat:@"\t\titem.%@ = [set intForColumn:@\"%@\"];\n", keyfieldname, key];
                     }
                     else if ([keyType isEqualToString:@"string"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set stringForForColumn:@\"%@\"];\n", keyfieldname, key];
+                        [result appendFormat:@"\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", keyfieldname, key];
                     }
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
                     [result appendString:@"\t\t[result addObject:item];\n"];
@@ -656,28 +657,28 @@
                 case TYPE_SEL:
                 {
                     if ([type isEqualToString:@"int"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set intForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([type isEqualToString:@"short"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set intForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([type isEqualToString:@"bool"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set boolForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set boolForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([type isEqualToString:@"long"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set longForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set longForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([type isEqualToString:@"float"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set doubleForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([type isEqualToString:@"double"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set doubleForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([type isEqualToString:@"char"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set stringForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                     else {
-                        [result appendFormat:@"\t\titem.%@ = [set stringForForColumn:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, keyname];
                     }
                 }
                     break;

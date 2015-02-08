@@ -41,6 +41,7 @@ static NSMutableArray *enumList;
     [m appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
     
 //头文件的导入 h 文件@class 形式导入  m 文件import
+    [h appendString:[self introductionPackages:H_FILE]];
     [m appendString:[self introductionPackages:M_FILE]];
     
 //匹配出所有的枚举类型
@@ -63,12 +64,14 @@ static NSMutableArray *enumList;
     switch (fileType) {
         case H_FILE:
         {
+            [result appendFormat:@"#import <UIKit/UIKit.h>\n"];
+            [result appendFormat:@"#import <Foundation/Foundation.h>\n"];
         }
             break;
         
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@+DB.h\"", MODEL_NAME];
+            [result appendFormat:@"#import \"%@.h\"", MODEL_NAME];
         }
             break;
         default:
@@ -173,7 +176,7 @@ static NSMutableArray *enumList;
             break;
         case M_FILE:
         {
-            [result appendString:@"\n\n@implementation OOject \n"];
+            [result appendString:@"\n\n@implementation OObject \n"];
             [result appendString:@"\n+(NSString *)initialDB {\n"];
             [result appendString:@"\tstatic dispatch_once_t onceToken;\n"];
             [result appendString:@"\tdispatch_once(&onceToken, ^{\n"];
@@ -183,7 +186,7 @@ static NSMutableArray *enumList;
             [result appendString:@"\t\tif (!(isDir == YES && existed == YES)) {\n"];
             [result appendString:@"\t\t\t[[NSFileManager defaultManager] createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:nil];\n"];
             [result appendString:@"\t\t}\n"];
-            [result appendString:@"\t\tdbPath = [NSString stringWithFormat:@\"%%@/database.sqlite\", dirPath];\n"];
+            [result appendString:@"\t\tdbPath = [NSString stringWithFormat:@\"%@/database.sqlite\", dirPath];\n"];
             [result appendString:@"\t});\n"];
             [result appendString:@"\treturn dbPath;\n"];
             [result appendString:@"}\n"];
@@ -267,7 +270,7 @@ static NSMutableArray *enumList;
     [contentsList removeObjectAtIndex:0];
     [contentsList removeLastObject];
     
-    [self allPropertys:contentsList fileType:fileType methodType:TYPE_PROPERTY];
+    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_PROPERTY]];
     
     return result;
 }
@@ -415,10 +418,10 @@ static NSMutableArray *enumList;
                     if ([[style lowercaseString] isEqualToString:@"repeated"]) {
                         [result appendFormat:@"\tif ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSArray class]]) {\n", keyname, keyname];
                         if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
-                            [result appendFormat:@"\t\tself.%@List addObjectsFromArray:[sender objectForKey:@\"%@\"]", fieldname, keyname];
+                            [result appendFormat:@"\t\tself.%@List addObjectsFromArray:[sender objectForKey:@\"%@\"];\n", fieldname, keyname];
                         }
                         else {
-                            [result appendFormat:@"\t\tfor (id object in [sender.allKeys objectForKey:@\"%@\"]) {\n", keyname];
+                            [result appendFormat:@"\t\tfor (id object in [sender objectForKey:@\"%@\"]) {\n", keyname];
                             [result appendFormat:@"\t\t\tif (object && [object isKindOfClass:[NSDictionary class]]) {\n"];
                             [result appendFormat:@"\t\t\t\t%@ *item = [%@ parseFromDictionary:object];\n", type, type];
                             [result appendFormat:@"\t\t\t\t[self.%@List addObject:item];\n", fieldname];
@@ -448,7 +451,7 @@ static NSMutableArray *enumList;
                         if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
                             [result appendFormat:@"\tNSAssert(([[sender allKeys] containsObject:@\"%@\"] && !([[sender objectForKey:@\"%@\"] isKindOfClass:[NSNull class]])), @\"字段不能为空\");\n", keyname, keyname];
                         }
-                        [result appendFormat:@"\tif ([sender.allKeys contaionsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
+                        [result appendFormat:@"\tif ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
                         [result appendFormat:@"\t\tself.%@ = [%@ parseFromDictionary:[sender objectForKey:@\"%@\"]];\n", fieldname, type, keyname];
                         [result appendFormat:@"\t}\n"];
                     }
@@ -558,7 +561,7 @@ static NSMutableArray *enumList;
                     break;
                 case TYPE_INIT:
                 {
-                    [result appendString:@"- (id)init {\n"];
+                    [result appendString:@"\n- (id)init {\n"];
                     [result appendString:@"\tself = [super init];\n"];
                     [result appendString:@"\tif (self) {\n"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];

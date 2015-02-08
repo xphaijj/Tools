@@ -265,7 +265,7 @@
                         [result appendFormat:@"\t\t\tUIImage *image = [pic objectAtIndex:i];\n"];
                         [result appendFormat:@"\t\t\t[formData appendPartWithFileData:UIImageJPEGRepresentation(image, 1.0) name:[NSString stringWithFormat:@\"%%i.png\", i] fileName:[NSString stringWithFormat:@\"%%i.png\", i] mimeType:@\"image/png\"];\n"];
                         [result appendFormat:@"\t\t}\n"];
-                        [result appendFormat:@"\t} success:^(AFHTTPRequestOperation *operation, id responseObject) {\n"];
+                        [result appendFormat:@"\t} success:^(AFHTTPRequestOperation *operation, id result) {\n"];
                     }
                     
                     [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
