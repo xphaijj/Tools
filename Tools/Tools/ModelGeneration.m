@@ -71,6 +71,7 @@ static NSMutableArray *enumList;
         
         case M_FILE:
         {
+            [result appendFormat:@"#import \"%@.h\"\n", CONFIG_NAME];
             [result appendFormat:@"#import \"%@.h\"", MODEL_NAME];
         }
             break;
@@ -418,7 +419,7 @@ static NSMutableArray *enumList;
                     if ([[style lowercaseString] isEqualToString:@"repeated"]) {
                         [result appendFormat:@"\tif ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSArray class]]) {\n", keyname, keyname];
                         if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
-                            [result appendFormat:@"\t\tself.%@List addObjectsFromArray:[sender objectForKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\t\t[self.%@List addObjectsFromArray:[sender objectForKey:@\"%@\"]];\n", fieldname, keyname];
                         }
                         else {
                             [result appendFormat:@"\t\tfor (id object in [sender objectForKey:@\"%@\"]) {\n", keyname];

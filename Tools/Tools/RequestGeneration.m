@@ -271,7 +271,7 @@
                     [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
                     [result appendFormat:@"\t\t%@ *info = [%@ parseFromDictionary:result];\n", returnType, returnType];
-                    [result appendString:@"\t\tsuccess(operation, result);\n"];
+                    [result appendString:@"\t\tsuccess(operation, info);\n"];
                     [result appendString:@"\t} failure:^(AFHTTPRequestOperation *operation, NSError *error) {\n"];
                     [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
@@ -342,7 +342,8 @@
             case TYPE_METHOD:
             {
                 if ([style isEqualToString:@"repeated"]) {
-#warning 上传数组的处理
+//#warning 上传数组的处理
+                    [result appendFormat:@" %@:(NSArray *)%@List", fieldname, fieldname];
                 }
                 else {
                     if (IS_BASE_TYPE(type)) {
@@ -353,6 +354,7 @@
                     }
                     else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
+                        
                         //result appendString:@"%@:(%@)"
                     }
                 }
@@ -380,7 +382,8 @@
                     case TYPE_REQUEST:
                     {
                         if ([style isEqualToString:@"repeated"]) {
-#warning 上传数组的处理
+//#warning 上传数组的处理
+                            [result appendFormat:@"\t[params setObject:[%@List componentsJoinedByString:@\",\"] forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                         else {
                             if (IS_BASE_TYPE(type)) {

@@ -63,6 +63,7 @@
             
         case M_FILE:
         {
+            [result appendFormat:@"#import \"%@.h\"\n", CONFIG_NAME];
             [result appendFormat:@"#import \"%@+DB.h\"", MODEL_NAME];
         }
             break;
@@ -116,7 +117,6 @@
             break;
         case M_FILE:
         {
-            [result appendString:@"#define SHOW_DB_ERROR(msg) [[[UIAlertView alloc] initWithTitle:msg message:nil delegate:nil cancelButtonTitle:@\"好的\" otherButtonTitles:nil, nil] show];\n\n"];
             [result appendString:@"@implementation OObject(DB) \n"];
             [result appendString:@"- (BOOL)save {\n"];
             [result appendString:@"\treturn NO;\n"];

@@ -49,11 +49,13 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-void generation(NSString *sourcePath, NSString *outputPath)
-{
+void generation(NSString *sourcePath, NSString *outputPath) {
     NSLog(@"\n\tsourcePath = %@ \n\toutputPath = %@\n", sourcePath, outputPath);
     [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath];
     [DBGeneration generationSourcePath:sourcePath outputPath:outputPath];
     [RequestGeneration generationSourcePath:sourcePath outputPath:outputPath];
-    //[ConfigGeneration generationOutputPath:outputPath];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/%@.h", outputPath, CONFIG_NAME]]) {
+        [ConfigGeneration generationOutputPath:outputPath];
+    }
+    
 }

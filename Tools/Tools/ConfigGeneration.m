@@ -28,7 +28,8 @@
     //版权信息的导入
     [h appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
     
-    [h appendString:[[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Config" ofType:@"h"] encoding:NSUTF8StringEncoding error:nil]];
+    [h appendString:[[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:@"http://git.oschina.net/phxiang/Public/raw/master/Config.h"] encoding:NSUTF8StringEncoding error:nil]];
+    //[h appendString:[[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Config" ofType:@"h"] encoding:NSUTF8StringEncoding error:nil]];
     [h writeToFile:hFilePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
 }
 

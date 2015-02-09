@@ -50,7 +50,6 @@
 		FAC026F71A8512BD00EE4721 /* CategoryGeneration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CategoryGeneration.m; sourceTree = "<group>"; };
 		FAC279781A80FED8008886F8 /* ConfigGeneration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConfigGeneration.h; sourceTree = "<group>"; };
 		FAC279791A80FED8008886F8 /* ConfigGeneration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConfigGeneration.m; sourceTree = "<group>"; };
-		FAC2797B1A810053008886F8 /* Config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -164,7 +163,6 @@
 		FAC279771A80FEA3008886F8 /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				FAC2797B1A810053008886F8 /* Config.h */,
 				FAC279781A80FED8008886F8 /* ConfigGeneration.h */,
 				FAC279791A80FED8008886F8 /* ConfigGeneration.m */,
 			);
