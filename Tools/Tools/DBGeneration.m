@@ -56,7 +56,12 @@
     switch (fileType) {
         case H_FILE:
         {
-            [result appendFormat:@"#import <FMDB/FMDatabase.h>\n"];
+            if (K_HAS_PODS) {
+                [result appendFormat:@"#import <FMDB/FMDatabase.h>\n"];
+            }
+            else {
+                [result appendFormat:@"#import \"FMDatabase.h\"\n"];
+            }
             [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
         }
             break;

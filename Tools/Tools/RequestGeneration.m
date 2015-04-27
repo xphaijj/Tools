@@ -61,7 +61,12 @@
     switch (fileType) {
         case H_FILE:
         {
-            [result appendString:@"#import <AFNetworking/AFNetworking.h>\n"];
+            if (K_HAS_PODS) {
+                [result appendString:@"#import <AFNetworking/AFNetworking.h>\n"];
+            }
+            else {
+                [result appendString:@"#import \"AFNetworking.h\"\n"];
+            }
             [result appendString:@"#import \"Config.h\"\n"];
             [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
         }
@@ -69,7 +74,12 @@
         case M_FILE:
         {
             [result appendFormat:@"#import \"%@.h\"\n", REQUEST_NAME];
-            [result appendFormat:@"#import <SVProgressHUD/SVProgressHUD.h>\n"];
+            if (K_HAS_PODS) {
+                [result appendFormat:@"#import <SVProgressHUD/SVProgressHUD.h>\n"];
+            }
+            else {
+                [result appendFormat:@"#import \"SVProgressHUD.h\"\n"];
+            }
         }
             break;
             

@@ -10,9 +10,9 @@
 
 #import "RegexKitLite.h"
 
-#define MODEL_NAME @"Model"   //生成Model的名称
-#define REQUEST_NAME @"Request" //网络文件名称
-#define CONFIG_NAME @"Config" //配置文件
+#define MODEL_NAME @"PPModel"   //生成Model的名称
+#define REQUEST_NAME @"PPRequest" //网络文件名称
+#define CONFIG_NAME @"PPConfig" //配置文件
 
 #define CopyRightVersion 1.0
 
@@ -21,6 +21,9 @@
 #define KEY_FIELDNAME @"KEY_FIELDNAME"
 
 #define IS_BASE_TYPE(type) [[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"] || [[type lowercaseString] isEqualToString:@"bool"] || [[type lowercaseString] isEqualToString:@"short"] || [[type lowercaseString] isEqualToString:@"byte"] || [[type lowercaseString] isEqualToString:@"long"] || [[type lowercaseString] isEqualToString:@"char"]
+
+#define K_HAS_PODS YES
+
 
 typedef enum FileType { //文件类型
     H_FILE,
