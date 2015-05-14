@@ -344,7 +344,7 @@ static NSMutableArray *enumList;
                         [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *%@;//%@\n", fieldname, notes];
                     }
                     else if ([enumList containsObject:type]) {//枚举类型
-                        [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;//%@\n", [type lowercaseString], fieldname, notes];
+                        [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;//%@\n", type, fieldname, notes];
                     }
                     else {
                         [result appendFormat:@"@property (readwrite, nonatomic, strong) %@ *%@;//%@\n", type, fieldname, notes];
