@@ -100,19 +100,19 @@
     switch (fileType) {
         case H_FILE:
         {
-            [result appendFormat:@"\n\n@interface Request : AFHTTPRequestOperationManager {\n"];
+            [result appendFormat:@"\n\n@interface PPRequest : AFHTTPRequestOperationManager {\n"];
             [result appendFormat:@"}\n"];
             [result appendFormat:@"\n+ (instancetype)sharedClient;\n\n\n"];
         }
             break;
         case M_FILE:
         {
-            [result appendFormat:@"\n@implementation Request\n"];
+            [result appendFormat:@"\n@implementation PPRequest\n"];
             [result appendFormat:@"\n+ (instancetype)sharedClient {\n"];
-            [result appendFormat:@"\tstatic Request *_sharedClient;\n"];
+            [result appendFormat:@"\tstatic PPRequest *_sharedClient;\n"];
             [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
             [result appendFormat:@"\tdispatch_once(&onceToken, ^{ \n"];
-            [result appendFormat:@"\t\t_sharedClient = [[Request alloc] initWithBaseURL:[NSURL URLWithString:HOST_NAME]];\n"];
+            [result appendFormat:@"\t\t_sharedClient = [[PPRequest alloc] initWithBaseURL:[NSURL URLWithString:HOST_NAME]];\n"];
             [result appendFormat:@"\t\t_sharedClient.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];\n"];
             [result appendFormat:@"\t\t_sharedClient.responseSerializer = [AFJSONResponseSerializer serializer];//申明返回的结果是json类型\n"];
             [result appendFormat:@"\t\t_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"text/html\"];//如果报接受类型不一致请替换一致text/html或别的\n"];
@@ -264,13 +264,13 @@
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
                     if ([requestType isEqualToString:@"get"]) {
-                        [result appendString:@"\tAFHTTPRequestOperation *op = [[Request sharedClient] GET:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params success:^(AFHTTPRequestOperation *operation, id result) {\n"];
+                        [result appendString:@"\tAFHTTPRequestOperation *op = [[PPRequest sharedClient] GET:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params success:^(AFHTTPRequestOperation *operation, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"post"]) {
-                        [result appendString:@"\tAFHTTPRequestOperation *op = [[Request sharedClient] POST:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params success:^(AFHTTPRequestOperation *operation, id result) {\n"];
+                        [result appendString:@"\tAFHTTPRequestOperation *op = [[PPRequest sharedClient] POST:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params success:^(AFHTTPRequestOperation *operation, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"upload"]){
-                        [result appendString:@"\tAFHTTPRequestOperation *op = [[Request sharedClient] POST:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n"];
+                        [result appendString:@"\tAFHTTPRequestOperation *op = [[PPRequest sharedClient] POST:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n"];
                         [result appendFormat:@"\t\tfor (int i = 0; i < pic.count; i++) {\n"];
                         [result appendFormat:@"\t\t\tUIImage *image = [pic objectAtIndex:i];\n"];
                         [result appendFormat:@"\t\t\t[formData appendPartWithFileData:UIImageJPEGRepresentation(image, 1.0) name:[NSString stringWithFormat:@\"%%i.png\", i] fileName:[NSString stringWithFormat:@\"%%i.png\", i] mimeType:@\"image/png\"];\n"];
