@@ -19,7 +19,7 @@ static NSMutableArray *enumList;
 
 /**
  * @brief  Model类自动生成
- * @prama  sourcepath:资源路径   
+ * @prama  sourcepath:资源路径
  * @prama  outputPath:资源生成路径
  */
 +(void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath
@@ -36,18 +36,18 @@ static NSMutableArray *enumList;
     [fileManager createFileAtPath:hFilePath contents:nil attributes:nil];
     [fileManager createFileAtPath:mFilePath contents:nil attributes:nil];
     
-//版权信息的导入
+    //版权信息的导入
     [h appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
     [m appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
     
-//头文件的导入 h 文件@class 形式导入  m 文件import
+    //头文件的导入 h 文件@class 形式导入  m 文件import
     [h appendString:[self introductionPackages:H_FILE]];
     [m appendString:[self introductionPackages:M_FILE]];
     
-//匹配出所有的枚举类型
+    //匹配出所有的枚举类型
     [h appendString:[self enumFromSourceString:sourceString]];
     
-//匹配出所有的Model类型
+    //匹配出所有的Model类型
     [h appendString:[self messageFromSourceString:sourceString fileType:H_FILE]];
     [m appendString:[self messageFromSourceString:sourceString fileType:M_FILE]];
     
@@ -68,7 +68,7 @@ static NSMutableArray *enumList;
             [result appendFormat:@"#import <Foundation/Foundation.h>\n"];
         }
             break;
-        
+            
         case M_FILE:
         {
             [result appendFormat:@"#import \"%@.h\"\n", CONFIG_NAME];
@@ -343,6 +343,9 @@ static NSMutableArray *enumList;
                     else if ([[type lowercaseString] isEqualToString:@"string"]){
                         [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *%@;//%@\n", fieldname, notes];
                     }
+                    else if ([enumList containsObject:type]) {//枚举类型
+                        [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;//%@\n", [type lowercaseString], fieldname, notes];
+                    }
                     else {
                         [result appendFormat:@"@property (readwrite, nonatomic, strong) %@ *%@;//%@\n", type, fieldname, notes];
                     }
@@ -369,7 +372,7 @@ static NSMutableArray *enumList;
             }
         }
             break;
-        
+            
         case M_FILE:
         {
             switch (methodType) {
@@ -408,6 +411,9 @@ static NSMutableArray *enumList;
                         else {
                             [result appendFormat:@"\t\tself.%@ = @\"%@\";\n", fieldname, defaultValue];
                         }
+                    }
+                    else if ([enumList containsObject:type]) {//枚举类型
+                        [result appendFormat:@"\t\tself.%@ = %@;\n", fieldname, defaultValue];
                     }
                     else {
                         [result appendFormat:@"\t\tself.%@ = [[%@ alloc] init];\n", fieldname, type];
@@ -465,7 +471,6 @@ static NSMutableArray *enumList;
                             [result appendFormat:@"\t[dictionaryValue setObject:self.%@List forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                         else {
-                            
                             [result appendFormat:@"\tNSMutableArray *%@Items = [[NSMutableArray alloc] init];\n", fieldname];
                             [result appendFormat:@"\tfor (%@ *item in self.%@List) {\n", type, fieldname];
                             [result appendFormat:@"\t\t[%@Items addObject:[item dictionaryValue]];\n", fieldname];
@@ -473,8 +478,11 @@ static NSMutableArray *enumList;
                             [result appendFormat:@"\t[dictionaryValue setObject:%@Items forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                     }
-                    else if (IS_BASE_TYPE(type) || [enumList containsObject:type]) {
+                    else if (IS_BASE_TYPE(type)) {
                         [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWith%@:self.%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                    }
+                    else if ([enumList containsObject:type]) {
+                        [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]) {
                         [result appendFormat:@"\t[dictionaryValue setObject:self.%@ forKey:@\"%@\"];\n", fieldname, keyname];
