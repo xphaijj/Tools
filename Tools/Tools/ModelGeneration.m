@@ -66,6 +66,8 @@ static NSMutableArray *enumList;
         {
             [result appendFormat:@"#import <UIKit/UIKit.h>\n"];
             [result appendFormat:@"#import <Foundation/Foundation.h>\n"];
+            [result appendFormat:@"#import \"NSDictionary+SafeAccess.h\""];
+            
         }
             break;
             
@@ -425,10 +427,10 @@ static NSMutableArray *enumList;
                     if ([[style lowercaseString] isEqualToString:@"repeated"]) {
                         [result appendFormat:@"\tif ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSArray class]]) {\n", keyname, keyname];
                         if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
-                            [result appendFormat:@"\t\t[self.%@List addObjectsFromArray:[sender objectForKey:@\"%@\"]];\n", fieldname, keyname];
+                            [result appendFormat:@"\t\t[self.%@List addObjectsFromArray:[sender arrayForKey:@\"%@\"]];\n", fieldname, keyname];
                         }
                         else {
-                            [result appendFormat:@"\t\tfor (id object in [sender objectForKey:@\"%@\"]) {\n", keyname];
+                            [result appendFormat:@"\t\tfor (id object in [sender arrayForKey:@\"%@\"]) {\n", keyname];
                             [result appendFormat:@"\t\t\tif (object && [object isKindOfClass:[NSDictionary class]]) {\n"];
                             [result appendFormat:@"\t\t\t\t%@ *item = [%@ parseFromDictionary:object];\n", type, type];
                             [result appendFormat:@"\t\t\t\t[self.%@List addObject:item];\n", fieldname];
@@ -442,24 +444,37 @@ static NSMutableArray *enumList;
                             [result appendFormat:@"\tNSAssert(([[sender allKeys] containsObject:@\"%@\"] && !([[sender objectForKey:@\"%@\"] isKindOfClass:[NSNull class]])), @\"字段不能为空\");\n", keyname, keyname];
                         }
                         if (IS_BASE_TYPE(type)) {
-                            [result appendFormat:@"\tself.%@ = [[sender objectForKey:@\"%@\"] %@Value];\n", fieldname, keyname, [type lowercaseString]];
+                            if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
+                                [result appendFormat:@"\tself.%@ = [sender integerForKey:@\"%@\"];\n", fieldname, keyname];
+                            }
+                            else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
+                                [result appendFormat:@"\tself.%@ = [sender CGFloatForKey:@\"%@\"];\n", fieldname, keyname];
+                            }
+                            else if ([[type lowercaseString] isEqualToString:@"long"]) {
+                                [result appendFormat:@"\tself.%@ = [sender longLongForKey:@\"%@\"];\n", fieldname, keyname];
+                            }
+                            else if ([[type lowercaseString] isEqualToString:@"bool"]) {
+                                [result appendFormat:@"\tself.%@ = [sender boolForKey:@\"%@\"];\n", fieldname, keyname];
+                            }
+                            else if ([[type lowercaseString] isEqualToString:@"char"]) {
+                            }
                         }
                         else {
-                            [result appendFormat:@"\tself.%@ = [[sender objectForKey:@\"%@\"] intValue];\n", fieldname, keyname];
+                            [result appendFormat:@"\tself.%@ = [sender integerForKey:@\"%@\"];\n", fieldname, keyname];
                         }
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]) {
                         if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
                             [result appendFormat:@"\tNSAssert(([[sender allKeys] containsObject:@\"%@\"] && !([[sender objectForKey:@\"%@\"] isKindOfClass:[NSNull class]])), @\"字段不能为空\");\n", keyname, keyname];
                         }
-                        [result appendFormat:@"\tself.%@ = [sender objectForKey:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\tself.%@ = [sender stringForKey:@\"%@\"];\n", fieldname, keyname];
                     }
                     else {
                         if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
                             [result appendFormat:@"\tNSAssert(([[sender allKeys] containsObject:@\"%@\"] && !([[sender objectForKey:@\"%@\"] isKindOfClass:[NSNull class]])), @\"字段不能为空\");\n", keyname, keyname];
                         }
                         [result appendFormat:@"\tif ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
-                        [result appendFormat:@"\t\tself.%@ = [%@ parseFromDictionary:[sender objectForKey:@\"%@\"]];\n", fieldname, type, keyname];
+                        [result appendFormat:@"\t\tself.%@ = [%@ parseFromDictionary:[sender dictionaryForKey:@\"%@\"]];\n", fieldname, type, keyname];
                         [result appendFormat:@"\t}\n"];
                     }
                 }
@@ -618,7 +633,7 @@ static NSMutableArray *enumList;
                     [result appendFormat:@"}\n"];
                     
                     [result appendFormat:@"\n+ (%@ *)findForKey:(NSString *)sender {\n", classname];
-                    [result appendFormat:@"\tNSDictionary *findDictionary = [[NSUserDefaults standardUserDefaults] objectForKey:sender];\n"];
+                    [result appendFormat:@"\tNSDictionary *findDictionary = [[NSUserDefaults standardUserDefaults] dictionaryForKey:sender];\n"];
                     [result appendFormat:@"\tif (![findDictionary isKindOfClass:[NSDictionary class]]) {\n"];
                     [result appendFormat:@"\t\t[[[UIAlertView alloc] initWithTitle:@\"FindForKey 出现错误\" message:nil delegate:nil cancelButtonTitle:@\"好的\" otherButtonTitles:nil, nil] show];\n"];
                     [result appendFormat:@"\t\treturn nil;\n"];
