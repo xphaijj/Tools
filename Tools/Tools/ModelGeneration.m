@@ -340,7 +340,21 @@ static NSMutableArray *enumList;
                         [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray *%@List;//%@\n", fieldname, notes];
                     }
                     else if (IS_BASE_TYPE(type)) {//数据的基本类型 int | float | double | bool
-                        [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;//%@\n", [type lowercaseString], fieldname, notes];
+                        if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) NSInteger %@;//%@\n", fieldname, notes];
+                        }
+                        else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) CGFloat %@;//%@\n", fieldname, notes];
+                        }
+                        else if([[type lowercaseString] isEqualToString:@"long"]) {
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) long long %@;//%@\n", fieldname, notes];
+                        }
+                        else if ([[type lowercaseString] isEqualToString:@"bool"]){
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) BOOL %@;//%@\n", fieldname, notes];
+                        }
+                        else {}
+                        
+                        
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]){
                         [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *%@;//%@\n", fieldname, notes];
@@ -456,7 +470,7 @@ static NSMutableArray *enumList;
                             else if ([[type lowercaseString] isEqualToString:@"bool"]) {
                                 [result appendFormat:@"\tself.%@ = [sender boolForKey:@\"%@\"];\n", fieldname, keyname];
                             }
-                            else if ([[type lowercaseString] isEqualToString:@"char"]) {
+                            else  {
                             }
                         }
                         else {
@@ -494,7 +508,12 @@ static NSMutableArray *enumList;
                         }
                     }
                     else if (IS_BASE_TYPE(type)) {
-                        [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWith%@:self.%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                        if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
+                            [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
+                        }
+                        else  {
+                            [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWith%@:self.%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                        }
                     }
                     else if ([enumList containsObject:type]) {
                         [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];

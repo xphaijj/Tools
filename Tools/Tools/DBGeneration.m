@@ -283,7 +283,7 @@
                     [result appendFormat:@") VALUES (?"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_THREE key:key keyType:keyType keyfieldname:keyfieldname]];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@")\", [NSNumber numberWithInt:self.%@]", keyfieldname];
+                        [result appendFormat:@")\", [NSNumber numberWithInteger:self.%@]", keyfieldname];
                     }
                     else {
                         [result appendFormat:@")\", self.%@", keyfieldname];
@@ -302,7 +302,7 @@
                     [result appendString:[self dbbaseControl:classname]];
                     [result appendFormat:@"\tBOOL result = NO;\n"];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@"\tresult = [db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", [NSNumber numberWithInt:self.%@]];\n", classname, key, keyfieldname];
+                        [result appendFormat:@"\tresult = [db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", [NSNumber numberWithInteger:self.%@]];\n", classname, key, keyfieldname];
                     }
                     else if ([keyType isEqualToString:@"string"]) {
                         [result appendFormat:@"\tresult = [db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", self.%@];\n", classname, key, keyfieldname];
@@ -332,7 +332,7 @@
                     [result appendFormat:@" WHERE %@ = ?\"", key];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType index:INDEX_TWO key:key keyType:keyType keyfieldname:keyfieldname]];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@", [NSNumber numberWithInt:self.%@]", keyfieldname];
+                        [result appendFormat:@", [NSNumber numberWithInteger:self.%@]", keyfieldname];
                     }
                     else {
                         [result appendFormat:@", self.%@", keyfieldname];
@@ -581,11 +581,8 @@
                             break;
                         case INDEX_FOUR:
                         {
-                            if ([type isEqualToString:@"int"]) {
-                                [result appendFormat:@", [NSNumber numberWithInt:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"short"]) {
-                                [result appendFormat:@", [NSNumber numberWithShort:self.%@]", fieldname];
+                            if ([type isEqualToString:@"int"] || [type isEqualToString:@"short"]) {
+                                [result appendFormat:@", [NSNumber numberWithInteger:self.%@]", fieldname];
                             }
                             else if ([type isEqualToString:@"bool"]) {
                                 [result appendFormat:@", [NSNumber numberWithBool:self.%@]", fieldname];
@@ -628,7 +625,7 @@
                         case INDEX_TWO:
                         {
                             if ([type isEqualToString:@"int"]) {
-                                [result appendFormat:@", [NSNumber numberWithInt:self.%@]", fieldname];
+                                [result appendFormat:@", [NSNumber numberWithInteger:self.%@]", fieldname];
                             }
                             else if ([type isEqualToString:@"short"]) {
                                 [result appendFormat:@", [NSNumber numberWithShort:self.%@]", fieldname];
