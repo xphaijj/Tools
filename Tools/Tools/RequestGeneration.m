@@ -69,6 +69,7 @@
             }
             [result appendString:@"#import \"Config.h\"\n"];
             [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
+            [result appendFormat:@"#import \"NSDictionary+SafeAccess.h\"\n"];
         }
             break;
         case M_FILE:
@@ -393,14 +394,14 @@
                     {
                         if ([style isEqualToString:@"repeated"]) {
 //#warning 上传数组的处理
-                            [result appendFormat:@"\t[params setObject:[%@List componentsJoinedByString:@\",\"] forKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\t[params setObj:[%@List componentsJoinedByString:@\",\"] forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                         else {
                             if (IS_BASE_TYPE(type)) {
-                                [result appendFormat:@"\t[params setObject:[NSNumber numberWith%@:%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                                [result appendFormat:@"\t[params setObj:[NSNumber numberWith%@:%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
                             }
                             else if ([type isEqualToString:@"string"]){
-                                [result appendFormat:@"\t[params setObject:%@ forKey:@\"%@\"];\n", fieldname, keyname];
+                                [result appendFormat:@"\t[params setObj:%@ forKey:@\"%@\"];\n", fieldname, keyname];
                             }
                             else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
