@@ -332,7 +332,7 @@
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {
         NSString *lineString = [contents objectAtIndex:i];
-        NSString *regexLine = @"^(?:[\\s]*)(required|optional|repeated)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
+        NSString *regexLine = @"^(?:[\\s]*)(class|required|optional|repeated)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
         NSArray *lineList = [lineString arrayOfCaptureComponentsMatchedByRegex:regexLine];
         if (lineList.count == 0) {
             continue;
@@ -370,9 +370,11 @@
 //#warning 上传数组的处理
                     [result appendFormat:@" %@:(NSArray *)%@List", fieldname, fieldname];
                 }
+                else if ([style isEqualToString:@"class"]) {
+                    [result appendFormat:@" %@:(%@ *)%@", fieldname, type, fieldname];
+                }
                 else {
                     if (IS_BASE_TYPE(type)) {
-                        
                         if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
                             [result appendFormat:@" %@:(NSInteger)%@", fieldname, fieldname];
                         }
@@ -422,6 +424,9 @@
                         if ([style isEqualToString:@"repeated"]) {
 //#warning 上传数组的处理
                             [result appendFormat:@"\t[params setObj:[%@List componentsJoinedByString:@\",\"] forKey:@\"%@\"];\n", fieldname, keyname];
+                        }
+                        else if ([style isEqualToString:@"class"]) {
+                            [result appendFormat:@"\t[params addEntriesFromDictionary:[%@ dictionaryValue]];\n", fieldname];
                         }
                         else {
                             if (IS_BASE_TYPE(type)) {
