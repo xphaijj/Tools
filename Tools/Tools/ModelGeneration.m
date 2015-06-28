@@ -8,11 +8,6 @@
 
 #import "ModelGeneration.h"
 
-
-
-
-
-
 @implementation ModelGeneration
 
 static NSMutableArray *enumList;
@@ -497,32 +492,32 @@ static NSMutableArray *enumList;
                 {
                     if ([[style lowercaseString] isEqualToString:@"repeated"]) {
                         if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
-                            [result appendFormat:@"\t[dictionaryValue setObject:self.%@List forKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\t[dictionaryValue setObj:self.%@List forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                         else {
                             [result appendFormat:@"\tNSMutableArray *%@Items = [[NSMutableArray alloc] init];\n", fieldname];
                             [result appendFormat:@"\tfor (%@ *item in self.%@List) {\n", type, fieldname];
                             [result appendFormat:@"\t\t[%@Items addObject:[item dictionaryValue]];\n", fieldname];
                             [result appendFormat:@"\t}\n"];
-                            [result appendFormat:@"\t[dictionaryValue setObject:%@Items forKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\t[dictionaryValue setObj:%@Items forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                     }
                     else if (IS_BASE_TYPE(type)) {
                         if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
-                            [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\t[dictionaryValue setObj:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                         else  {
-                            [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWith%@:self.%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                            [result appendFormat:@"\t[dictionaryValue setObj:[NSNumber numberWith%@:self.%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
                         }
                     }
                     else if ([enumList containsObject:type]) {
-                        [result appendFormat:@"\t[dictionaryValue setObject:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t[dictionaryValue setObj:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]) {
-                        [result appendFormat:@"\t[dictionaryValue setObject:self.%@ forKey:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t[dictionaryValue setObj:self.%@ forKey:@\"%@\"];\n", fieldname, keyname];
                     }
                     else {
-                        [result appendFormat:@"\t[dictionaryValue setObject:[self.%@ dictionaryValue] forKey:@\"%@\"];\n", fieldname, keyname];
+                        [result appendFormat:@"\t[dictionaryValue setObj:[self.%@ dictionaryValue] forKey:@\"%@\"];\n", fieldname, keyname];
                     }
                 }
                     break;

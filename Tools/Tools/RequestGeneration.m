@@ -63,9 +63,11 @@
         {
             if (K_HAS_PODS) {
                 [result appendString:@"#import <AFNetworking/AFNetworking.h>\n"];
+                [result appendString:@"#import <XMLDictionary/XMLDictionary.h>\n"];
             }
             else {
                 [result appendString:@"#import \"AFNetworking.h\"\n"];
+                [result appendString:@"#import \"XMLDictionary.h\"\n"];
             }
             [result appendString:@"#import \"Config.h\"\n"];
             [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
@@ -115,7 +117,12 @@
             [result appendFormat:@"\tdispatch_once(&onceToken, ^{ \n"];
             [result appendFormat:@"\t\t_sharedClient = [[PPRequest alloc] initWithBaseURL:[NSURL URLWithString:HOST_NAME]];\n"];
             [result appendFormat:@"\t\t_sharedClient.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];\n"];
-            [result appendFormat:@"\t\t_sharedClient.responseSerializer = [AFJSONResponseSerializer serializer];//申明返回的结果是json类型\n"];
+            if (K_RESPONSE_TYPE == XML_TYPE) {
+                [result appendFormat:@"\t\t_sharedClient.responseSerializer = [AFXMLParserResponseSerializer serializer];//申明返回的结果是json类型\n"];
+            }
+            else {
+                [result appendFormat:@"\t\t_sharedClient.responseSerializer = [AFJSONResponseSerializer serializer];//申明返回的结果是json类型\n"];
+            }
             [result appendFormat:@"\t\t_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"text/html\"];//如果报接受类型不一致请替换一致text/html或别的\n"];
             [result appendFormat:@"\t\t//_sharedClient.requestSerializer = [AFJSONRequestSerializer serializer];//申明请求的数据是json类型\n"];
             [result appendFormat:@"\t});\n"];
@@ -281,7 +288,14 @@
                     
                     [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
-                    [result appendFormat:@"\t\t%@ *info = [%@ parseFromDictionary:result];\n", returnType, returnType];
+                    [result appendFormat:@"\t\t%@ *info;\n", returnType];
+                    if (K_RESPONSE_TYPE == XML_TYPE) {
+                        [result appendString:@"\t\tNSDictionary *res = [[XMLDictionaryParser sharedInstance] dictionaryWithParser:result];\n"];
+                        [result appendFormat:@"\t\tinfo = [%@ parseFromDictionary:res];\n", returnType];
+                    }
+                    else {
+                        [result appendFormat:@"\t\tinfo = [%@ parseFromDictionary:result];\n", returnType];
+                    }
                     [result appendString:@"\t\tsuccess(operation, info);\n"];
                     [result appendString:@"\t} failure:^(AFHTTPRequestOperation *operation, NSError *error) {\n"];
                     [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
@@ -358,15 +372,28 @@
                 }
                 else {
                     if (IS_BASE_TYPE(type)) {
-                        [result appendFormat:@" %@:(%@)%@", fieldname, [type lowercaseString], fieldname];
+                        
+                        if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
+                            [result appendFormat:@" %@:(NSInteger)%@", fieldname, fieldname];
+                        }
+                        else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
+                            [result appendFormat:@" %@:(CGFloat)%@", fieldname, fieldname];
+                        }
+                        else if ([[type lowercaseString] isEqualToString:@"long"]) {
+                            [result appendFormat:@" %@:(long long)%@", fieldname, fieldname];
+                        }
+                        else if ([[type lowercaseString] isEqualToString:@"bool"]) {
+                            [result appendFormat:@" %@:(BOOL)%@", fieldname, fieldname];
+                        }
+                        else  {
+                        }
                     }
                     else if ([type isEqualToString:@"string"]){
                         [result appendFormat:@" %@:(NSString *)%@", fieldname, fieldname];
                     }
                     else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
-                        
-                        //result appendString:@"%@:(%@)"
+                        [result appendFormat:@" %@:(%@)%@", fieldname, type, fieldname];
                     }
                 }
             }
@@ -398,13 +425,19 @@
                         }
                         else {
                             if (IS_BASE_TYPE(type)) {
-                                [result appendFormat:@"\t[params setObj:[NSNumber numberWith%@:%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                                if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
+                                    [result appendFormat:@"\t[params setObj:[NSNumber numberWithInteger:%@] forKey:@\"%@\"];\n", fieldname, keyname];
+                                }
+                                else {
+                                    [result appendFormat:@"\t[params setObj:[NSNumber numberWith%@:%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                                }
                             }
                             else if ([type isEqualToString:@"string"]){
                                 [result appendFormat:@"\t[params setObj:%@ forKey:@\"%@\"];\n", fieldname, keyname];
                             }
                             else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
+                                [result appendFormat:@"\t[params setObj:[NSNumber numberWithInteger:%@] forKey:@\"%@\"];\n", fieldname, keyname];
                                 //result appendString:@"%@:(%@)"
                             }
                         }

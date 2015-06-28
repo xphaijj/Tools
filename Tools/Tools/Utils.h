@@ -22,7 +22,23 @@
 
 #define IS_BASE_TYPE(type) [[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"] || [[type lowercaseString] isEqualToString:@"bool"] || [[type lowercaseString] isEqualToString:@"short"] || [[type lowercaseString] isEqualToString:@"byte"] || [[type lowercaseString] isEqualToString:@"long"] || [[type lowercaseString] isEqualToString:@"char"]
 
+typedef enum ResponseType {
+    JSON_TYPE,
+    XML_TYPE
+}ResponseType;
+
+#pragma mark -- config
+
+#define K_RESPONSE_TYPE XML_TYPE
 #define K_HAS_PODS YES
+
+
+
+
+
+
+
+
 
 
 typedef enum FileType { //文件类型
