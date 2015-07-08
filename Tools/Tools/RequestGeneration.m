@@ -154,6 +154,7 @@
             NSString *requestType = @"get";
             requestType = [items objectAtIndex:1];
             NSString *interface = [items objectAtIndex:2];
+            
             NSString *returnType = [items objectAtIndex:3];
             NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
             
@@ -179,6 +180,16 @@
 + (NSString *)generationFileType:(FileType)fileType requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
+    
+    NSMutableString *interfacename = (NSMutableString *)interface;
+    NSString *regex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
+    NSArray *nameList = [[interface arrayOfCaptureComponentsMatchedByRegex:regex] firstObject];
+    if (nameList.count >= 3) {
+        interface = [nameList objectAtIndex:1];
+        interfacename = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
+        [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
+        [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
+    }
 
     // h m 文件中均需导入的
     switch (methodType) {
@@ -193,7 +204,7 @@
             
         case TYPE_METHOD:
         {
-            [result appendFormat:@"+(AFHTTPRequestOperation *)%@RequestUrl:(NSString *)baseurl", interface];
+            [result appendFormat:@"+(AFHTTPRequestOperation *)%@RequestUrl:(NSString *)baseurl", interfacename];
             
             //判断是否是上传接口  上传接口需要提取出来单独处理
             if ([requestType isEqualToString:@"upload"]) {
