@@ -69,7 +69,7 @@
                 [result appendString:@"#import \"AFNetworking.h\"\n"];
                 [result appendString:@"#import \"XMLDictionary.h\"\n"];
             }
-            [result appendString:@"#import \"Config.h\"\n"];
+            [result appendFormat:@"#import \"%@.h\"\n", CONFIG_NAME];
             [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
             [result appendFormat:@"#import \"NSDictionary+SafeAccess.h\"\n"];
         }
