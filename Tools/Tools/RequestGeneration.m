@@ -64,10 +64,12 @@
             if (K_HAS_PODS) {
                 [result appendString:@"#import <AFNetworking/AFNetworking.h>\n"];
                 [result appendString:@"#import <XMLDictionary/XMLDictionary.h>\n"];
+                [result appendString:@"#import <WToast/WToast.h>\n"];
             }
             else {
                 [result appendString:@"#import \"AFNetworking.h\"\n"];
                 [result appendString:@"#import \"XMLDictionary.h\"\n"];
+                [result appendString:@"#import \"WToast.h\"\n"];
             }
             [result appendFormat:@"#import \"%@.h\"\n", CONFIG_NAME];
             [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
