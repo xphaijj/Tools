@@ -309,6 +309,7 @@
                     }
                     [result appendString:@"\t\tsuccess(operation, info);\n"];
                     [result appendString:@"\t} failure:^(AFHTTPRequestOperation *operation, NSError *error) {\n"];
+                    [result appendString:@"\t\t[WToast showWithText:@\"网络异常\"];\n"];
                     [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
                     [result appendFormat:@"\t\tfailure(operation, error);\n"];
