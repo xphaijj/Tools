@@ -194,7 +194,7 @@ static NSMutableArray *enumList;
             [result appendString:@"\t\tif (!(isDir == YES && existed == YES)) {\n"];
             [result appendString:@"\t\t\t[[NSFileManager defaultManager] createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:nil];\n"];
             [result appendString:@"\t\t}\n"];
-            [result appendString:@"\t\t[OObject shareInstance].dbPath = [NSString stringWithFormat:@\"%@/database.sqlite\", dirPath];\n"];
+            [result appendString:@"\t\t[OObject shareInstance].dbPath = [NSString stringWithFormat:@\"%@/database.db\", dirPath];\n"];
             [result appendString:@"\t});\n"];
             [result appendString:@"\treturn [OObject shareInstance].dbPath;\n"];
             [result appendString:@"}\n"];
