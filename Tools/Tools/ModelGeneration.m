@@ -169,6 +169,7 @@ static NSMutableArray *enumList;
             [result appendFormat:@"static OObject *shareObject;\n\n"];
             [result appendString:@"\n\n@interface OObject : NSObject {\n"];
             [result appendString:@"}\n"];
+            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *dbPath;\n\n"];
             [result appendFormat:@"+ (OObject *)shareInstance;\n"];
             [result appendString:@"+(NSString *)initialDB;\n"];
             [result appendString:@"\n@end\n"];
