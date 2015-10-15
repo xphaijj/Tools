@@ -282,6 +282,7 @@
                     [result appendString:@"\t[SVProgressHUD showWithStatus:@\"正在加载...\"];\n"];
                     [result appendString:@"\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
                     [result appendString:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] init];\n"];
+                    [result appendFormat:@"\t[params setObj:@\"%@\" forKey:@\"action\"];\n", interfacename];
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
                     if ([requestType isEqualToString:@"get"]) {
