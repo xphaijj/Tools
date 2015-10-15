@@ -183,7 +183,7 @@ static NSMutableArray *enumList;
             [result appendFormat:@"\tdispatch_once(&onceToken, ^{\n"];
             [result appendFormat:@"\t\tshareObject = [[OObject alloc] init];\n"];
             [result appendFormat:@"\t});\n"];
-            [result appendFormat:@"\treturn object;\n"];
+            [result appendFormat:@"\treturn shareObject;\n"];
             [result appendFormat:@"}\n\n"];
             [result appendString:@"\n+(NSString *)initialDB {\n"];
             [result appendString:@"\tstatic dispatch_once_t onceToken;\n"];
