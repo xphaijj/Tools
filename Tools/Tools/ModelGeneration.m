@@ -121,6 +121,7 @@ static NSMutableArray *enumList;
         case H_FILE:
         {
             //@class 所有的model
+            [result appendFormat:@"@class OObject;\n"];
             [result appendString:[self allClass:classes]];
         }
             break;
@@ -165,9 +166,10 @@ static NSMutableArray *enumList;
     switch (fileType) {
         case H_FILE:
         {
-            [result appendString:@"static NSString *dbPath;\n\n"];
+            [result appendFormat:@"static OObject *shareObject;\n\n"];
             [result appendString:@"\n\n@interface OObject : NSObject {\n"];
             [result appendString:@"}\n"];
+            [result appendFormat:@"+ (OObject *)shareInstance;\n"];
             [result appendString:@"+(NSString *)initialDB;\n"];
             [result appendString:@"\n@end\n"];
         }
@@ -175,6 +177,13 @@ static NSMutableArray *enumList;
         case M_FILE:
         {
             [result appendString:@"\n\n@implementation OObject \n"];
+            [result appendFormat:@"+ (OObject *)shareInstance {\n"];
+            [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
+            [result appendFormat:@"\tdispatch_once(&onceToken, ^{\n"];
+            [result appendFormat:@"\t\tshareObject = [[OObject alloc] init];\n"];
+            [result appendFormat:@"\t});\n"];
+            [result appendFormat:@"\treturn object;\n"];
+            [result appendFormat:@"}\n\n"];
             [result appendString:@"\n+(NSString *)initialDB {\n"];
             [result appendString:@"\tstatic dispatch_once_t onceToken;\n"];
             [result appendString:@"\tdispatch_once(&onceToken, ^{\n"];
@@ -184,9 +193,9 @@ static NSMutableArray *enumList;
             [result appendString:@"\t\tif (!(isDir == YES && existed == YES)) {\n"];
             [result appendString:@"\t\t\t[[NSFileManager defaultManager] createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:nil];\n"];
             [result appendString:@"\t\t}\n"];
-            [result appendString:@"\t\tdbPath = [NSString stringWithFormat:@\"%@/database.sqlite\", dirPath];\n"];
+            [result appendString:@"\t\t[OObject shareInstance].dbPath = [NSString stringWithFormat:@\"%@/database.sqlite\", dirPath];\n"];
             [result appendString:@"\t});\n"];
-            [result appendString:@"\treturn dbPath;\n"];
+            [result appendString:@"\treturn [OObject shareInstance].dbPath;\n"];
             [result appendString:@"}\n"];
             [result appendString:@"\n\n@end\n\n"];
         }

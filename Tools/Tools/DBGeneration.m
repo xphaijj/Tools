@@ -401,7 +401,7 @@
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     [result appendFormat:@"\t[%@ initialDB];\n", classname];
-    [result appendFormat:@"\tFMDatabase *db = [FMDatabase databaseWithPath:dbPath];\n"];
+    [result appendFormat:@"\tFMDatabase *db = [FMDatabase databaseWithPath:[OObject shareInstance].dbPath];\n"];
     [result appendFormat:@"\tif (![db open]) {\n"];
     [result appendFormat:@"\t\tSHOW_DB_ERROR(@\"数据库打开失败\");\n"];
     [result appendFormat:@"\t\treturn NO;\n"];
