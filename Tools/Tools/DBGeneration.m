@@ -117,6 +117,7 @@
             [result appendString:@"- (BOOL)update;\n"];
             [result appendString:@"+ (BOOL)updateByConditions:(NSString *)sender;\n"];
             [result appendString:@"+ (NSArray *)findByConditions:(NSString *)sender;\n"];
+            [result appendString:@"+ (NSInteger)maxKeyValue;\n"];
             [result appendString:@"\n@end\n"];
         }
             break;
@@ -140,6 +141,9 @@
             [result appendString:@"}\n"];
             [result appendString:@"+ (NSArray *)findByConditions:(NSString *)sender {\n"];
             [result appendString:@"\treturn [[NSMutableArray alloc] init];\n"];
+            [result appendString:@"}\n"];
+            [result appendString:@"+ (NSInteger)maxKeyValue {\n"];
+            [result appendString:@"\treturn 0;\n"];
             [result appendString:@"}\n"];
             [result appendString:@"\n@end\n"];
         }
@@ -200,6 +204,7 @@
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DEL]];//删
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_UPDATE]];//改
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_SEL]];//查
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_MAX]];
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
     
@@ -255,6 +260,11 @@
                     [result appendString:@"+ (NSArray *)findByConditions:(NSString *)sender;\n"];
                 }
                     break;
+                case TYPE_MAX:
+                {
+                    [result appendFormat:@"+ (NSInteger)maxKeyValue;\n"];
+                }
+                    break;
                     
                 default:
                     break;
@@ -271,10 +281,10 @@
                     [result appendFormat:@"\tBOOL result = NO;\n"];
                     [result appendFormat:@"\t[db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", classname];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@"%@ INTEGER PRIMARY KEY", key];
+                        [result appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", key];
                     }
                     else if ([keyType isEqualToString:@"string"]){
-                        [result appendFormat:@"%@ TEXT PRIMARY KEY", key];
+                        [result appendFormat:@"%@ TEXT PRIMARY KEY AUTOINCREMENT", key];
                     }
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
                     [result appendFormat:@")\"];\n"];
@@ -362,7 +372,7 @@
                     [result appendFormat:@"\t\tset = [db executeQuery:@\"SELECT * FROM %@\"];\n", classname];
                     [result appendFormat:@"\t}\n"];
                     [result appendFormat:@"\telse {\n"];
-                    [result appendFormat:@"\t\tset = [db executeQuery:@\"SELECT * FROM %@ WHERE %%@\", sender];\n", classname];
+                    [result appendFormat:@"\t\tset = [db executeQuery:[NSString stringWithFormat:@\"SELECT * FROM %@ WHERE %%@\", sender]];\n", classname];
                     [result appendFormat:@"\t}\n"];
                     [result appendFormat:@"\twhile ([set next]) {\n"];
                     [result appendFormat:@"\t\t%@ *item = [[%@ alloc] init];\n", classname, classname];
@@ -377,6 +387,19 @@
                     [result appendFormat:@"\t}\n"];
                     [result appendString:@"\treturn result;\n"];
                     [result appendString:@"}\n"];
+                }
+                    break;
+                case TYPE_MAX:
+                {
+                    [result appendFormat:@"\n+ (NSInteger)maxKeyValue {\n"];
+                    [result appendString:[self dbbaseControl:classname]];
+                    [result appendFormat:@"\tFMResultSet* set = [db executeQuery:@\"SELECT MAX(CAST(%@ as INT)) FROM %@\"];\n", key, classname];
+                    [result appendFormat:@"\tNSInteger result = 0;\n"];
+                    [result appendFormat:@"\tif ([set next]) {\n"];
+                    [result appendFormat:@"\t\tresult = [set intForColumnIndex:0];\n"];
+                    [result appendFormat:@"\t}\n"];
+                    [result appendFormat:@"\treturn result;\n"];
+                    [result appendFormat:@"}\n"];
                 }
                     break;
                     

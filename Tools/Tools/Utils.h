@@ -57,6 +57,7 @@ typedef enum MethodType {//方法类型
     TYPE_DEL,//删除
     TYPE_UPDATE,//更新
     TYPE_SEL,//查询
+    TYPE_MAX,//查询主键的最大值
     
 #pragma mark ++ Request
     TYPE_NOTES,//获取注释

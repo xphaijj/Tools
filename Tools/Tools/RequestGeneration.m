@@ -125,7 +125,7 @@
             else {
                 [result appendFormat:@"\t\t_sharedClient.responseSerializer = [AFJSONResponseSerializer serializer];//申明返回的结果是json类型\n"];
             }
-            [result appendFormat:@"\t\t_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"text/html\"];//如果报接受类型不一致请替换一致text/html或别的\n"];
+            [result appendFormat:@"\t\t//_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"text/html\"];//如果报接受类型不一致请替换一致text/html或别的\n"];
             [result appendFormat:@"\t\t//_sharedClient.requestSerializer = [AFJSONRequestSerializer serializer];//申明请求的数据是json类型\n"];
             [result appendFormat:@"\t});\n"];
             [result appendFormat:@"\treturn _sharedClient;\n"];
