@@ -192,7 +192,7 @@
         [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
         [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
     }
-
+    NSString *uploadKey = @"";
     // h m 文件中均需导入的
     switch (methodType) {
         case TYPE_NOTES:
@@ -233,6 +233,7 @@
                         [fieldname deleteCharactersInRange:[fieldname rangeOfString:@"("]];
                         [fieldname deleteCharactersInRange:[fieldname rangeOfString:@")"]];
                     }
+                    uploadKey = fieldname;
                     NSString *defaultValue = [fields objectAtIndex:4];
                     NSString *notes = [fields objectAtIndex:5];
                     
@@ -295,7 +296,7 @@
                         [result appendString:@"\tAFHTTPRequestOperation *op = [[PPRequest sharedClient] POST:[NSString stringWithFormat:@\"%@%@\", BASE_URL, baseurl] parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n"];
                         [result appendFormat:@"\t\tfor (int i = 0; i < pic.count; i++) {\n"];
                         [result appendFormat:@"\t\t\tUIImage *image = [pic objectAtIndex:i];\n"];
-                        [result appendFormat:@"\t\t\t[formData appendPartWithFileData:UIImageJPEGRepresentation(image, 1.0) name:[NSString stringWithFormat:@\"%%i.png\", i] fileName:[NSString stringWithFormat:@\"%%i.png\", i] mimeType:@\"image/png\"];\n"];
+                        [result appendFormat:@"\t\t\t[formData appendPartWithFileData:UIImageJPEGRepresentation(image, 1.0) name:[NSString stringWithFormat:@\"%@\"] fileName:[NSString stringWithFormat:@\"%%i.jpg\", i] mimeType:@\"image/jpg\"];\n", (uploadKey.length==0)?@"pic":uploadKey];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendFormat:@"\t} success:^(AFHTTPRequestOperation *operation, id result) {\n"];
                     }
