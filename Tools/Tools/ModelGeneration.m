@@ -457,6 +457,16 @@ static NSMutableArray *enumList;
                             [result appendFormat:@"\t\t}\n"];
                         }
                         [result appendString:@"\t}\n"];
+                        
+                        [result appendFormat:@"\telse if ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
+                        if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
+                            [result appendFormat:@"\t\t[self.%@List addObject:[sender arrayForKey:@\"%@\"]];\n", fieldname, keyname];
+                        }
+                        else {
+                            [result appendFormat:@"\t\t%@ *item = [%@ parseFromDictionary:[sender objectForKey:@\"%@\"]];\n", type, type, keyname];
+                            [result appendFormat:@"\t\t[self.%@List addObject:item];\n", fieldname];
+                        }
+                        [result appendString:@"\t}\n"];
                     }
                     else if (IS_BASE_TYPE(type) || [enumList containsObject:type]) {
                         if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
