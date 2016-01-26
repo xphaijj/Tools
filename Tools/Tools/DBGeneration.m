@@ -486,6 +486,7 @@
         
         keyType = [fields objectAtIndex:2];
         key = [fields objectAtIndex:3];
+        fieldname = key;
         NSString *nameRegex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
         NSArray *nameList = [[key arrayOfCaptureComponentsMatchedByRegex:nameRegex] firstObject];
         if (nameList.count >= 3) {

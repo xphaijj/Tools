@@ -29,15 +29,8 @@ typedef enum ResponseType {
 
 #pragma mark -- config
 
-#define K_RESPONSE_TYPE XML_TYPE
+#define K_RESPONSE_TYPE JSON_TYPE
 #define K_HAS_PODS YES
-
-
-
-
-
-
-
 
 
 
