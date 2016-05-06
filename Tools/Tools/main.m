@@ -11,10 +11,9 @@
 #import "DBGeneration.h"
 #import "RequestGeneration.h"
 #import "ConfigGeneration.h"
+#import "Utils.h"
 
-void generation(NSString *sourcePath, NSString *outputPath);
-
-//     /Users/Alex/Desktop/
+void generation(NSString *sourcePath, NSString *outputPath, NSDictionary *config);
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
@@ -31,14 +30,18 @@ int main(int argc, const char * argv[]) {
                 sourcePath = [NSString stringWithUTF8String:argv[1]];
                 outputPath = [[NSMutableString alloc] initWithUTF8String:argv[1]];
                 outputPath = [outputPath substringToIndex:([outputPath rangeOfString:@"/" options:NSBackwardsSearch].location+1)];
-                generation(sourcePath, outputPath);
+                
+                NSDictionary *config = [Utils configDictionary:sourcePath];
+                generation(sourcePath, outputPath, config);
             }
                 break;
             case 3:
             {
                 sourcePath = [NSString stringWithUTF8String:argv[1]];
                 outputPath = (NSMutableString *)[NSString stringWithUTF8String:argv[2]];
-                generation(sourcePath, outputPath);
+                
+                NSDictionary *config = [Utils configDictionary:sourcePath];
+                generation(sourcePath, outputPath, config);
             }
                 break;
                 
@@ -49,13 +52,13 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-void generation(NSString *sourcePath, NSString *outputPath) {
+void generation(NSString *sourcePath, NSString *outputPath, NSDictionary *config) {
     NSLog(@"\n\tsourcePath = %@ \n\toutputPath = %@\n", sourcePath, outputPath);
-    [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath];
-    [DBGeneration generationSourcePath:sourcePath outputPath:outputPath];
-    [RequestGeneration generationSourcePath:sourcePath outputPath:outputPath];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/%@.h", outputPath, CONFIG_NAME]]) {
-        [ConfigGeneration generationOutputPath:outputPath];
+    [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath config:config];
+    [DBGeneration generationSourcePath:sourcePath outputPath:outputPath config:config];
+    [RequestGeneration generationSourcePath:sourcePath outputPath:outputPath config:config];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"%@/%@Config.h", outputPath, config[@"filename"]]]) {
+        [ConfigGeneration generationOutputPath:outputPath config:config];
     }
     
 }

@@ -15,7 +15,7 @@
  * @brief  Request类自动生成
  * @prama  sourcepath:资源路径   outputPath:资源生成路径
  */
-+ (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath;
++ (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath config:(NSDictionary *)config;
 
 /**
  * @brief  导入头文件

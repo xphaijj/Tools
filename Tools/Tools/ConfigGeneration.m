@@ -15,18 +15,18 @@
  * @brief  配置文件的生成
  * @prama  outputPath:配置文件的生成路径
  **/
-+ (void)generationOutputPath:(NSString *)outputPath
++ (void)generationOutputPath:(NSString *)outputPath  config:(NSDictionary *)config
 {
     //NSString *sourceString = [[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForAuxiliaryExecutable:sourcepath] encoding:NSUTF8StringEncoding error:&error];
     
     NSMutableString *h = [[NSMutableString alloc] init];
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     
-    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.h", CONFIG_NAME]];
+    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@Config.h", config[@"filename"]]];
     [fileManager createFileAtPath:hFilePath contents:nil attributes:nil];
     
     //版权信息的导入
-    [h appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
+    [h appendString:[Utils createCopyrightByFilename:[NSString stringWithFormat:@"%@Config.h", config[@"filename"]] config:config]];
     
     [h appendString:[[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:@"http://git.oschina.net/phxiang/Public/raw/master/Config.h"] encoding:NSUTF8StringEncoding error:nil]];
     //[h appendString:[[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Config" ofType:@"h"] encoding:NSUTF8StringEncoding error:nil]];

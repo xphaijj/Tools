@@ -9,13 +9,14 @@
 #import "RequestGeneration.h"
 
 @implementation RequestGeneration
-
+static NSDictionary *configDictionary;
 /**
  * @brief  Model类自动生成
  * @prama  sourcepath:资源路径   outputPath:资源生成路径
  */
-+ (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath
++ (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath config:(NSDictionary *)config
 {
+    configDictionary = config;
     NSError *error;
     NSString *sourceString = [[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForAuxiliaryExecutable:sourcepath] encoding:NSUTF8StringEncoding error:&error];
     
@@ -23,14 +24,14 @@
     NSMutableString *m = [[NSMutableString alloc] init];
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     
-    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.h", REQUEST_NAME]];
-    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.m", REQUEST_NAME]];
+    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@Request.h", configDictionary[@"filename"]]];
+    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@Request.m", configDictionary[@"filename"]]];
     [fileManager createFileAtPath:hFilePath contents:nil attributes:nil];
     [fileManager createFileAtPath:mFilePath contents:nil attributes:nil];
     
     //版权信息的导入
-    [h appendString:[Utils createCopyrightByFilename:REQUEST_NAME]];
-    [m appendString:[Utils createCopyrightByFilename:REQUEST_NAME]];
+    [h appendString:[Utils createCopyrightByFilename:[NSString stringWithFormat:@"%@Request.h", configDictionary[@"filename"]] config:config]];
+    [m appendString:[Utils createCopyrightByFilename:[NSString stringWithFormat:@"%@Request.m", configDictionary[@"filename"]] config:config]];
     
     //头文件的导入
     [h appendString:[self introductionPackages:H_FILE]];
@@ -61,7 +62,7 @@
     switch (fileType) {
         case H_FILE:
         {
-            if (K_HAS_PODS) {
+            if ([configDictionary[@"pods"] boolValue]) {
                 [result appendString:@"#import <AFNetworking/AFNetworking.h>\n"];
                 [result appendString:@"#import <XMLDictionary/XMLDictionary.h>\n"];
                 [result appendString:@"#import <WToast/WToast.h>\n"];
@@ -71,15 +72,15 @@
                 [result appendString:@"#import \"XMLDictionary.h\"\n"];
                 [result appendString:@"#import \"WToast.h\"\n"];
             }
-            [result appendFormat:@"#import \"%@.h\"\n", CONFIG_NAME];
-            [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
+            [result appendFormat:@"#import \"%@Config.h\"\n", configDictionary[@"filename"]];
+            [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
             [result appendFormat:@"#import \"NSDictionary+SafeAccess.h\"\n"];
         }
             break;
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@.h\"\n", REQUEST_NAME];
-            if (K_HAS_PODS) {
+            [result appendFormat:@"#import \"%@Request.h\"\n", configDictionary[@"filename"]];
+            if ([configDictionary[@"pods"] boolValue]) {
                 [result appendFormat:@"#import <SVProgressHUD/SVProgressHUD.h>\n"];
             }
             else {
@@ -119,14 +120,22 @@
             [result appendFormat:@"\tdispatch_once(&onceToken, ^{ \n"];
             [result appendFormat:@"\t\t_sharedClient = [[PPRequest alloc] initWithBaseURL:[NSURL URLWithString:HOST_NAME]];\n"];
             [result appendFormat:@"\t\t_sharedClient.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];\n"];
-            if (K_RESPONSE_TYPE == XML_TYPE) {
+            if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                 [result appendFormat:@"\t\t_sharedClient.responseSerializer = [AFXMLParserResponseSerializer serializer];//申明返回的结果是json类型\n"];
             }
-            else {
+            else if ([configDictionary[@"response"] isEqualToString:@"json"]){
                 [result appendFormat:@"\t\t_sharedClient.responseSerializer = [AFJSONResponseSerializer serializer];//申明返回的结果是json类型\n"];
             }
-            [result appendFormat:@"\t\t//_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"text/html\"];//如果报接受类型不一致请替换一致text/html或别的\n"];
-            [result appendFormat:@"\t\t//_sharedClient.requestSerializer = [AFJSONRequestSerializer serializer];//申明请求的数据是json类型\n"];
+            if ([configDictionary.allKeys containsObject:@"content_type"]) {
+                [result appendFormat:@"\t\t_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"%@\"];//如果报接受类型不一致请替换一致text/html或别的\n", configDictionary[@"content_type"]];
+            }
+            else {
+                [result appendFormat:@"\t\t_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"text/html\"];//如果报接受类型不一致请替换一致text/html或别的\n"];
+            }
+            if ([configDictionary[@"request"] isEqualToString:@"json"]) {
+                [result appendFormat:@"\t\t_sharedClient.requestSerializer = [AFJSONRequestSerializer serializer];//申明请求的数据是json类型\n"];
+            }
+            
             [result appendFormat:@"\t});\n"];
             [result appendFormat:@"\treturn _sharedClient;\n"];
             [result appendFormat:@"}\n\n\n"];
@@ -304,11 +313,11 @@
                     [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
                     [result appendFormat:@"\t\t%@ *info;\n", returnType];
-                    if (K_RESPONSE_TYPE == XML_TYPE) {
+                    if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                         [result appendString:@"\t\tNSDictionary *res = [[XMLDictionaryParser sharedInstance] dictionaryWithParser:result];\n"];
                         [result appendFormat:@"\t\tinfo = [%@ parseFromDictionary:res];\n", returnType];
                     }
-                    else {
+                    else if ([configDictionary[@"response"] isEqualToString:@"json"]){
                         [result appendFormat:@"\t\tinfo = [%@ parseFromDictionary:result];\n", returnType];
                     }
                     [result appendString:@"\t\tsuccess(operation, info);\n"];

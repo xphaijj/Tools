@@ -14,6 +14,6 @@
  * @brief  配置文件的生成
  * @prama  outputPath:配置文件的生成路径
  **/
-+ (void)generationOutputPath:(NSString *)outputPath;
++ (void)generationOutputPath:(NSString *)outputPath config:(NSDictionary *)config;
 
 @end

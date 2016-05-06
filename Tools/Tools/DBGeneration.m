@@ -10,13 +10,15 @@
 
 @implementation DBGeneration
 
+static NSDictionary *configDictionary;
 /**
  * @brief  DB类自动生成
  * @prama  sourcepath:资源路径
  * @prama  outputPath:资源生成路径
  */
-+(void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath
++(void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath config:(NSDictionary *)config
 {
+    configDictionary = config;
     NSError *error;
     NSString *sourceString = [[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForAuxiliaryExecutable:sourcepath] encoding:NSUTF8StringEncoding error:&error];
     
@@ -24,14 +26,14 @@
     NSMutableString *m = [[NSMutableString alloc] init];
     NSFileManager *fileManager = [[NSFileManager alloc] init];
     
-    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@+DB.h", MODEL_NAME]];
-    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@+DB.m", MODEL_NAME]];
+    NSString *hFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@Model+DB.h", config[@"filename"]]];
+    NSString *mFilePath = [outputPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@Model+DB.m", config[@"filename"]]];
     [fileManager createFileAtPath:hFilePath contents:nil attributes:nil];
     [fileManager createFileAtPath:mFilePath contents:nil attributes:nil];
     
     //版权信息的导入
-    [h appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
-    [m appendString:[Utils createCopyrightByFilename:MODEL_NAME]];
+    [h appendString:[Utils createCopyrightByFilename:[NSString stringWithFormat:@"%@Model+DB.h", config[@"filename"]] config:config]];
+    [m appendString:[Utils createCopyrightByFilename:[NSString stringWithFormat:@"%@Model+DB.m", config[@"filename"]] config:config]];
     
     //头文件的导入
     [h appendString:[self introductionPackages:H_FILE]];
@@ -40,8 +42,6 @@
     //匹配出所有的Model类型
     [h appendString:[self messageFromSourceString:sourceString fileType:H_FILE]];
     [m appendString:[self messageFromSourceString:sourceString fileType:M_FILE]];
-    
-
     
     [h writeToFile:hFilePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
     [m writeToFile:mFilePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
@@ -56,20 +56,20 @@
     switch (fileType) {
         case H_FILE:
         {
-            if (K_HAS_PODS) {
+            if ([configDictionary[@"pods"] boolValue]) {
                 [result appendFormat:@"#import <FMDB/FMDatabase.h>\n"];
             }
             else {
                 [result appendFormat:@"#import \"FMDatabase.h\"\n"];
             }
-            [result appendFormat:@"#import \"%@.h\"\n", MODEL_NAME];
+            [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
         }
             break;
             
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@.h\"\n", CONFIG_NAME];
-            [result appendFormat:@"#import \"%@+DB.h\"", MODEL_NAME];
+            [result appendFormat:@"#import \"%@Config.h\"\n",  configDictionary[@"filename"]];
+            [result appendFormat:@"#import \"%@Model+DB.h\"",  configDictionary[@"filename"]];
         }
             break;
         default:

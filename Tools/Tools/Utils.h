@@ -10,29 +10,13 @@
 
 #import "RegexKitLite.h"
 
-#define MODEL_NAME @"PPModel"   //生成Model的名称
-#define REQUEST_NAME @"PPRequest" //网络文件名称
-#define CONFIG_NAME @"PPConfig" //配置文件
-
-#define CopyRightVersion 1.0
-
 #define KEY @"KEY"
 #define KEY_TYPE @"KEY_TYPE"
 #define KEY_FIELDNAME @"KEY_FIELDNAME"
 
 #define IS_BASE_TYPE(type) [[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"] || [[type lowercaseString] isEqualToString:@"bool"] || [[type lowercaseString] isEqualToString:@"short"] || [[type lowercaseString] isEqualToString:@"byte"] || [[type lowercaseString] isEqualToString:@"long"] || [[type lowercaseString] isEqualToString:@"char"]
 
-typedef enum ResponseType {
-    JSON_TYPE,
-    XML_TYPE
-}ResponseType;
-
 #pragma mark -- config
-
-#define K_RESPONSE_TYPE JSON_TYPE
-#define K_HAS_PODS YES
-
-
 
 typedef enum FileType { //文件类型
     H_FILE,
@@ -74,7 +58,10 @@ typedef enum TypeIndex {//增删改查 的选择索引
  * @brief  为文件创建版权
  * @prama  filename:需要创建版权的文件名
  */
-+(NSString *)createCopyrightByFilename:(NSString *)filename;
++(NSString *)createCopyrightByFilename:(NSString *)filename config:(NSDictionary *)config;
+
++(NSDictionary *)configDictionary:(NSString *)sourcePath;
+
 
 
 

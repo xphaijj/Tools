@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CE75ED0B1CDC41C6007905F5 /* Config.json in Sources */ = {isa = PBXBuildFile; fileRef = CE75ED0A1CDC3ACF007905F5 /* Config.json */; };
 		FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8016681A7CC09400F3215A /* RegexKitLite.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		FA80166C1A7CC0F400F3215A /* libicucore.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */; };
 		FA80166D1A7CC0F400F3215A /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA80166B1A7CC0F400F3215A /* libicucore.dylib */; };
@@ -22,7 +23,7 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		FAB0C15C1A7C72C90032D14E /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
@@ -32,6 +33,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CE75ED0A1CDC3ACF007905F5 /* Config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = Config.json; path = /Users/user/Code/Tools/Tools/Tools/Config.json; sourceTree = "<absolute>"; };
 		FA8016671A7CC09400F3215A /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
 		FA8016681A7CC09400F3215A /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
 		FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.A.dylib; path = usr/lib/libicucore.A.dylib; sourceTree = SDKROOT; };
@@ -225,6 +227,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE75ED0B1CDC41C6007905F5 /* Config.json in Sources */,
 				FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */,
 				FAC026F81A8512BD00EE4721 /* CategoryGeneration.m in Sources */,
 				FAC2797A1A80FED8008886F8 /* ConfigGeneration.m in Sources */,
