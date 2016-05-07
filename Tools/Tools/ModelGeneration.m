@@ -62,8 +62,13 @@ static NSDictionary *configDictionary;
         {
             [result appendFormat:@"#import <UIKit/UIKit.h>\n"];
             [result appendFormat:@"#import <Foundation/Foundation.h>\n"];
-            [result appendFormat:@"#import \"NSDictionary+SafeAccess.h\""];
-            
+            if ([configDictionary[@"pods"] boolValue]) {
+                [result appendFormat:@"#import <NSDictionary+SafeGetters/NSDictionary+SafeGetters.h>\n"];
+            }
+            else {
+                [result appendFormat:@"#import \"NSDictionary+SafeGetters.h\"\n"];
+            }
+            [result appendFormat:@"#import \"NSDictionary+SafeAccess.h\"\n"];
         }
             break;
             
@@ -327,11 +332,11 @@ static NSDictionary *configDictionary;
     NSString *nameRegex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
     NSArray *nameList = [[fieldname arrayOfCaptureComponentsMatchedByRegex:nameRegex] firstObject];
     if (nameList.count >= 3) {
-        keyname = [nameList objectAtIndex:1];
+        fieldname = [nameList objectAtIndex:1];
         NSMutableString *str = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
         [str deleteCharactersInRange:[str rangeOfString:@"("]];
         [str deleteCharactersInRange:[str rangeOfString:@")"]];
-        fieldname = (NSString *)str;
+        keyname = (NSString *)str;
     }
     NSString *defaultValue = [fields objectAtIndex:4];//默认值
     NSString *notes = [fields objectAtIndex:5];//注释
@@ -445,7 +450,7 @@ static NSDictionary *configDictionary;
                 case TYPE_PARSE:
                 {
                     if ([[style lowercaseString] isEqualToString:@"repeated"]) {
-                        [result appendFormat:@"\tif ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSArray class]]) {\n", keyname, keyname];
+                        [result appendFormat:@"\tif ([sender hasKey:@\"%@\"]) {\n", keyname];
                         if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
                             [result appendFormat:@"\t\t[self.%@List addObjectsFromArray:[sender arrayForKey:@\"%@\"]];\n", fieldname, keyname];
                         }
@@ -459,7 +464,7 @@ static NSDictionary *configDictionary;
                         }
                         [result appendString:@"\t}\n"];
                         
-                        [result appendFormat:@"\telse if ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
+                        [result appendFormat:@"\telse if ([sender hasKey:@\"%@\"] && [[sender dictionaryForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
                         if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
                             [result appendFormat:@"\t\t[self.%@List addObject:[sender arrayForKey:@\"%@\"]];\n", fieldname, keyname];
                         }
@@ -471,7 +476,9 @@ static NSDictionary *configDictionary;
                     }
                     else if (IS_BASE_TYPE(type) || [enumList containsObject:type]) {
                         if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
-                            [result appendFormat:@"\tNSAssert(([[sender allKeys] containsObject:@\"%@\"] && !([[sender objectForKey:@\"%@\"] isKindOfClass:[NSNull class]])), @\"字段不能为空\");\n", keyname, keyname];
+                            [result appendFormat:@"\tif (![sender hasKey:@\"%@\"]) {\n", keyname];
+                            [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 必须字段为空\");\n", fieldname];
+                            [result appendFormat:@"\t}\n"];
                         }
                         if (IS_BASE_TYPE(type)) {
                             if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
@@ -495,15 +502,19 @@ static NSDictionary *configDictionary;
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]) {
                         if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
-                            [result appendFormat:@"\tNSAssert(([[sender allKeys] containsObject:@\"%@\"] && !([[sender objectForKey:@\"%@\"] isKindOfClass:[NSNull class]])), @\"字段不能为空\");\n", keyname, keyname];
+                            [result appendFormat:@"\tif (![sender hasKey:@\"%@\"]) {\n", keyname];
+                            [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 必须字段为空\");\n", fieldname];
+                            [result appendFormat:@"\t}\n"];
                         }
                         [result appendFormat:@"\tself.%@ = [sender stringForKey:@\"%@\"];\n", fieldname, keyname];
                     }
                     else {
                         if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
-                            [result appendFormat:@"\tNSAssert(([[sender allKeys] containsObject:@\"%@\"] && !([[sender objectForKey:@\"%@\"] isKindOfClass:[NSNull class]])), @\"字段不能为空\");\n", keyname, keyname];
+                            [result appendFormat:@"\tif (![sender hasKey:@\"%@\"]) {\n", keyname];
+                            [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 必须字段为空\");\n", fieldname];
+                            [result appendFormat:@"\t}\n"];
                         }
-                        [result appendFormat:@"\tif ([sender.allKeys containsObject:@\"%@\"] && [[sender objectForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
+                        [result appendFormat:@"\tif ([sender hasKey:@\"%@\"] && [[sender dictionaryForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
                         [result appendFormat:@"\t\tself.%@ = [%@ parseFromDictionary:[sender dictionaryForKey:@\"%@\"]];\n", fieldname, type, keyname];
                         [result appendFormat:@"\t}\n"];
                     }
@@ -636,12 +647,10 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"}\n\n"];
                     [result appendFormat:@"\n- (%@ *)parseFromDictionary:(NSDictionary *)sender {\n", classname];
                     [result appendFormat:@"\tif ([self init]) {\n"];
-                    [result appendFormat:@"\t\tNSString *errors = [NSString stringWithFormat:@\"%@ 初始化失败\"];\n", classname];
-                    [result appendFormat:@"\t\tSHOW_REQUEST_ERRORS(errors);\n"];
+                    [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 初始化失败\");\n", classname];
                     [result appendString:@"\t}\n"];
                     [result appendString:@"\tif (![sender isKindOfClass:[NSDictionary class]]) {\n"];
-                    [result appendFormat:@"\t\tNSString *errors = [NSString stringWithFormat:@\"%@ 解析非字典类\"];\n", classname];
-                    [result appendFormat:@"\t\tSHOW_REQUEST_ERRORS(errors);\n"];
+                    [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 解析非字典类\");\n", classname];
                     [result appendString:@"\t\treturn self;\n"];
                     [result appendString:@"\t}\n"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
@@ -670,7 +679,7 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\n+ (%@ *)findForKey:(NSString *)sender {\n", classname];
                     [result appendFormat:@"\tNSDictionary *findDictionary = [[NSUserDefaults standardUserDefaults] dictionaryForKey:sender];\n"];
                     [result appendFormat:@"\tif (![findDictionary isKindOfClass:[NSDictionary class]]) {\n"];
-                    [result appendFormat:@"\t\t[[[UIAlertView alloc] initWithTitle:@\"FindForKey 出现错误\" message:nil delegate:nil cancelButtonTitle:@\"好的\" otherButtonTitles:nil, nil] show];\n"];
+                    [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 查找数据出错\");\n", classname];
                     [result appendFormat:@"\t\treturn nil;\n"];
                     [result appendFormat:@"\t}\n"];
                     [result appendFormat:@"\t%@ *findResult = [%@ parseFromDictionary:findDictionary];\n", classname, classname];
