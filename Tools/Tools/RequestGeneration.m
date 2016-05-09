@@ -234,15 +234,15 @@ static NSDictionary *configDictionary;
                     
                     NSString *style = [fields objectAtIndex:1];
                     NSString *type = [fields objectAtIndex:2];
-                    NSMutableString *fieldname = [fields objectAtIndex:3];
-                    NSString *keyname = [fields objectAtIndex:3];
+                    NSString *fieldname = [fields objectAtIndex:3];
+                    NSMutableString *keyname = [fields objectAtIndex:3];
                     NSString *regex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
                     NSArray *nameList = [[fieldname arrayOfCaptureComponentsMatchedByRegex:regex] firstObject];
                     if (nameList.count >= 3) {
-                        keyname = [nameList objectAtIndex:1];
-                        fieldname = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
-                        [fieldname deleteCharactersInRange:[fieldname rangeOfString:@"("]];
-                        [fieldname deleteCharactersInRange:[fieldname rangeOfString:@")"]];
+                        fieldname = [nameList objectAtIndex:1];
+                        keyname = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
+                        [keyname deleteCharactersInRange:[keyname rangeOfString:@"("]];
+                        [keyname deleteCharactersInRange:[keyname rangeOfString:@")"]];
                     }
                     uploadKey = fieldname;
                     NSString *defaultValue = [fields objectAtIndex:4];
@@ -370,15 +370,15 @@ static NSDictionary *configDictionary;
         }
         NSString *style = [fields objectAtIndex:1];
         NSString *type = [fields objectAtIndex:2];
-        NSMutableString *fieldname = [fields objectAtIndex:3];
-        NSString *keyname = [fields objectAtIndex:3];
+        NSString *fieldname = [fields objectAtIndex:3];
+        NSMutableString *keyname = [fields objectAtIndex:3];
         NSString *regex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
         NSArray *nameList = [[fieldname arrayOfCaptureComponentsMatchedByRegex:regex] firstObject];
         if (nameList.count >= 3) {
-            keyname = [nameList objectAtIndex:1];
-            fieldname = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
-            [fieldname deleteCharactersInRange:[fieldname rangeOfString:@"("]];
-            [fieldname deleteCharactersInRange:[fieldname rangeOfString:@")"]];
+            fieldname = [nameList objectAtIndex:1];
+            keyname = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
+            [keyname deleteCharactersInRange:[keyname rangeOfString:@"("]];
+            [keyname deleteCharactersInRange:[keyname rangeOfString:@")"]];
         }
         NSString *defaultValue = [fields objectAtIndex:4];
         NSString *notes = [fields objectAtIndex:5];
@@ -418,11 +418,12 @@ static NSDictionary *configDictionary;
                         }
                     }
                     else if ([type isEqualToString:@"string"]){
-                        [result appendFormat:@" %@:(NSString *)%@", fieldname, fieldname];
+                        [result appendFormat:@" %@:(NSString * _Nullable)%@", fieldname, fieldname];
                     }
                     else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
-                        [result appendFormat:@" %@:(%@)%@", fieldname, type, fieldname];
+                        //首先 区分开枚举类型与数据类型   所有的枚举类型  使用整型替代
+                        [result appendFormat:@" %@:(%@ * _Nullable)%@", fieldname, type, fieldname];
                     }
                 }
             }
@@ -469,8 +470,7 @@ static NSDictionary *configDictionary;
                             }
                             else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
-                                [result appendFormat:@"\t[params setObj:[NSNumber numberWithInteger:%@] forKey:@\"%@\"];\n", fieldname, keyname];
-                                //result appendString:@"%@:(%@)"
+                                [result appendFormat:@"\t[params addEntriesFromDictionary:[%@ dictionaryValue]];\n", fieldname];
                             }
                         }
                     }
