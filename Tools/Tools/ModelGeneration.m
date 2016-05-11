@@ -68,7 +68,7 @@ static NSDictionary *configDictionary;
             else {
                 [result appendFormat:@"#import \"NSDictionary+SafeGetters.h\"\n"];
             }
-            [result appendFormat:@"#import \"NSDictionary+SafeAccess.h\"\n"];
+            [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
         }
             break;
             

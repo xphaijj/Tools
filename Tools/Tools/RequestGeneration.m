@@ -110,13 +110,13 @@ static NSDictionary *configDictionary;
         {
             [result appendFormat:@"\n\n@interface %@Request : AFHTTPSessionManager {\n", configDictionary[@"filename"]];
             [result appendFormat:@"}\n"];
-            [result appendFormat:@"\n+ (instancetype)sharedClient;\n\n\n"];
+            [result appendFormat:@"\n+ (instancetype _Nonnull)sharedClient;\n\n\n"];
         }
             break;
         case M_FILE:
         {
             [result appendFormat:@"\n@implementation %@Request\n", configDictionary[@"filename"]];
-            [result appendFormat:@"\n+ (instancetype)sharedClient {\n"];
+            [result appendFormat:@"\n+ (instancetype _Nonnull)sharedClient {\n"];
             [result appendFormat:@"\tstatic %@Request *_sharedClient;\n", configDictionary[@"filename"]];
             [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
             [result appendFormat:@"\tdispatch_once(&onceToken, ^{ \n"];
@@ -159,7 +159,7 @@ static NSDictionary *configDictionary;
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regexRequest = @"request (get|post|upload)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    NSString *regexRequest = @"request (get|post|upload|iget|ipost|iupload)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
 
     @autoreleasepool {
@@ -217,10 +217,10 @@ static NSDictionary *configDictionary;
             
         case TYPE_METHOD:
         {
-            [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestUrl:(NSString *)baseurl", interfacename];
+            [result appendFormat:@"+(NSURLSessionDataTask * _Nonnull)%@RequestUrl:(NSString * _Nullable)baseurl", interfacename];
             
             //判断是否是上传接口  上传接口需要提取出来单独处理
-            if ([requestType isEqualToString:@"upload"]) {
+            if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                 for (NSString *line in contents) {
                     NSString *regexLine = @"^(?:[\\s]*)(loadpath)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
                     NSArray *lineList = [line arrayOfCaptureComponentsMatchedByRegex:regexLine];
@@ -251,15 +251,15 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@" %@:(NSArray *)%@", fieldname, @"pic"];
                 }
             }
-            else if ([requestType isEqualToString:@"get"]) {
+            else if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
             }
-            else if ([requestType isEqualToString:@"post"]) {
+            else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
             }
             else {
                 NSLog(@"ERROR -- 网络请求接口参数有误");
             }
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
-            [result appendFormat:@" success:(void (^)(NSURLSessionDataTask * _Nonnull task, %@ * _Nullable result))success  failure:(void (^)(NSURLSessionDataTask * _Nonnull task, NSError * _Nonnull error))failure;", returnType];
+            [result appendFormat:@" success:(void (^ _Nullable)(NSURLSessionDataTask * _Nonnull task, %@ * _Nullable result))success  failure:(void (^ _Nullable)(NSURLSessionDataTask * _Nonnull task, NSError * _Nonnull error))failure;", returnType];
             
             
         }
@@ -290,21 +290,26 @@ static NSDictionary *configDictionary;
             switch (methodType) {
                 case TYPE_REQUEST:
                 {
+                    BOOL qm = ([configDictionary.allKeys containsObject:@"custom"] && [[configDictionary objectForKey:@"custom"] isEqualToString:@"qm"]);//判断是否是全民服务的请求
+                    NSString *params = qm?[NSString stringWithFormat:@"@{@\"request\":@\"%@\", @\"param\":params}", interfacename]:@"params";
+                    
+                    NSString *processString = [requestType hasPrefix:@"i"]?@"//":@"";
+                    
                     [result appendString:@"{\n"];
-                    [result appendString:@"\t[SVProgressHUD showProgress:0];\n"];
+                    [result appendFormat:@"\t%@[SVProgressHUD showProgress:0];\n", processString];
                     [result appendString:@"\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
                     [result appendString:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] init];\n"];
                     [result appendFormat:@"\t[params setObj:@\"%@\" forKey:@\"action\"];\n", interfacename];
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
-                    if ([requestType isEqualToString:@"get"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"]];
+                    if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:%@ progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], params, processString];
                     }
-                    else if ([requestType isEqualToString:@"post"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"]];
+                    else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:%@ progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], params, processString];
                     }
-                    else if ([requestType isEqualToString:@"upload"]){
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"]];
+                    else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:%@ progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"], params, processString];
                         [result appendFormat:@"\t\t//for (int i = 0; i < pic.count; i++) {\n"];
                         [result appendFormat:@"\t\t//tUIImage *image = [pic objectAtIndex:i];\n"];
                         [result appendFormat:@"\t\t\t//[formData appendPartWithFileData:UIImageJPEGRepresentation(image, 1.0) name:[NSString stringWithFormat:@\"%@\"] fileName:[NSString stringWithFormat:@\"%%i.jpg\", i] mimeType:@\"image/jpg\"];\n", (uploadKey.length==0)?@"pic":uploadKey];
@@ -312,7 +317,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n"];
                     }
                     
-                    [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
+                    [result appendFormat:@"\t\t%@[SVProgressHUD dismiss];\n", processString];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
                     [result appendFormat:@"\t\t%@ *info;\n", returnType];
                     if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
@@ -325,7 +330,7 @@ static NSDictionary *configDictionary;
                     [result appendString:@"\t\tsuccess(task, info);\n"];
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {\n"];
                     [result appendString:@"\t\t[WToast showWithText:@\"网络异常\"];\n"];
-                    [result appendString:@"\t\t[SVProgressHUD dismiss];\n"];
+                    [result appendFormat:@"\t\t%@[SVProgressHUD dismiss];\n", processString];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
                     [result appendFormat:@"\t\tfailure(task, error);\n"];
                     [result appendString:@"\t}];\n"];
