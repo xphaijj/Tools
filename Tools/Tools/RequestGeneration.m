@@ -69,7 +69,6 @@ static NSDictionary *configDictionary;
                 }
                 [result appendString:@"#import <WToast/WToast.h>\n"];
                 [result appendFormat:@"#import <SVProgressHUD/SVProgressHUD.h>\n"];
-                [result appendFormat:@"#import <NSDictionary+SafeGetters/NSDictionary+SafeGetters.h>\n"];
             }
             else {
                 [result appendString:@"#import \"AFNetworking.h\"\n"];
@@ -78,7 +77,7 @@ static NSDictionary *configDictionary;
                 }
                 [result appendString:@"#import \"WToast.h\"\n"];
                 [result appendFormat:@"#import \"SVProgressHUD.h\"\n"];
-                [result appendFormat:@"#import \"NSDictionary+SafeGetters.h\"\n"];
+                [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
             }
             [result appendFormat:@"#import \"%@Config.h\"\n", configDictionary[@"filename"]];
             [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];

@@ -62,12 +62,6 @@ static NSDictionary *configDictionary;
         {
             [result appendFormat:@"#import <UIKit/UIKit.h>\n"];
             [result appendFormat:@"#import <Foundation/Foundation.h>\n"];
-            if ([configDictionary[@"pods"] boolValue]) {
-                [result appendFormat:@"#import <NSDictionary+SafeGetters/NSDictionary+SafeGetters.h>\n"];
-            }
-            else {
-                [result appendFormat:@"#import \"NSDictionary+SafeGetters.h\"\n"];
-            }
             [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
         }
             break;
