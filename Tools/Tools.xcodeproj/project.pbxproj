@@ -11,6 +11,10 @@
 		FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8016681A7CC09400F3215A /* RegexKitLite.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		FA80166C1A7CC0F400F3215A /* libicucore.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */; };
 		FA80166D1A7CC0F400F3215A /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA80166B1A7CC0F400F3215A /* libicucore.dylib */; };
+		FA9502311CEFE1970007E8FB /* PictureGeneration.m in Sources */ = {isa = PBXBuildFile; fileRef = FA9502301CEFE1970007E8FB /* PictureGeneration.m */; };
+		FA9502371CEFE87D0007E8FB /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9502351CEFE87D0007E8FB /* AppKit.framework */; };
+		FA9502381CEFE87D0007E8FB /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9502361CEFE87D0007E8FB /* AVKit.framework */; };
+		FA95025B1CEFE9A20007E8FB /* NSImage+Resizing.m in Sources */ = {isa = PBXBuildFile; fileRef = FA95025A1CEFE9A20007E8FB /* NSImage+Resizing.m */; };
 		FAAB91221A7CADA20018E188 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = FAAB91211A7CADA20018E188 /* Utils.m */; };
 		FAB0C1621A7C72C90032D14E /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB0C1611A7C72C90032D14E /* main.m */; };
 		FAB0C16D1A7C73DB0032D14E /* ModelGeneration.m in Sources */ = {isa = PBXBuildFile; fileRef = FAB0C16C1A7C73DB0032D14E /* ModelGeneration.m */; };
@@ -38,6 +42,12 @@
 		FA8016681A7CC09400F3215A /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
 		FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.A.dylib; path = usr/lib/libicucore.A.dylib; sourceTree = SDKROOT; };
 		FA80166B1A7CC0F400F3215A /* libicucore.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.dylib; path = usr/lib/libicucore.dylib; sourceTree = SDKROOT; };
+		FA95022F1CEFE1970007E8FB /* PictureGeneration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PictureGeneration.h; sourceTree = "<group>"; };
+		FA9502301CEFE1970007E8FB /* PictureGeneration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PictureGeneration.m; sourceTree = "<group>"; };
+		FA9502351CEFE87D0007E8FB /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		FA9502361CEFE87D0007E8FB /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
+		FA9502591CEFE9A20007E8FB /* NSImage+Resizing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+Resizing.h"; sourceTree = "<group>"; };
+		FA95025A1CEFE9A20007E8FB /* NSImage+Resizing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage+Resizing.m"; sourceTree = "<group>"; };
 		FAAB91201A7CADA20018E188 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		FAAB91211A7CADA20018E188 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
 		FAB0C15E1A7C72C90032D14E /* Tools */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Tools; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,6 +69,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA9502371CEFE87D0007E8FB /* AppKit.framework in Frameworks */,
+				FA9502381CEFE87D0007E8FB /* AVKit.framework in Frameworks */,
 				FA80166C1A7CC0F400F3215A /* libicucore.A.dylib in Frameworks */,
 				FA80166D1A7CC0F400F3215A /* libicucore.dylib in Frameworks */,
 			);
@@ -70,6 +82,8 @@
 		6F3BE3C9D9ED9090CC6A4510 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FA9502351CEFE87D0007E8FB /* AppKit.framework */,
+				FA9502361CEFE87D0007E8FB /* AVKit.framework */,
 				FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */,
 				FA80166B1A7CC0F400F3215A /* libicucore.dylib */,
 			);
@@ -83,6 +97,17 @@
 				FA8016681A7CC09400F3215A /* RegexKitLite.m */,
 			);
 			name = Lib;
+			sourceTree = "<group>";
+		};
+		FA95022E1CEFE16C0007E8FB /* 图片处理 */ = {
+			isa = PBXGroup;
+			children = (
+				FA9502591CEFE9A20007E8FB /* NSImage+Resizing.h */,
+				FA95025A1CEFE9A20007E8FB /* NSImage+Resizing.m */,
+				FA95022F1CEFE1970007E8FB /* PictureGeneration.h */,
+				FA9502301CEFE1970007E8FB /* PictureGeneration.m */,
+			);
+			name = "图片处理";
 			sourceTree = "<group>";
 		};
 		FAAB911F1A7CAD820018E188 /* 一些公共方法的调用 */ = {
@@ -114,6 +139,7 @@
 		FAB0C1601A7C72C90032D14E /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				FA95022E1CEFE16C0007E8FB /* 图片处理 */,
 				FAC026F51A85128700EE4721 /* 扩展的生成 */,
 				FA8016631A7CBE3C00F3215A /* Lib */,
 				FAAB911F1A7CAD820018E188 /* 一些公共方法的调用 */,
@@ -231,10 +257,12 @@
 				FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */,
 				FAC026F81A8512BD00EE4721 /* CategoryGeneration.m in Sources */,
 				FAC2797A1A80FED8008886F8 /* ConfigGeneration.m in Sources */,
+				FA9502311CEFE1970007E8FB /* PictureGeneration.m in Sources */,
 				FAB0C1621A7C72C90032D14E /* main.m in Sources */,
 				FAB0C16D1A7C73DB0032D14E /* ModelGeneration.m in Sources */,
 				FAB0C1701A7C73E80032D14E /* DBGeneration.m in Sources */,
 				FAAB91221A7CADA20018E188 /* Utils.m in Sources */,
+				FA95025B1CEFE9A20007E8FB /* NSImage+Resizing.m in Sources */,
 				FAB0C1731A7C73FA0032D14E /* RequestGeneration.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
