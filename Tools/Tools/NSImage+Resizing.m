@@ -9,20 +9,27 @@
 
 @implementation NSImage (Resizing)
 
-- (NSImage *) resizeImageToNewSize: (NSSize) newSize {
+- (NSImage *) resizeImageToNewfactor:(CGFloat)factor {
     NSImage *sourceImage = self;
     
     // Report an error if the source isn't a valid image
     if (![sourceImage isValid]){
         NSLog(@"Invalid Image");
     } else {
-        NSImage *smallImage = [[NSImage alloc] initWithSize: newSize];
-        [smallImage lockFocus];
-        [sourceImage setSize: newSize];
-        [[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationHigh];
-        [sourceImage drawAtPoint:NSZeroPoint fromRect:CGRectMake(0, 0, newSize.width, newSize.height) operation:NSCompositeCopy fraction:1.0];
-        [smallImage unlockFocus];
-        return smallImage;
+        NSSize size = NSZeroSize;
+        
+        size.width = self.size.width*factor;
+        size.height = self.size.height*factor;
+        
+        NSImage *ret = [[NSImage alloc] initWithSize:size];
+        [ret lockFocus];
+        NSAffineTransform *transform = [NSAffineTransform transform];
+        [transform scaleBy:factor];
+        [transform concat];
+        [self drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeCopy fraction:1.0];
+        [ret unlockFocus];
+        
+        return ret;
     }
     return nil;
 

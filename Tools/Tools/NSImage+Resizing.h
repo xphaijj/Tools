@@ -9,7 +9,7 @@
 
 @interface NSImage (Resizing)
 
-- (NSImage *) resizeImageToNewSize: (NSSize) newSize;
+- (NSImage *) resizeImageToNewfactor:(CGFloat)factor;
 - (NSImage *) cropImageToSize: (NSSize) newSize fromPoint:(NSPoint) point;
 
 @end
