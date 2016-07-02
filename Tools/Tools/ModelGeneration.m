@@ -167,9 +167,11 @@ static NSDictionary *configDictionary;
         case H_FILE:
         {
             [result appendFormat:@"static OObject *shareObject;\n\n"];
-            [result appendString:@"\n\n@interface OObject : NSObject {\n"];
+            [result appendString:@"\n\n@interface OObject : NSObject<NSCopying> {\n"];
             [result appendString:@"}\n"];
             [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *dbPath;\n\n"];
+            [result appendFormat:@"- (id)copyWithZone:(NSZone *)zone;\n"];
+            [result appendFormat:@"- (void)copyOperationWithObject:(id)object;\n\n"];
             [result appendFormat:@"+ (OObject *)shareInstance;\n"];
             [result appendString:@"+(NSString *)initialDB;\n"];
             [result appendString:@"\n@end\n"];
@@ -177,7 +179,14 @@ static NSDictionary *configDictionary;
             break;
         case M_FILE:
         {
-            [result appendString:@"\n\n@implementation OObject \n"];
+            [result appendString:@"\n\n@implementation OObject \n\n"];
+            [result appendFormat:@"- (id)copyWithZone:(NSZone *)zone {\n"];
+            [result appendFormat:@"\tOObject *copyObject = [[self class] allocWithZone:zone];\n"];
+            [result appendFormat:@"\t[self copyOperationWithObject:copyObject];\n"];
+            [result appendFormat:@"\treturn copyObject;\n"];
+            [result appendFormat:@"}\n\n"];
+            [result appendFormat:@"- (void)copyOperationWithObject:(id)object {\n"];
+            [result appendFormat:@"}\n"];
             [result appendFormat:@"+ (OObject *)shareInstance {\n"];
             [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
             [result appendFormat:@"\tdispatch_once(&onceToken, ^{\n"];
@@ -258,6 +267,7 @@ static NSDictionary *configDictionary;
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_PARSE]];//解析方法
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DICTIONARY]];//字典化
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_SAVE]];//存取
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_COPY]];//拷贝
     
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
@@ -551,6 +561,25 @@ static NSDictionary *configDictionary;
                 {
                 }
                     break;
+                case TYPE_COPY:
+                {
+                    if ([[style lowercaseString] isEqualToString:@"repeated"]) {
+                        [result appendFormat:@"\t\tobject.%@List = [[NSMutableArray alloc] initWithArray:self.%@List copyItems:YES];\n", fieldname, fieldname];
+                    }
+                    else if (IS_BASE_TYPE(type)) {
+                        [result appendFormat:@"\t\tobject.%@ = self.%@;\n", fieldname, fieldname];
+                    }
+                    else if ([[type lowercaseString] isEqualToString:@"string"]) {
+                        [result appendFormat:@"\t\tobject.%@ = self.%@;\n", fieldname, fieldname];
+                    }
+                    else if ([enumList containsObject:type]) {//枚举类型
+                        [result appendFormat:@"\t\tobject.%@ = self.%@;\n", fieldname, fieldname];
+                    }
+                    else {
+                        [result appendFormat:@"\t\tobject.%@ = self.%@.copy;\n", fieldname, fieldname];
+                    }
+                }
+                    break;
                     
                 default:
                     break;
@@ -608,6 +637,11 @@ static NSDictionary *configDictionary;
                 {
                     [result appendFormat:@"- (BOOL)saveForKey:(NSString *)sender;\n"];
                     [result appendFormat:@"+ (%@ *)findForKey:(NSString *)sender;\n", classname];
+                }
+                    break;
+                case TYPE_COPY:
+                {
+                    [result appendFormat:@"- (void)copyOperationWithObject:(%@ *)object;\n", classname];
                 }
                     break;
                     
@@ -679,6 +713,13 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\t%@ *findResult = [%@ parseFromDictionary:findDictionary];\n", classname, classname];
                     [result appendFormat:@"\treturn findResult;\n"];
                     [result appendFormat:@"}\n"];
+                }
+                    break;
+                case TYPE_COPY:
+                {
+                    [result appendFormat:@"\n- (void)copyOperationWithObject:(%@ *)object {\n", classname];
+                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
+                    [result appendFormat:@"}\n\n"];
                 }
                     break;
                     

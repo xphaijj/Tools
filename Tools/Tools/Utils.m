@@ -33,10 +33,10 @@
     NSString *sourceString = [[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForAuxiliaryExecutable:sourcePath] encoding:NSUTF8StringEncoding error:nil];
     
     NSDictionary *result = @{@"version":@"1.0",
-        @"request":@"json",//数据请求类型  json xml
-        @"response":@"json", //数据返回类型 json xml
-        @"pods":@YES,  //是否是pods
-        @"filename":@"PP" //文件名开头
+                             @"request":@"json",//数据请求类型  json xml
+                             @"response":@"json", //数据返回类型 json xml
+                             @"pods":@YES,  //是否是pods
+                             @"filename":@"PP" //文件名开头
                              };
     NSString *regex = @"Config(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     NSArray *list = [sourceString arrayOfCaptureComponentsMatchedByRegex:regex];
