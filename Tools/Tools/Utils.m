@@ -44,6 +44,7 @@
         NSArray *contents = list[0];
         NSString *jsonString = [NSString stringWithFormat:@"{%@}", contents[2]];
         result = [NSJSONSerialization JSONObjectWithData:[jsonString dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil];
+        NSLog(@"%@", result);
     }
     
     return result;

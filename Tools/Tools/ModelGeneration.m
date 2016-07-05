@@ -344,6 +344,7 @@ static NSDictionary *configDictionary;
     }
     NSString *defaultValue = [fields objectAtIndex:4];//默认值
     NSString *notes = [fields objectAtIndex:5];//注释
+    notes = [notes stringByReplacingOccurrencesOfString:@"/" withString:@""];
     
     switch (fileType) {
         case H_FILE:

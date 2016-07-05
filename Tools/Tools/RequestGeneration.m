@@ -208,7 +208,7 @@ static NSDictionary *configDictionary;
         case TYPE_NOTES:
         {
             [result appendFormat:@"/**\n"];
-            [result appendFormat:@" * @brief %@\n", [contents firstObject]];
+            [result appendFormat:@" * @brief %@\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
             [result appendFormat:@" **/\n"];
         }
@@ -386,6 +386,7 @@ static NSDictionary *configDictionary;
         }
         NSString *defaultValue = [fields objectAtIndex:4];
         NSString *notes = [fields objectAtIndex:5];
+        notes = [notes stringByReplacingOccurrencesOfString:@"/" withString:@""];
         
         //h m 文件都需要导入的文件
         switch (methodType) {
