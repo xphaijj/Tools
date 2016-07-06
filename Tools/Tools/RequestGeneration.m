@@ -160,7 +160,9 @@ static NSDictionary *configDictionary;
     NSMutableString *result = [[NSMutableString alloc] init];
     NSString *regexRequest = @"request (get|post|upload|iget|ipost|iupload)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
-
+    
+    
+    
     @autoreleasepool {
         for (NSArray *items in requestList) {
             NSString *requestType = @"get";
@@ -309,10 +311,7 @@ static NSDictionary *configDictionary;
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
                         [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:%@  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"], params];
-                        [result appendFormat:@"\t\t//for (int i = 0; i < pic.count; i++) {\n"];
-                        [result appendFormat:@"\t\t//tUIImage *image = [pic objectAtIndex:i];\n"];
-                        [result appendFormat:@"\t\t\t//[formData appendPartWithFileData:UIImageJPEGRepresentation(image, 1.0) name:[NSString stringWithFormat:@\"%@\"] fileName:[NSString stringWithFormat:@\"%%i.jpg\", i] mimeType:@\"image/jpg\"];\n", (uploadKey.length==0)?@"pic":uploadKey];
-                        [result appendFormat:@"\t\t//}\n"];
+                        
                         [result appendFormat:@"\t}\n"];
                         [result appendFormat:@"\tprogress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t}", processString];
                         [result appendFormat:@" success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n"];
@@ -365,8 +364,9 @@ static NSDictionary *configDictionary;
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {
         NSString *lineString = [contents objectAtIndex:i];
-        NSString *regexLine = @"^(?:[\\s]*)(class|required|optional|repeated)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
+        NSString *regexLine = @"^(?:[\\s]*)(class|required|optional|repeated|upload)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
         NSArray *lineList = [lineString arrayOfCaptureComponentsMatchedByRegex:regexLine];
+        
         if (lineList.count == 0) {
             continue;
         }
