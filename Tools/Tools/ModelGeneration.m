@@ -702,7 +702,7 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\tNSDictionary *dictionaryValue = [self dictionaryValue];\n"];
                     [result appendFormat:@"\t[[NSUserDefaults standardUserDefaults] setObject:dictionaryValue forKey:sender];\n"];
                     [result appendFormat:@"\tBOOL saveResult = [[NSUserDefaults standardUserDefaults] synchronize];\n"];
-                    [result appendFormat:@"return saveResult;\n"];
+                    [result appendFormat:@"\treturn saveResult;\n"];
                     [result appendFormat:@"}\n"];
                     
                     [result appendFormat:@"\n+ (%@ *)findForKey:(NSString *)sender {\n", classname];
