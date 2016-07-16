@@ -675,7 +675,7 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\treturn [[[%@ alloc] init] parseFromDictionary:sender];\n", classname];
                     [result appendFormat:@"}\n\n"];
                     [result appendFormat:@"\n- (%@ *)parseFromDictionary:(NSDictionary *)sender {\n", classname];
-                    [result appendFormat:@"\tif ([self init]) {\n"];
+                    [result appendFormat:@"\tif (![self init]) {\n"];
                     [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 初始化失败\");\n", classname];
                     [result appendString:@"\t}\n"];
                     [result appendString:@"\tif (![sender isKindOfClass:[NSDictionary class]]) {\n"];
