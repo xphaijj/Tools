@@ -296,10 +296,10 @@ static NSDictionary *configDictionary;
                     
                     NSString *processString = [requestType hasPrefix:@"i"]?@"//":@"";
                     
-                    [result appendString:@"{\n"];
+                    [result appendFormat:@"{\n"];
                     [result appendFormat:@"\t%@[SVProgressHUD showProgress:0];\n", processString];
-                    [result appendString:@"\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
-                    [result appendString:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] init];\n"];
+                    [result appendFormat:@"\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
+                    [result appendFormat:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] initWithDictionary:BaseParams(@\"%@\")];\n", interfacename];
                     [result appendFormat:@"\t[params setObj:@\"%@\" forKey:@\"action\"];\n", interfacename];
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
