@@ -467,9 +467,15 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t\t\t[self.%@List addObject:item];\n", fieldname];
                             [result appendFormat:@"\t\t\t}\n"];
                             
-                            [result appendFormat:@"\t\t\telse if (object && [object isKindOfClass:[NSArray class]] && ((NSArray *)object).count > 0 && [((NSArray *)object)[0] isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t%@ *item = [%@ parseFromDictionary:((NSArray *)object)[0]];\n", type, type];
-                            [result appendFormat:@"\t\t\t\t[self.%@List addObject:item];\n", fieldname];
+                            [result appendFormat:@"\t\t\telse if (object && [object isKindOfClass:[NSArray class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\tif (((NSArray *)object).count > 0 && [((NSArray *)object)[0] isKindOfClass:[NSDictionary class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\t\t%@ *item = [%@ parseFromDictionary:((NSArray *)object)[0]];\n", type, type];
+                            [result appendFormat:@"\t\t\t\t\t[self.%@List addObject:item];\n", fieldname];
+                            [result appendFormat:@"\t\t\t\t}\n"];
+                            [result appendFormat:@"\t\t\t\telse {\n"];
+                            [result appendFormat:@"\t\t\t\t\t%@ *item = [%@ parseFromDictionary:@{}];\n", type, type];
+                            [result appendFormat:@"\t\t\t\t\t[self.%@List addObject:item];\n", fieldname];
+                            [result appendFormat:@"\t\t\t\t}\n"];
                             [result appendFormat:@"\t\t\t}\n"];
                             
                             [result appendFormat:@"\t\t}\n"];
