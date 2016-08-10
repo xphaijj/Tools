@@ -219,9 +219,7 @@ static NSDictionary *configDictionary;
             
         case TYPE_METHOD:
         {
-            NSMutableString *interface = [[NSMutableString alloc] initWithString:interfacename];
-            [interface stringByReplacingOccurrencesOfString:@"/" withString:@""];
-            [result appendFormat:@"+(NSURLSessionDataTask * _Nonnull)%@RequestUrl:(NSString * _Nullable)baseurl", interface];
+            [result appendFormat:@"+(NSURLSessionDataTask * _Nonnull)%@RequestUrl:(NSString * _Nullable)baseurl", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
             
             //判断是否是上传接口  上传接口需要提取出来单独处理
             if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
