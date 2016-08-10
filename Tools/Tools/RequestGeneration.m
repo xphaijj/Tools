@@ -204,6 +204,7 @@ static NSDictionary *configDictionary;
         [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
         [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
     }
+    
     NSString *uploadKey = @"";
     // h m 文件中均需导入的
     switch (methodType) {
@@ -218,7 +219,9 @@ static NSDictionary *configDictionary;
             
         case TYPE_METHOD:
         {
-            [result appendFormat:@"+(NSURLSessionDataTask * _Nonnull)%@RequestUrl:(NSString * _Nullable)baseurl", interfacename];
+            NSMutableString *interface = [[NSMutableString alloc] initWithString:interfacename];
+            [interface stringByReplacingOccurrencesOfString:@"/" withString:@""];
+            [result appendFormat:@"+(NSURLSessionDataTask * _Nonnull)%@RequestUrl:(NSString * _Nullable)baseurl", interface];
             
             //判断是否是上传接口  上传接口需要提取出来单独处理
             if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
