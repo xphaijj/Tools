@@ -268,6 +268,7 @@ static NSDictionary *configDictionary;
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DICTIONARY]];//字典化
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_SAVE]];//存取
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_COPY]];//拷贝
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_STATIC]];
     
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
@@ -594,6 +595,10 @@ static NSDictionary *configDictionary;
                     }
                 }
                     break;
+                case TYPE_STATIC:
+                {
+                }
+                    break;
                     
                 default:
                     break;
@@ -656,6 +661,11 @@ static NSDictionary *configDictionary;
                 case TYPE_COPY:
                 {
                     [result appendFormat:@"- (void)copyOperationWithObject:(%@ *)object;\n", classname];
+                }
+                    break;
+                case TYPE_STATIC:
+                {
+                    [result appendFormat:@"+ (%@ *)shareInstance;", classname];
                 }
                     break;
                     
@@ -733,6 +743,18 @@ static NSDictionary *configDictionary;
                 {
                     [result appendFormat:@"\n- (void)copyOperationWithObject:(%@ *)object {\n", classname];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
+                    [result appendFormat:@"}\n\n"];
+                }
+                    break;
+                case TYPE_STATIC:
+                {
+                    [result appendFormat:@"static %@ *%@ShareData;\n", classname, classname];
+                    [result appendFormat:@"+ (%@ *)shareInstance {\n", classname];
+                    [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
+                    [result appendFormat:@"\tdispatch_once(&onceToken, ^{\n"];
+                    [result appendFormat:@"\t\t%@ShareData = [[%@ alloc] init];\n", classname, classname];
+                    [result appendFormat:@"\t});\n"];
+                    [result appendFormat:@"\treturn %@ShareData;\n", classname];
                     [result appendFormat:@"}\n\n"];
                 }
                     break;

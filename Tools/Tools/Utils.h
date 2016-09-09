@@ -30,6 +30,7 @@ typedef enum MethodType {//方法类型
     TYPE_DICTIONARY,//字典化
     TYPE_SAVE,//保存
     TYPE_COPY,//拷贝
+    TYPE_STATIC,//静态变量
     
     TYPE_ADD,//增加
     TYPE_DEL,//删除

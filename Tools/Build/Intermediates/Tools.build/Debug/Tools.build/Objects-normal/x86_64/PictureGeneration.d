@@ -1,3 +1,4 @@
-dependencies: /Users/user/Code/Tools/Tools/Tools/PictureGeneration.m \
-  /Users/user/Code/Tools/Tools/Tools/PictureGeneration.h \
-  /Users/user/Code/Tools/Tools/Tools/NSImage+Resizing.h
+dependencies: \
+  /Users/xiangpuhua/Code/Tools/Tools/Tools/PictureGeneration.m \
+  /Users/xiangpuhua/Code/Tools/Tools/Tools/PictureGeneration.h \
+  /Users/xiangpuhua/Code/Tools/Tools/Tools/NSImage+Resizing.h
