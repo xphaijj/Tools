@@ -16,6 +16,7 @@
 
 void generation(NSString *sourcePath, NSString *outputPath, NSDictionary *config);
 
+
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
         NSString *sourcePath;

@@ -23,7 +23,7 @@
     [copyright appendFormat:@"// %@ \n//\n", filename];
     [copyright appendFormat:@"// Created By 项普华 Version: %@\n", config[@"version"]];
     [copyright appendFormat:@"// Copyright (C) %@  By AlexXiang  All rights reserved.\n", [dateFormatter stringFromDate:[NSDate date]]];
-    [copyright appendFormat:@"// email:// 496007302@qq.com  tel:// +86 13316987488 \n"];
+    [copyright appendFormat:@"// email:// xiangpuhua@126.com  tel:// +86 13316987488 \n"];
     [copyright appendFormat:@"//\n//\n\n"];
     
     return copyright;

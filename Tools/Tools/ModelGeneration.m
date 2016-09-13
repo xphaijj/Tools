@@ -113,7 +113,7 @@ static NSDictionary *configDictionary;
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regex = @"message(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    NSString *regex = @"message((?:\\s+)(\\S+)(?:\\s*)(:(?:\\s+)(\\S+)(?:\\s*))?)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     NSArray *classes = [sourceString arrayOfCaptureComponentsMatchedByRegex:regex];
     [result appendFormat:@"\n\n"];
     
@@ -127,6 +127,8 @@ static NSDictionary *configDictionary;
             break;
         case M_FILE:
         {
+            
+            
         }
             
         default:
@@ -150,7 +152,7 @@ static NSDictionary *configDictionary;
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     for (NSArray *contents in classes) {
-        [result appendFormat:@"@class %@;\n", [contents objectAtIndex:1]];
+        [result appendFormat:@"@class %@;\n", [contents objectAtIndex:2]];
     }
     
     return result;
@@ -166,48 +168,12 @@ static NSDictionary *configDictionary;
     switch (fileType) {
         case H_FILE:
         {
-            [result appendFormat:@"static OObject *shareObject;\n\n"];
-            [result appendString:@"\n\n@interface OObject : NSObject<NSCopying> {\n"];
-            [result appendString:@"}\n"];
-            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *dbPath;\n\n"];
-            [result appendFormat:@"- (id)copyWithZone:(NSZone *)zone;\n"];
-            [result appendFormat:@"- (void)copyOperationWithObject:(id)object;\n\n"];
-            [result appendFormat:@"+ (OObject *)shareInstance;\n"];
-            [result appendString:@"+(NSString *)initialDB;\n"];
-            [result appendString:@"\n@end\n"];
+            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfFile:[NSString stringWithFormat:@"%@/OObject.h", BUNDLE_PATH] encoding:NSUTF8StringEncoding error:nil]];
         }
             break;
         case M_FILE:
         {
-            [result appendString:@"\n\n@implementation OObject \n\n"];
-            [result appendFormat:@"- (id)copyWithZone:(NSZone *)zone {\n"];
-            [result appendFormat:@"\tOObject *copyObject = [[self class] allocWithZone:zone];\n"];
-            [result appendFormat:@"\t[self copyOperationWithObject:copyObject];\n"];
-            [result appendFormat:@"\treturn copyObject;\n"];
-            [result appendFormat:@"}\n\n"];
-            [result appendFormat:@"- (void)copyOperationWithObject:(id)object {\n"];
-            [result appendFormat:@"}\n"];
-            [result appendFormat:@"+ (OObject *)shareInstance {\n"];
-            [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
-            [result appendFormat:@"\tdispatch_once(&onceToken, ^{\n"];
-            [result appendFormat:@"\t\tshareObject = [[OObject alloc] init];\n"];
-            [result appendFormat:@"\t});\n"];
-            [result appendFormat:@"\treturn shareObject;\n"];
-            [result appendFormat:@"}\n\n"];
-            [result appendString:@"\n+(NSString *)initialDB {\n"];
-            [result appendString:@"\tstatic dispatch_once_t onceToken;\n"];
-            [result appendString:@"\tdispatch_once(&onceToken, ^{\n"];
-            [result appendString:@"\t\tNSString *dirPath = [NSString stringWithFormat:@\"%@/%@\", [NSSearchPathForDirectoriesInDomains(NSCachesDirectory , NSUserDomainMask , YES) lastObject], @\"DB\"];\n"];
-            [result appendString:@"\t\tBOOL isDir = NO;\n"];
-            [result appendString:@"\t\tbool existed = [[NSFileManager defaultManager] fileExistsAtPath:dirPath isDirectory:&isDir];\n"];
-            [result appendString:@"\t\tif (!(isDir == YES && existed == YES)) {\n"];
-            [result appendString:@"\t\t\t[[NSFileManager defaultManager] createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:nil];\n"];
-            [result appendString:@"\t\t}\n"];
-            [result appendString:@"\t\t[OObject shareInstance].dbPath = [NSString stringWithFormat:@\"%@/database.db\", dirPath];\n"];
-            [result appendString:@"\t});\n"];
-            [result appendString:@"\treturn [OObject shareInstance].dbPath;\n"];
-            [result appendString:@"}\n"];
-            [result appendString:@"\n\n@end\n\n"];
+            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfFile:[NSString stringWithFormat:@"%@/OObject.m", BUNDLE_PATH] encoding:NSUTF8StringEncoding error:nil]];
         }
             break;
             
@@ -243,11 +209,15 @@ static NSDictionary *configDictionary;
 + (NSString *)modelFromClass:(NSArray *)contents fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *classname = [contents objectAtIndex:1];//获取类名称
+    NSString *classname = [contents objectAtIndex:2];//获取类名称
+    NSString *superClassname = [contents objectAtIndex:4];//获取父类名称
+    if (superClassname.length == 0) {
+        superClassname = @"OObject";
+    }
     switch (fileType) {
         case H_FILE:
         {
-            [result appendFormat:@"\n\n@interface %@ : OObject {\n", classname];
+            [result appendFormat:@"\n\n@interface %@ : %@ {\n", classname, superClassname];
             [result appendFormat:@"}\n"];
         }
             break;
@@ -261,7 +231,7 @@ static NSDictionary *configDictionary;
             break;
     }
     
-    NSString *modelClass = [contents objectAtIndex:2];//获取属性
+    NSString *modelClass = [contents objectAtIndex:5];//获取属性
     [result appendString:[self propertyFromContents:modelClass fileType:fileType]]; //属性的生成
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_INIT]];//初始化方法
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_PARSE]];//解析方法
