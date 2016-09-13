@@ -154,6 +154,10 @@ static NSDictionary *configDictionary;
     for (NSArray *contents in classes) {
         [result appendFormat:@"@class %@;\n", [contents objectAtIndex:2]];
     }
+    [result appendFormat:@"\n"];
+    for (NSArray *contents in classes) {
+        [result appendFormat:@"static %@ *%@ShareObject = nil;\n", [contents objectAtIndex:2], [[contents objectAtIndex:2] lowercaseString]];
+    }
     
     return result;
 }
@@ -623,7 +627,6 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_STATIC:
                 {
-                    [result appendFormat:@"static %@ *%@ShareObject = nil;\n", classname, [classname lowercaseString]];
                     [result appendFormat:@"+ (%@ *)shareInstance;\n", classname];
                 }
                     break;
