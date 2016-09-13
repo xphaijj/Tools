@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C727F61B1D87F13200E282DB /* OObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C727F6191D87F0AC00E282DB /* OObject.m */; };
 		CE75ED0B1CDC41C6007905F5 /* Config.json in Sources */ = {isa = PBXBuildFile; fileRef = CE75ED0A1CDC3ACF007905F5 /* Config.json */; };
 		FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8016681A7CC09400F3215A /* RegexKitLite.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		FA80166C1A7CC0F400F3215A /* libicucore.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */; };
@@ -38,9 +37,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C727F6181D87F0AC00E282DB /* OObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OObject.h; sourceTree = "<group>"; };
-		C727F6191D87F0AC00E282DB /* OObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OObject.m; sourceTree = "<group>"; };
-		C727F61C1D87FB2200E282DB /* OOConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OOConfig.h; sourceTree = "<group>"; };
 		CE75ED0A1CDC3ACF007905F5 /* Config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = Config.json; path = /Users/user/Code/Tools/Tools/Tools/Config.json; sourceTree = "<absolute>"; };
 		FA8016671A7CC09400F3215A /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
 		FA8016681A7CC09400F3215A /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
@@ -179,8 +175,6 @@
 			children = (
 				FAB0C16B1A7C73DB0032D14E /* ModelGeneration.h */,
 				FAB0C16C1A7C73DB0032D14E /* ModelGeneration.m */,
-				C727F6181D87F0AC00E282DB /* OObject.h */,
-				C727F6191D87F0AC00E282DB /* OObject.m */,
 			);
 			name = "Model生成";
 			sourceTree = "<group>";
@@ -199,7 +193,6 @@
 			children = (
 				FAC279781A80FED8008886F8 /* ConfigGeneration.h */,
 				FAC279791A80FED8008886F8 /* ConfigGeneration.m */,
-				C727F61C1D87FB2200E282DB /* OOConfig.h */,
 			);
 			name = Config;
 			sourceTree = "<group>";
@@ -266,7 +259,6 @@
 				FAC2797A1A80FED8008886F8 /* ConfigGeneration.m in Sources */,
 				FA9502311CEFE1970007E8FB /* PictureGeneration.m in Sources */,
 				FAB0C1621A7C72C90032D14E /* main.m in Sources */,
-				C727F61B1D87F13200E282DB /* OObject.m in Sources */,
 				FAB0C16D1A7C73DB0032D14E /* ModelGeneration.m in Sources */,
 				FAB0C1701A7C73E80032D14E /* DBGeneration.m in Sources */,
 				FAAB91221A7CADA20018E188 /* Utils.m in Sources */,

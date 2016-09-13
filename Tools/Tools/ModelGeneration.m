@@ -168,12 +168,12 @@ static NSDictionary *configDictionary;
     switch (fileType) {
         case H_FILE:
         {
-            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfFile:[NSString stringWithFormat:@"%@/OObject.h", BUNDLE_PATH] encoding:NSUTF8StringEncoding error:nil]];
+            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:@"http://git.oschina.net/phxiang/Public/raw/master/OObject.h"] encoding:NSUTF8StringEncoding error:nil]];
         }
             break;
         case M_FILE:
         {
-            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfFile:[NSString stringWithFormat:@"%@/OObject.m", BUNDLE_PATH] encoding:NSUTF8StringEncoding error:nil]];
+            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:@"http://git.oschina.net/phxiang/Public/raw/master/OObject.m"] encoding:NSUTF8StringEncoding error:nil]];
         }
             break;
             
