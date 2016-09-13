@@ -37,6 +37,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C727F61D1D88012200E282DB /* OObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OObject.h; sourceTree = "<group>"; };
+		C727F61E1D88012200E282DB /* OObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OObject.m; sourceTree = "<group>"; };
+		C727F61F1D88012200E282DB /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		CE75ED0A1CDC3ACF007905F5 /* Config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = Config.json; path = /Users/user/Code/Tools/Tools/Tools/Config.json; sourceTree = "<absolute>"; };
 		FA8016671A7CC09400F3215A /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
 		FA8016681A7CC09400F3215A /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
@@ -173,6 +176,8 @@
 		FAB0C1761A7C74310032D14E /* Model生成 */ = {
 			isa = PBXGroup;
 			children = (
+				C727F61D1D88012200E282DB /* OObject.h */,
+				C727F61E1D88012200E282DB /* OObject.m */,
 				FAB0C16B1A7C73DB0032D14E /* ModelGeneration.h */,
 				FAB0C16C1A7C73DB0032D14E /* ModelGeneration.m */,
 			);
@@ -193,6 +198,7 @@
 			children = (
 				FAC279781A80FED8008886F8 /* ConfigGeneration.h */,
 				FAC279791A80FED8008886F8 /* ConfigGeneration.m */,
+				C727F61F1D88012200E282DB /* Config.h */,
 			);
 			name = Config;
 			sourceTree = "<group>";

@@ -234,11 +234,10 @@ static NSDictionary *configDictionary;
     NSString *modelClass = [contents objectAtIndex:5];//获取属性
     [result appendString:[self propertyFromContents:modelClass fileType:fileType]]; //属性的生成
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_INIT]];//初始化方法
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_STATIC]];
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_PARSE]];//解析方法
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DICTIONARY]];//字典化
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_SAVE]];//存取
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_COPY]];//拷贝
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_STATIC]];
     
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
@@ -365,7 +364,7 @@ static NSDictionary *configDictionary;
                 {
                 }
                     break;
-                case TYPE_SAVE:
+                case TYPE_STATIC:
                 {
                 }
                     break;
@@ -434,17 +433,17 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\tfor (id object in [sender arrayForKey:@\"%@\"]) {\n", keyname];
                             
                             [result appendFormat:@"\t\t\tif (object && [object isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t%@ *item = [%@ parseFromDictionary:object];\n", type, type];
+                            [result appendFormat:@"\t\t\t\t%@ *item = (%@ *)[%@ parseFromDictionary:object];\n", type, type, type];
                             [result appendFormat:@"\t\t\t\t[self.%@List addObject:item];\n", fieldname];
                             [result appendFormat:@"\t\t\t}\n"];
                             
                             [result appendFormat:@"\t\t\telse if (object && [object isKindOfClass:[NSArray class]]) {\n"];
                             [result appendFormat:@"\t\t\t\tif (((NSArray *)object).count > 0 && [((NSArray *)object)[0] isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t\t%@ *item = [%@ parseFromDictionary:((NSArray *)object)[0]];\n", type, type];
+                            [result appendFormat:@"\t\t\t\t\t%@ *item = (%@ *)[%@ parseFromDictionary:((NSArray *)object)[0]];\n", type, type, type];
                             [result appendFormat:@"\t\t\t\t\t[self.%@List addObject:item];\n", fieldname];
                             [result appendFormat:@"\t\t\t\t}\n"];
                             [result appendFormat:@"\t\t\t\telse {\n"];
-                            [result appendFormat:@"\t\t\t\t\t%@ *item = [%@ parseFromDictionary:@{}];\n", type, type];
+                            [result appendFormat:@"\t\t\t\t\t%@ *item = (%@ *)[%@ parseFromDictionary:@{}];\n", type, type, type];
                             [result appendFormat:@"\t\t\t\t\t[self.%@List addObject:item];\n", fieldname];
                             [result appendFormat:@"\t\t\t\t}\n"];
                             [result appendFormat:@"\t\t\t}\n"];
@@ -458,7 +457,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t[self.%@List addObject:[sender arrayForKey:@\"%@\"]];\n", fieldname, keyname];
                         }
                         else {
-                            [result appendFormat:@"\t\t%@ *item = [%@ parseFromDictionary:[sender objectForKey:@\"%@\"]];\n", type, type, keyname];
+                            [result appendFormat:@"\t\t%@ *item = (%@ *)[%@ parseFromDictionary:[sender objectForKey:@\"%@\"]];\n", type, type, type, keyname];
                             [result appendFormat:@"\t\t[self.%@List addObject:item];\n", fieldname];
                         }
                         [result appendString:@"\t}\n"];
@@ -471,7 +470,7 @@ static NSDictionary *configDictionary;
                         }
                         if (IS_BASE_TYPE(type)) {
                             if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
-                                [result appendFormat:@"\tself.%@ = [sender integerForKey:@\"%@\"];\n", fieldname, keyname];
+                                [result appendFormat:@"\tself.%@ = [sender int32ForKey:@\"%@\"];\n", fieldname, keyname];
                             }
                             else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
                                 [result appendFormat:@"\tself.%@ = [sender CGFloatForKey:@\"%@\"];\n", fieldname, keyname];
@@ -486,7 +485,7 @@ static NSDictionary *configDictionary;
                             }
                         }
                         else {
-                            [result appendFormat:@"\tself.%@ = [sender integerForKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\tself.%@ = [sender int32ForKey:@\"%@\"];\n", fieldname, keyname];
                         }
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]) {
@@ -504,7 +503,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t}\n"];
                         }
                         [result appendFormat:@"\tif ([sender hasKey:@\"%@\"] && [[sender dictionaryForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
-                        [result appendFormat:@"\t\tself.%@ = [%@ parseFromDictionary:[sender dictionaryForKey:@\"%@\"]];\n", fieldname, type, keyname];
+                        [result appendFormat:@"\t\tself.%@ = (%@ *)[%@ parseFromDictionary:[sender dictionaryForKey:@\"%@\"]];\n", fieldname, type, type, keyname];
                         [result appendFormat:@"\t}\n"];
                     }
                 }
@@ -540,10 +539,6 @@ static NSDictionary *configDictionary;
                     else {
                         [result appendFormat:@"\t[dictionaryValue setObj:[self.%@ dictionaryValue] forKey:@\"%@\"];\n", fieldname, keyname];
                     }
-                }
-                    break;
-                case TYPE_SAVE:
-                {
                 }
                     break;
                 case TYPE_COPY:
@@ -613,19 +608,12 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_PARSE:
                 {
-                    [result appendFormat:@"+ (%@ *)parseFromDictionary:(NSDictionary *)sender;\n", classname];
                     [result appendFormat:@"- (%@ *)parseFromDictionary:(NSDictionary *)sender;\n", classname];
                 }
                     break;
                 case TYPE_DICTIONARY:
                 {
-                    [result appendFormat:@"- (NSDictionary *)dictionaryValue;\n"];
-                }
-                    break;
-                case TYPE_SAVE:
-                {
-                    [result appendFormat:@"- (BOOL)saveForKey:(NSString *)sender;\n"];
-                    [result appendFormat:@"+ (%@ *)findForKey:(NSString *)sender;\n", classname];
+                    [result appendFormat:@"- (NSMutableDictionary *)dictionaryValue;\n"];
                 }
                     break;
                 case TYPE_COPY:
@@ -635,7 +623,8 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_STATIC:
                 {
-                    [result appendFormat:@"+ (%@ *)shareInstance;", classname];
+                    [result appendFormat:@"static %@ *%@ShareObject = nil;\n", classname, [classname lowercaseString]];
+                    [result appendFormat:@"+ (%@ *)shareInstance;\n", classname];
                 }
                     break;
                     
@@ -664,17 +653,8 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_PARSE:
                 {
-                    [result appendFormat:@"\n+ (%@ *)parseFromDictionary:(NSDictionary *)sender {\n", classname];
-                    [result appendFormat:@"\treturn [[[%@ alloc] init] parseFromDictionary:sender];\n", classname];
-                    [result appendFormat:@"}\n\n"];
                     [result appendFormat:@"\n- (%@ *)parseFromDictionary:(NSDictionary *)sender {\n", classname];
-                    [result appendFormat:@"\tif (![self init]) {\n"];
-                    [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 初始化失败\");\n", classname];
-                    [result appendString:@"\t}\n"];
-                    [result appendString:@"\tif (![sender isKindOfClass:[NSDictionary class]]) {\n"];
-                    [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 解析非字典类\");\n", classname];
-                    [result appendString:@"\t\treturn self;\n"];
-                    [result appendString:@"\t}\n"];
+                    [result appendFormat:@"\t[super parseFromDictionary:sender];\n"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
                     [result appendString:@"\treturn self;\n"];
                     [result appendFormat:@"}\n\n"];
@@ -682,30 +662,10 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_DICTIONARY:
                 {
-                    [result appendFormat:@"\n- (NSDictionary *)dictionaryValue {\n"];
-                    [result appendFormat:@"\tNSMutableDictionary *dictionaryValue = [[NSMutableDictionary alloc] init];\n"];
+                    [result appendFormat:@"\n- (NSMutableDictionary *)dictionaryValue {\n"];
+                    [result appendFormat:@"\tNSMutableDictionary *dictionaryValue = [super dictionaryValue];\n"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
                     [result appendFormat:@"\treturn dictionaryValue;\n"];
-                    [result appendFormat:@"}\n"];
-                }
-                    break;
-                case TYPE_SAVE:
-                {
-                    [result appendFormat:@"\n- (BOOL)saveForKey:(NSString *)sender {\n"];
-                    [result appendFormat:@"\tNSDictionary *dictionaryValue = [self dictionaryValue];\n"];
-                    [result appendFormat:@"\t[[NSUserDefaults standardUserDefaults] setObject:dictionaryValue forKey:sender];\n"];
-                    [result appendFormat:@"\tBOOL saveResult = [[NSUserDefaults standardUserDefaults] synchronize];\n"];
-                    [result appendFormat:@"\treturn saveResult;\n"];
-                    [result appendFormat:@"}\n"];
-                    
-                    [result appendFormat:@"\n+ (%@ *)findForKey:(NSString *)sender {\n", classname];
-                    [result appendFormat:@"\tNSDictionary *findDictionary = [[NSUserDefaults standardUserDefaults] dictionaryForKey:sender];\n"];
-                    [result appendFormat:@"\tif (![findDictionary isKindOfClass:[NSDictionary class]]) {\n"];
-                    [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 查找数据出错\");\n", classname];
-                    [result appendFormat:@"\t\treturn nil;\n"];
-                    [result appendFormat:@"\t}\n"];
-                    [result appendFormat:@"\t%@ *findResult = [%@ parseFromDictionary:findDictionary];\n", classname, classname];
-                    [result appendFormat:@"\treturn findResult;\n"];
                     [result appendFormat:@"}\n"];
                 }
                     break;
@@ -718,14 +678,13 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_STATIC:
                 {
-                    [result appendFormat:@"static %@ *%@ShareData;\n", classname, classname];
                     [result appendFormat:@"+ (%@ *)shareInstance {\n", classname];
                     [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
                     [result appendFormat:@"\tdispatch_once(&onceToken, ^{\n"];
-                    [result appendFormat:@"\t\t%@ShareData = [[%@ alloc] init];\n", classname, classname];
+                    [result appendFormat:@"\t\t%@ShareObject = [[[self class] alloc] init];\n", [classname lowercaseString]];
                     [result appendFormat:@"\t});\n"];
-                    [result appendFormat:@"\treturn %@ShareData;\n", classname];
-                    [result appendFormat:@"}\n\n"];
+                    [result appendFormat:@"\treturn %@ShareObject;\n", [classname lowercaseString]];
+                    [result appendFormat:@"}\n"];
                 }
                     break;
                     

@@ -1,31 +1,35 @@
-#import "OObject.h"
 
 @implementation OObject
 
 - (id)init {
     self = [super init];
-    if (self) {
+    if (!self) {
+        CCLOG(@"%@   初始化失败", NSStringFromClass([self class]));
     }
     return self;
 }
 
-+ (OObject *)parseFromDictionary:(NSDictionary *)sender {
-    return [[[OObject alloc] init] parseFromDictionary:sender];
++ (id)parseFromDictionary:(NSDictionary *)sender {
+    if (![sender isKindOfClass:[NSDictionary class]]) {
+        CCLOG(@"Product +++++++++++++++MODEL+++++++++++++ 解析非字典类");
+        return [self init];
+    }
+    return [[[[self class] alloc] init] parseFromDictionary:sender];
 }
 
-- (OObject *)parseFromDictionary:(NSDictionary *)sender {
+- (id)parseFromDictionary:(NSDictionary *)sender {
     if (![self init]) {
-        NSLog(@"Product +++++++++++++++MODEL+++++++++++++ 初始化失败");
+        CCLOG(@"Product +++++++++++++++MODEL+++++++++++++ 初始化失败");
     }
     if (![sender isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"Product +++++++++++++++MODEL+++++++++++++ 解析非字典类");
+        CCLOG(@"Product +++++++++++++++MODEL+++++++++++++ 解析非字典类");
         return self;
     }
     return self;
 }
 
 
-- (NSDictionary *)dictionaryValue {
+- (NSMutableDictionary *)dictionaryValue {
     NSMutableDictionary *dictionaryValue = [[NSMutableDictionary alloc] init];
     return dictionaryValue;
 }
@@ -37,14 +41,13 @@
     return saveResult;
 }
 
-+ (OObject *)findForKey:(NSString *)sender {
++ (id)findForKey:(NSString *)sender {
     NSDictionary *findDictionary = [[NSUserDefaults standardUserDefaults] dictionaryForKey:sender];
     if (![findDictionary isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"Product +++++++++++++++MODEL+++++++++++++ 查找数据出错");
+        CCLOG(@"Product +++++++++++++++MODEL+++++++++++++ 查找数据出错");
         return nil;
     }
-    
-    OObject *findResult = [OObject parseFromDictionary:findDictionary];
+    OObject *findResult = [[self class] parseFromDictionary:findDictionary];
     return findResult;
 }
 
@@ -60,10 +63,10 @@
 
 
 static OObject *shareObject = nil;
-+ (OObject *)shareInstance {
++ (id)shareInstance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        shareObject = [[OObject alloc] init];
+        shareObject = [[[self class] alloc] init];
     });
     return shareObject;
 }
@@ -77,9 +80,9 @@ static OObject *shareObject = nil;
         if (!(isDir == YES && existed == YES)) {
             [[NSFileManager defaultManager] createDirectoryAtPath:dirPath withIntermediateDirectories:YES attributes:nil error:nil];
         }
-        [OObject shareInstance].dbPath = [NSString stringWithFormat:@"%@/database.db", dirPath];
+        ((OObject *)[OObject shareInstance]).dbPath = [NSString stringWithFormat:@"%@/database.db", dirPath];
     });
-    return [OObject shareInstance].dbPath;
+    return ((OObject *)[OObject shareInstance]).dbPath;
 }
 
 @end
