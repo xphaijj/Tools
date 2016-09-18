@@ -509,6 +509,12 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\tif ([sender hasKey:@\"%@\"] && [[sender dictionaryForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
                         [result appendFormat:@"\t\tself.%@ = (%@ *)[%@ parseFromDictionary:[sender dictionaryForKey:@\"%@\"]];\n", fieldname, type, type, keyname];
                         [result appendFormat:@"\t}\n"];
+                        [result appendFormat:@"\tif ([sender hasKey:@\"%@\"] && [[sender stringForKey:@\"%@\"] isKindOfClass:[NSString class]]) {\n", keyname, keyname];
+                        [result appendFormat:@"\t\tNSDictionary *dic = [NSJSONSerialization JSONObjectWithData:[((NSString *) [sender stringForKey:@\"%@\"]) dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil];\n", keyname];
+                        [result appendFormat:@"\t\tif ([dic isKindOfClass:[NSDictionary class]]) {\n"];
+                        [result appendFormat:@"\t\t\tself.%@ = (%@ *)[%@ parseFromDictionary:dic];\n", fieldname, type, type];
+                        [result appendFormat:@"\t\t}\n"];
+                        [result appendFormat:@"\t}\n"];
                     }
                 }
                     break;
