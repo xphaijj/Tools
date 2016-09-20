@@ -293,7 +293,7 @@ static NSDictionary *configDictionary;
                 case TYPE_REQUEST:
                 {
                     BOOL qm = ([configDictionary.allKeys containsObject:@"custom"] && [[configDictionary objectForKey:@"custom"] isEqualToString:@"qm"]);//判断是否是全民服务的请求
-                    NSString *params = qm?[NSString stringWithFormat:@"@{@\"request\":@\"%@\", @\"param\":params}", interfacename]:@"params";
+//                    NSString *params = qm?[NSString stringWithFormat:@"@{@\"request\":@\"%@\", @\"param\":params}", interfacename]:@"params";
                     
                     NSString *processString = [requestType hasPrefix:@"i"]?@"//":@"";
                     
@@ -305,13 +305,13 @@ static NSDictionary *configDictionary;
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:%@ progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], params, processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:uploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], , processString];
                     }
                     else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:%@ progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], params, processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:uploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], processString];
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:%@  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"], params];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:uploadParams(params)  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"]];
                         
                         [result appendFormat:@"\t}\n"];
                         [result appendFormat:@"\tprogress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t}", processString];
