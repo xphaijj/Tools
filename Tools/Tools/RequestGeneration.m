@@ -292,16 +292,12 @@ static NSDictionary *configDictionary;
             switch (methodType) {
                 case TYPE_REQUEST:
                 {
-                    BOOL qm = ([configDictionary.allKeys containsObject:@"custom"] && [[configDictionary objectForKey:@"custom"] isEqualToString:@"qm"]);//判断是否是全民服务的请求
-//                    NSString *params = qm?[NSString stringWithFormat:@"@{@\"request\":@\"%@\", @\"param\":params}", interfacename]:@"params";
-                    
                     NSString *processString = [requestType hasPrefix:@"i"]?@"//":@"";
                     
                     [result appendFormat:@"{\n"];
                     [result appendFormat:@"\t%@[SVProgressHUD showProgress:0];\n", processString];
                     [result appendFormat:@"\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
                     [result appendFormat:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] initWithDictionary:BaseParams(@\"%@\")];\n", interfacename];
-                    [result appendFormat:@"\t[params setObj:@\"%@\" forKey:@\"action\"];\n", interfacename];
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
