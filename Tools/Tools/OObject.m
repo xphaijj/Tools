@@ -42,6 +42,9 @@
 }
 
 + (id)findForKey:(NSString *)sender {
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:sender]) {
+        return nil;
+    }
     NSDictionary *findDictionary = [[NSUserDefaults standardUserDefaults] dictionaryForKey:sender];
     if (![findDictionary isKindOfClass:[NSDictionary class]]) {
         CCLOG(@"Product +++++++++++++++MODEL+++++++++++++ 查找数据出错");
