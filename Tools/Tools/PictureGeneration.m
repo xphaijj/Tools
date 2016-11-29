@@ -34,9 +34,9 @@
                 image = [image resizeImageToNewfactor:2.0/3.88125];
                 [string replaceOccurrencesOfString:@"@3x.png" withString:@"@2x.png" options:NSBackwardsSearch range:NSMakeRange(string.length-9, 9)];
                 [PictureGeneration saveImage:image path:string];
-                image = [image resizeImageToNewfactor:1.0/2.0];
-                [string replaceOccurrencesOfString:@"@2x.png" withString:@".png" options:NSBackwardsSearch range:NSMakeRange(string.length-9, 9)];
-                [PictureGeneration saveImage:image path:string];
+//                image = [image resizeImageToNewfactor:1.0/2.0];
+//                [string replaceOccurrencesOfString:@"@2x.png" withString:@".png" options:NSBackwardsSearch range:NSMakeRange(string.length-9, 9)];
+//                [PictureGeneration saveImage:image path:string];
             }
         }
     }
