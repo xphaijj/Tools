@@ -324,6 +324,8 @@ static NSDictionary *configDictionary;
                     else if ([configDictionary[@"response"] isEqualToString:@"json"]){
                         [result appendFormat:@"\t\tinfo = [%@ parseFromDictionary:result];\n", returnType];
                     }
+                    [result appendString:@"\t\tsaveReCode(result);\n"];
+                    
                     [result appendString:@"\t\tsuccess(task, info);\n"];
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {\n"];
                     [result appendString:@"\t\t[WToast showWithText:@\"网络异常\"];\n"];
