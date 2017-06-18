@@ -30,10 +30,7 @@ typedef enum FileType { //文件类型
 typedef enum MethodType {//方法类型
     TYPE_PROPERTY,//属性解析
     TYPE_INIT,//初始化
-    TYPE_PARSE,//解析
-    TYPE_DICTIONARY,//字典化
-    TYPE_COPY,//拷贝
-    TYPE_STATIC,//静态方法
+    TYPE_KEYMAPPER,//静态方法
     
     TYPE_ADD,//增加
     TYPE_DEL,//删除
@@ -67,7 +64,7 @@ typedef enum TypeIndex {//增删改查 的选择索引
 
 +(NSDictionary *)configDictionary:(NSString *)sourcePath;
 
-
++(NSString *)note:(NSString *)note;
 
 
 

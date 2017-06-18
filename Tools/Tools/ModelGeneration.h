@@ -43,12 +43,6 @@
 + (NSString *)allClass:(NSArray *)classes;
 
 /**
- * @brief  model 基类的实现
- * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
- */
-+ (NSString *)baseModel:(FileType)fileType;
-
-/**
  * @brief  models 数据的生成
  * @prama  classes:所有的model列表
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]

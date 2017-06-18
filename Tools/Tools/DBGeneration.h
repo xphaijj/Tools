@@ -30,13 +30,6 @@
  **/
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType;
 
-
-/**
- * @brief  model 基类的实现
- * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
- */
-+ (NSString *)baseModel:(FileType)fileType;
-
 /**
  * @brief  models 数据的生成
  * @prama  classes:所有的model列表
@@ -88,11 +81,5 @@
  * @prama  keyfieldname:数据库字段
  */
 + (NSString *)singleProperty:(NSArray *)fields fileType:(FileType)fileType methodType:(MethodType)methodType index:(TypeIndex)index key:(NSString *)key keyType:(NSString *)keyType keyfieldname:(NSString *)keyfieldname;
-
-/**
- * @brief  数据库操作的基本生成
- * @prama  classname: 表名称
- **/
-+ (NSString *)dbbaseControl:(NSString *)classname;
 
 @end

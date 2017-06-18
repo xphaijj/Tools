@@ -79,13 +79,14 @@ static NSDictionary *configDictionary;
                 [result appendFormat:@"#import \"SVProgressHUD.h\"\n"];
                 [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
             }
-            [result appendFormat:@"#import \"%@Config.h\"\n", configDictionary[@"filename"]];
+            [result appendFormat:@"#import \"PHMacro.h\"\n"];
             [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
             
         }
             break;
         case M_FILE:
         {
+            [result appendFormat:@"#import \"PHTools.h\"\n"];
             [result appendFormat:@"#import \"%@Request.h\"\n", configDictionary[@"filename"]];
         }
             break;
@@ -297,17 +298,17 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"{\n"];
                     [result appendFormat:@"\t%@[SVProgressHUD showProgress:0];\n", processString];
                     [result appendFormat:@"\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
-                    [result appendFormat:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] initWithDictionary:BaseParams(@\"%@\")];\n", interfacename];
+                    [result appendFormat:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] initWithDictionary:PH_BaseParams(@{@\"action\":@\"%@\"})];\n", interfacename];
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:uploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], processString];
                     }
                     else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:uploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], processString];
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:uploadParams(params)  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"]];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params)  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"]];
                         
                         [result appendFormat:@"\t}\n"];
                         [result appendFormat:@"\tprogress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t}", processString];
@@ -319,12 +320,11 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\t\t%@ *info;\n", returnType];
                     if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                         [result appendString:@"\t\tNSDictionary *res = [[XMLDictionaryParser sharedInstance] dictionaryWithParser:result];\n"];
-                        [result appendFormat:@"\t\tinfo = [%@ parseFromDictionary:res];\n", returnType];
+                        [result appendFormat:@"\t\tinfo = [%@ mj_objectWithKeyValues:res];\n", returnType];
                     }
                     else if ([configDictionary[@"response"] isEqualToString:@"json"]){
-                        [result appendFormat:@"\t\tinfo = [%@ parseFromDictionary:result];\n", returnType];
+                        [result appendFormat:@"\t\tinfo = [%@ mj_objectWithKeyValues:PH_HandleResponse(result)];\n", returnType];
                     }
-                    [result appendString:@"\t\tsaveReCode(result);\n"];
                     
                     [result appendString:@"\t\tsuccess(task, info);\n"];
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {\n"];
@@ -342,7 +342,6 @@ static NSDictionary *configDictionary;
                     break;
             }
         }
-            
         default:
             break;
     }

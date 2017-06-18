@@ -30,9 +30,9 @@
  */
 #if !defined(DEBUG) || DEBUG == 0
 
-#define CCLOG(...) do {} whle (0)
-#define CCLOGINFO(...) do {} while (0)
-#define CCLOGERROR(...) do {} while (0)
+#define PHLogInfo(...) do {} whle (0)
+#define PHLogInfoINFO(...) do {} while (0)
+#define PHLogInfoERROR(...) do {} while (0)
 #define XXLOG do {} while (0)
 #define ERRORS(msg)  do{} while(0)
 
@@ -41,9 +41,9 @@
 
 #elif DEBUG >= 1
 
-#define CCLOG(...) NSLog(__VA_ARGS__)
-#define CCLOGERROR(...) NSLog(__VA_ARGS__)
-#define CCLOGINFO(...) do {} while (0)
+#define PHLogInfo(...) NSLog(__VA_ARGS__)
+#define PHLogInfoERROR(...) NSLog(__VA_ARGS__)
+#define PHLogInfoINFO(...) do {} while (0)
 #define XXLOG NSLog(@"-->> <<%@>> -->> <<%@>> ", self.class, NSStringFromSelector(_cmd));
 #define ERRORS(msg)  [WToast showWithText:msg];
 

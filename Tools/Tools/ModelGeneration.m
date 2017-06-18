@@ -63,12 +63,13 @@ static NSDictionary *configDictionary;
             [result appendFormat:@"#import <UIKit/UIKit.h>\n"];
             [result appendFormat:@"#import <Foundation/Foundation.h>\n"];
             [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
+            [result appendFormat:@"#import \"PHModel.h\"\n\n\n"];
         }
             break;
             
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@Config.h\"\n", configDictionary[@"filename"]];
+            [result appendFormat:@"#import \"PHMacro.h\"\n"];
             [result appendFormat:@"#import \"%@Model.h\"", configDictionary[@"filename"]];
         }
             break;
@@ -79,6 +80,10 @@ static NSDictionary *configDictionary;
     return result;
 }
 
+typedef NS_ENUM(NSUInteger, Code) {
+    OK = 200,//成功
+    Fail = 404,
+};
 /**
  * @brief  匹配出所有的枚举类型
  * @prama  sourceString:需要匹配的字符串
@@ -91,13 +96,15 @@ static NSDictionary *configDictionary;
     enumList = [[NSMutableArray alloc] init];
     for (NSArray *contents in list) {
         @autoreleasepool {
-            NSMutableString *enumString = [[NSMutableString alloc] initWithString:[contents firstObject]];
             NSString *classname = [contents objectAtIndex:1];
+            [result appendFormat:@"typedef NS_ENUM(NSUInteger, %@) {", classname];
+            NSMutableString *enumString = [[NSMutableString alloc] initWithString:[contents objectAtIndex:2]];
             [enumString replaceOccurrencesOfString:@"\n    "
                                         withString:[NSString stringWithFormat:@"\n    %@_", classname]
                                            options:NSLiteralSearch
                                              range:NSMakeRange(0,[enumString length])];
-            [result appendFormat:@"\ntypedef %@ %@;\n", enumString, classname];
+            [result appendString:enumString];
+            [result appendFormat:@"};\n"];
             [enumList addObject:classname];
         }
     }
@@ -121,25 +128,19 @@ static NSDictionary *configDictionary;
         case H_FILE:
         {
             //@class 所有的model
-            [result appendFormat:@"@class OObject;\n"];
             [result appendString:[self allClass:classes]];
         }
             break;
         case M_FILE:
         {
-            
-            
         }
             
         default:
             break;
     }
-    
-    //添加基类
-    [result appendString:[self baseModel:fileType]];
+
     //添加Model
     [result appendString:[self generationModelsFromClasses:classes fileType:fileType]];
-    
     
     return result;
 }
@@ -153,36 +154,6 @@ static NSDictionary *configDictionary;
     NSMutableString *result = [[NSMutableString alloc] init];
     for (NSArray *contents in classes) {
         [result appendFormat:@"@class %@;\n", [contents objectAtIndex:2]];
-    }
-    [result appendFormat:@"\n"];
-    for (NSArray *contents in classes) {
-        [result appendFormat:@"static %@ *%@ShareObject = nil;\n", [contents objectAtIndex:2], [[contents objectAtIndex:2] lowercaseString]];
-    }
-    
-    return result;
-}
-
-/**
- * @brief  model 基类的实现
- * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
- */
-+ (NSString *)baseModel:(FileType)fileType
-{
-    NSMutableString *result = [[NSMutableString alloc] init];
-    switch (fileType) {
-        case H_FILE:
-        {
-            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:@"http://git.oschina.net/phxiang/Public/raw/master/OObject.h"] encoding:NSUTF8StringEncoding error:nil]];
-        }
-            break;
-        case M_FILE:
-        {
-            [result appendFormat:@"%@", [[NSString alloc] initWithContentsOfURL:[NSURL URLWithString:@"http://git.oschina.net/phxiang/Public/raw/master/OObject.m"] encoding:NSUTF8StringEncoding error:nil]];
-        }
-            break;
-            
-        default:
-            break;
     }
     
     return result;
@@ -216,7 +187,7 @@ static NSDictionary *configDictionary;
     NSString *classname = [contents objectAtIndex:2];//获取类名称
     NSString *superClassname = [contents objectAtIndex:4];//获取父类名称
     if (superClassname.length == 0) {
-        superClassname = @"OObject";
+        superClassname = @"PHModel";
     }
     switch (fileType) {
         case H_FILE:
@@ -238,10 +209,7 @@ static NSDictionary *configDictionary;
     NSString *modelClass = [contents objectAtIndex:5];//获取属性
     [result appendString:[self propertyFromContents:modelClass fileType:fileType]]; //属性的生成
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_INIT]];//初始化方法
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_STATIC]];
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_PARSE]];//解析方法
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DICTIONARY]];//字典化
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_COPY]];//拷贝
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_KEYMAPPER]];
     
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
@@ -319,41 +287,41 @@ static NSDictionary *configDictionary;
     NSString *defaultValue = [fields objectAtIndex:4];//默认值
     NSString *notes = [fields objectAtIndex:5];//注释
     notes = [notes stringByReplacingOccurrencesOfString:@"/" withString:@""];
-    
     switch (fileType) {
         case H_FILE:
         {
             switch (methodType) {
                 case TYPE_PROPERTY:
                 {
+                    [result appendString:[Utils note:notes]];//添加注释
                     if ([style isEqualToString:@"repeated"]) {//数组类型单独处理
-                        [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray *%@List;//%@\n", fieldname, notes];
+                        [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray *%@List;\n", fieldname];
                     }
                     else if (IS_BASE_TYPE(type)) {//数据的基本类型 int | float | double | bool
                         if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) NSInteger %@;//%@\n", fieldname, notes];
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) NSInteger %@;\n", fieldname];
                         }
                         else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) CGFloat %@;//%@\n", fieldname, notes];
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) CGFloat %@;\n", fieldname];
                         }
                         else if([[type lowercaseString] isEqualToString:@"long"]) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) long long %@;//%@\n", fieldname, notes];
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) long long %@;\n", fieldname];
                         }
                         else if ([[type lowercaseString] isEqualToString:@"bool"]){
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) BOOL %@;//%@\n", fieldname, notes];
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) BOOL %@;\n", fieldname];
                         }
                         else {}
                         
                         
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]){
-                        [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *%@;//%@\n", fieldname, notes];
+                        [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *%@;\n", fieldname];
                     }
                     else if ([enumList containsObject:type]) {//枚举类型
-                        [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;//%@\n", type, fieldname, notes];
+                        [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;\n", type, fieldname];
                     }
                     else {
-                        [result appendFormat:@"@property (readwrite, nonatomic, strong) %@ *%@;//%@\n", type, fieldname, notes];
+                        [result appendFormat:@"@property (readwrite, nonatomic, strong) %@ *%@;\n", type, fieldname];
                     }
                 }
                     break;
@@ -361,14 +329,7 @@ static NSDictionary *configDictionary;
                 {
                 }
                     break;
-                case TYPE_PARSE:
-                {}
-                    break;
-                case TYPE_DICTIONARY:
-                {
-                }
-                    break;
-                case TYPE_STATIC:
+                case TYPE_KEYMAPPER:
                 {
                 }
                     break;
@@ -385,10 +346,10 @@ static NSDictionary *configDictionary;
                 case TYPE_PROPERTY:
                 {
                     if ([style isEqualToString:@"repeated"]) {
-                        [result appendFormat:@"@synthesize %@List;\n//%@", fieldname, notes];
+                        [result appendFormat:@"@synthesize %@List;\n", fieldname];
                     }
                     else {
-                        [result appendFormat:@"@synthesize %@;//%@\n", fieldname, notes];
+                        [result appendFormat:@"@synthesize %@;\n", fieldname];
                     }
                 }
                     break;
@@ -426,152 +387,20 @@ static NSDictionary *configDictionary;
                     }
                 }
                     break;
-                case TYPE_PARSE:
+                case TYPE_KEYMAPPER:
                 {
-                    if ([[style lowercaseString] isEqualToString:@"repeated"]) {
-                        [result appendFormat:@"\tif ([sender hasKey:@\"%@\"]) {\n", keyname];
-                        if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
-                            [result appendFormat:@"\t\t[self.%@List addObjectsFromArray:[sender arrayForKey:@\"%@\"]];\n", fieldname, keyname];
-                        }
-                        else {
-                            [result appendFormat:@"\t\tfor (id object in [sender arrayForKey:@\"%@\"]) {\n", keyname];
-                            
-                            [result appendFormat:@"\t\t\tif (object && [object isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t%@ *item = (%@ *)[%@ parseFromDictionary:object];\n", type, type, type];
-                            [result appendFormat:@"\t\t\t\t[self.%@List addObject:item];\n", fieldname];
-                            [result appendFormat:@"\t\t\t}\n"];
-                            
-                            [result appendFormat:@"\t\t\telse if (object && [object isKindOfClass:[NSArray class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\tif (((NSArray *)object).count > 0 && [((NSArray *)object)[0] isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t\t%@ *item = (%@ *)[%@ parseFromDictionary:((NSArray *)object)[0]];\n", type, type, type];
-                            [result appendFormat:@"\t\t\t\t\t[self.%@List addObject:item];\n", fieldname];
-                            [result appendFormat:@"\t\t\t\t}\n"];
-                            [result appendFormat:@"\t\t\t\telse {\n"];
-                            [result appendFormat:@"\t\t\t\t\t%@ *item = (%@ *)[%@ parseFromDictionary:@{}];\n", type, type, type];
-                            [result appendFormat:@"\t\t\t\t\t[self.%@List addObject:item];\n", fieldname];
-                            [result appendFormat:@"\t\t\t\t}\n"];
-                            [result appendFormat:@"\t\t\t}\n"];
-                            
-                            [result appendFormat:@"\t\t}\n"];
-                        }
-                        [result appendString:@"\t}\n"];
-                        
-                        [result appendFormat:@"\telse if ([sender hasKey:@\"%@\"] && [[sender dictionaryForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
-                        if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
-                            [result appendFormat:@"\t\t[self.%@List addObject:[sender arrayForKey:@\"%@\"]];\n", fieldname, keyname];
-                        }
-                        else {
-                            [result appendFormat:@"\t\t%@ *item = (%@ *)[%@ parseFromDictionary:[sender objectForKey:@\"%@\"]];\n", type, type, type, keyname];
-                            [result appendFormat:@"\t\t[self.%@List addObject:item];\n", fieldname];
-                        }
-                        [result appendString:@"\t}\n"];
-                    }
-                    else if (IS_BASE_TYPE(type) || [enumList containsObject:type]) {
-                        if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
-                            [result appendFormat:@"\tif (![sender hasKey:@\"%@\"]) {\n", keyname];
-                            [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 必须字段为空\");\n", fieldname];
-                            [result appendFormat:@"\t}\n"];
-                        }
-                        if (IS_BASE_TYPE(type)) {
-                            if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
-                                [result appendFormat:@"\tself.%@ = [sender int32ForKey:@\"%@\"];\n", fieldname, keyname];
+                    if (![fieldname isEqualToString:keyname]) {
+                        [result appendFormat:@"\t\t\t@\"%@\":@[", fieldname];
+                        NSArray *keyNames = [keyname componentsSeparatedByString:@","];
+                        for (int i = 0; i < keyNames.count; i++) {
+                            NSString *singleKeyname = keyNames[i];
+                            if (i != 0) {
+                                [result appendFormat:@","];
                             }
-                            else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
-                                [result appendFormat:@"\tself.%@ = [sender CGFloatForKey:@\"%@\"];\n", fieldname, keyname];
-                            }
-                            else if ([[type lowercaseString] isEqualToString:@"long"]) {
-                                [result appendFormat:@"\tself.%@ = [sender longLongForKey:@\"%@\"];\n", fieldname, keyname];
-                            }
-                            else if ([[type lowercaseString] isEqualToString:@"bool"]) {
-                                [result appendFormat:@"\tself.%@ = [sender boolForKey:@\"%@\"];\n", fieldname, keyname];
-                            }
-                            else  {
-                            }
+                            [result appendFormat:@"@\"%@\"", singleKeyname];
                         }
-                        else {
-                            [result appendFormat:@"\tself.%@ = [sender int32ForKey:@\"%@\"];\n", fieldname, keyname];
-                        }
+                        [result appendFormat:@"],\n"];
                     }
-                    else if ([[type lowercaseString] isEqualToString:@"string"]) {
-                        if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
-                            [result appendFormat:@"\tif (![sender hasKey:@\"%@\"]) {\n", keyname];
-                            [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 必须字段为空\");\n", fieldname];
-                            [result appendFormat:@"\t}\n"];
-                        }
-                        [result appendFormat:@"\tself.%@ = [sender stringForKey:@\"%@\"];\n", fieldname, keyname];
-                    }
-                    else {
-                        if ([[style lowercaseString] isEqualToString:@"required"]) {//必需字段
-                            [result appendFormat:@"\tif (![sender hasKey:@\"%@\"]) {\n", keyname];
-                            [result appendFormat:@"\t\tCCLOG(@\"%@ +++++++++++++++MODEL+++++++++++++ 必须字段为空\");\n", fieldname];
-                            [result appendFormat:@"\t}\n"];
-                        }
-                        [result appendFormat:@"\tif ([sender hasKey:@\"%@\"] && [[sender dictionaryForKey:@\"%@\"] isKindOfClass:[NSDictionary class]]) {\n", keyname, keyname];
-                        [result appendFormat:@"\t\tself.%@ = (%@ *)[%@ parseFromDictionary:[sender dictionaryForKey:@\"%@\"]];\n", fieldname, type, type, keyname];
-                        [result appendFormat:@"\t}\n"];
-                        [result appendFormat:@"\tif ([sender hasKey:@\"%@\"] && [[sender stringForKey:@\"%@\"] isKindOfClass:[NSString class]]) {\n", keyname, keyname];
-                        [result appendFormat:@"\t\tNSDictionary *dic = [NSJSONSerialization JSONObjectWithData:[((NSString *) [sender stringForKey:@\"%@\"]) dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONReadingAllowFragments error:nil];\n", keyname];
-                        [result appendFormat:@"\t\tif ([dic isKindOfClass:[NSDictionary class]]) {\n"];
-                        [result appendFormat:@"\t\t\tself.%@ = (%@ *)[%@ parseFromDictionary:dic];\n", fieldname, type, type];
-                        [result appendFormat:@"\t\t}\n"];
-                        [result appendFormat:@"\t}\n"];
-                    }
-                }
-                    break;
-                case TYPE_DICTIONARY:
-                {
-                    if ([[style lowercaseString] isEqualToString:@"repeated"]) {
-                        if (IS_BASE_TYPE(type) || [[type lowercaseString] isEqualToString:@"string"] || [enumList containsObject:type]) {
-                            [result appendFormat:@"\t[dictionaryValue setObj:self.%@List forKey:@\"%@\"];\n", fieldname, keyname];
-                        }
-                        else {
-                            [result appendFormat:@"\tNSMutableArray *%@Items = [[NSMutableArray alloc] init];\n", fieldname];
-                            [result appendFormat:@"\tfor (%@ *item in self.%@List) {\n", type, fieldname];
-                            [result appendFormat:@"\t\t[%@Items addObject:[item dictionaryValue]];\n", fieldname];
-                            [result appendFormat:@"\t}\n"];
-                            [result appendFormat:@"\t[dictionaryValue setObj:%@Items forKey:@\"%@\"];\n", fieldname, keyname];
-                        }
-                    }
-                    else if (IS_BASE_TYPE(type)) {
-                        if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
-                            [result appendFormat:@"\t[dictionaryValue setObj:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
-                        }
-                        else  {
-                            [result appendFormat:@"\t[dictionaryValue setObj:[NSNumber numberWith%@:self.%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
-                        }
-                    }
-                    else if ([enumList containsObject:type]) {
-                        [result appendFormat:@"\t[dictionaryValue setObj:[NSNumber numberWithInteger:self.%@] forKey:@\"%@\"];\n", fieldname, keyname];
-                    }
-                    else if ([[type lowercaseString] isEqualToString:@"string"]) {
-                        [result appendFormat:@"\t[dictionaryValue setObj:self.%@ forKey:@\"%@\"];\n", fieldname, keyname];
-                    }
-                    else {
-                        [result appendFormat:@"\t[dictionaryValue setObj:[self.%@ dictionaryValue] forKey:@\"%@\"];\n", fieldname, keyname];
-                    }
-                }
-                    break;
-                case TYPE_COPY:
-                {
-                    if ([[style lowercaseString] isEqualToString:@"repeated"]) {
-                        [result appendFormat:@"\t\tobject.%@List = [[NSMutableArray alloc] initWithArray:self.%@List copyItems:YES];\n", fieldname, fieldname];
-                    }
-                    else if (IS_BASE_TYPE(type)) {
-                        [result appendFormat:@"\t\tobject.%@ = self.%@;\n", fieldname, fieldname];
-                    }
-                    else if ([[type lowercaseString] isEqualToString:@"string"]) {
-                        [result appendFormat:@"\t\tobject.%@ = self.%@;\n", fieldname, fieldname];
-                    }
-                    else if ([enumList containsObject:type]) {//枚举类型
-                        [result appendFormat:@"\t\tobject.%@ = self.%@;\n", fieldname, fieldname];
-                    }
-                    else {
-                        [result appendFormat:@"\t\tobject.%@ = self.%@.copy;\n", fieldname, fieldname];
-                    }
-                }
-                    break;
-                case TYPE_STATIC:
-                {
                 }
                     break;
                     
@@ -613,27 +442,10 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_INIT:
                 {
-                    [result appendString:@"\n- (id)init;\n"];
                 }
                     break;
-                case TYPE_PARSE:
+                case TYPE_KEYMAPPER:
                 {
-                    [result appendFormat:@"- (%@ *)parseFromDictionary:(NSDictionary *)sender;\n", classname];
-                }
-                    break;
-                case TYPE_DICTIONARY:
-                {
-                    [result appendFormat:@"- (NSMutableDictionary *)dictionaryValue;\n"];
-                }
-                    break;
-                case TYPE_COPY:
-                {
-                    [result appendFormat:@"- (void)copyOperationWithObject:(%@ *)object;\n", classname];
-                }
-                    break;
-                case TYPE_STATIC:
-                {
-                    [result appendFormat:@"+ (%@ *)shareInstance;\n", classname];
                 }
                     break;
                     
@@ -660,39 +472,12 @@ static NSDictionary *configDictionary;
                     [result appendString:@"}\n\n"];
                 }
                     break;
-                case TYPE_PARSE:
+                case TYPE_KEYMAPPER:
                 {
-                    [result appendFormat:@"\n- (%@ *)parseFromDictionary:(NSDictionary *)sender {\n", classname];
-                    [result appendFormat:@"\t[super parseFromDictionary:sender];\n"];
+                    [result appendFormat:@"+ (NSDictionary *)ph_keyMapper {\n"];
+                    [result appendString:@"\treturn @{\n"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
-                    [result appendString:@"\treturn self;\n"];
-                    [result appendFormat:@"}\n\n"];
-                }
-                    break;
-                case TYPE_DICTIONARY:
-                {
-                    [result appendFormat:@"\n- (NSMutableDictionary *)dictionaryValue {\n"];
-                    [result appendFormat:@"\tNSMutableDictionary *dictionaryValue = [super dictionaryValue];\n"];
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
-                    [result appendFormat:@"\treturn dictionaryValue;\n"];
-                    [result appendFormat:@"}\n"];
-                }
-                    break;
-                case TYPE_COPY:
-                {
-                    [result appendFormat:@"\n- (void)copyOperationWithObject:(%@ *)object {\n", classname];
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
-                    [result appendFormat:@"}\n\n"];
-                }
-                    break;
-                case TYPE_STATIC:
-                {
-                    [result appendFormat:@"+ (%@ *)shareInstance {\n", classname];
-                    [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
-                    [result appendFormat:@"\tdispatch_once(&onceToken, ^{\n"];
-                    [result appendFormat:@"\t\t%@ShareObject = [[[self class] alloc] init];\n", [classname lowercaseString]];
-                    [result appendFormat:@"\t});\n"];
-                    [result appendFormat:@"\treturn %@ShareObject;\n", [classname lowercaseString]];
+                    [result appendString:@"\t\t\t\t};\n"];
                     [result appendFormat:@"}\n"];
                 }
                     break;
