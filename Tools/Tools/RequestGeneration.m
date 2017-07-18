@@ -302,32 +302,36 @@ static NSDictionary *configDictionary;
                     [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n", configDictionary[@"filename"], processString];
                     }
                     else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n", configDictionary[@"filename"], processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n", configDictionary[@"filename"], processString];
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
                         [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[NSString stringWithFormat:@\"%%@%%@\", BASE_URL, baseurl] parameters:PH_UploadParams(params)  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"]];
                         
                         [result appendFormat:@"\t}\n"];
                         [result appendFormat:@"\tprogress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t}", processString];
-                        [result appendFormat:@" success:^(NSURLSessionDataTask * _Nonnull task, id _Nullable result) {\n"];
+                        [result appendFormat:@" success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n"];
                     }
                     
                     [result appendFormat:@"\t\t%@[SVProgressHUD dismiss];\n", processString];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
                     [result appendFormat:@"\t\t%@ *info;\n", returnType];
                     if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
-                        [result appendString:@"\t\tNSDictionary *res = [[XMLDictionaryParser sharedInstance] dictionaryWithParser:result];\n"];
-                        [result appendFormat:@"\t\tinfo = [%@ mj_objectWithKeyValues:res];\n", returnType];
+                        [result appendString:@"\t\tresult = [[XMLDictionaryParser sharedInstance] dictionaryWithParser:result];\n"];
                     }
                     else if ([configDictionary[@"response"] isEqualToString:@"json"]){
-                        [result appendFormat:@"\t\tinfo = [%@ mj_objectWithKeyValues:PH_HandleResponse(result)];\n", returnType];
                     }
-                    
-                    [result appendString:@"\t\tsuccess(task, info);\n"];
+                    [result appendString:@"\t\tresult = PH_HandleResponse(result);\n"];
+                    [result appendString:@"\t\tif (result && result.allKeys.count > 0) {\n"];
+                    [result appendFormat:@"\t\t\tinfo = [%@ mj_objectWithKeyValues:result];\n", returnType];
+                    [result appendString:@"\t\t\tif (info) {\n"];
+                    [result appendString:@"\t\t\t\tsuccess(task, info);\n"];
+                    [result appendString:@"\t\t\t}\n"];
+                    [result appendString:@"\t\t}\n"];
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {\n"];
+                    [result appendString:@"\t\tPHLogError(@\"%@\", task);\n"];
                     [result appendString:@"\t\t[WToast showWithText:@\"网络异常\"];\n"];
                     [result appendFormat:@"\t\t%@[SVProgressHUD dismiss];\n", processString];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
