@@ -67,7 +67,6 @@ static NSDictionary *configDictionary;
                 if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                     [result appendString:@"#import <XMLDictionary/XMLDictionary.h>\n"];
                 }
-                [result appendString:@"#import <WToast/WToast.h>\n"];
                 [result appendFormat:@"#import <SVProgressHUD/SVProgressHUD.h>\n"];
             }
             else {
@@ -75,7 +74,6 @@ static NSDictionary *configDictionary;
                 if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                     [result appendString:@"#import \"XMLDictionary.h\"\n"];
                 }
-                [result appendString:@"#import \"WToast.h\"\n"];
                 [result appendFormat:@"#import \"SVProgressHUD.h\"\n"];
                 [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
             }
@@ -332,7 +330,7 @@ static NSDictionary *configDictionary;
                     [result appendString:@"\t\t}\n"];
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {\n"];
                     [result appendString:@"\t\tPHLogError(@\"%@\", task);\n"];
-                    [result appendString:@"\t\t[WToast showWithText:@\"网络异常\"];\n"];
+                    [result appendString:@"\t\t[SVProgressHUD showErrorWithStatus:@\"网络异常\"];\n"];
                     [result appendFormat:@"\t\t%@[SVProgressHUD dismiss];\n", processString];
                     [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
                     [result appendFormat:@"\t\tfailure(task, error);\n"];
