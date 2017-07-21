@@ -303,7 +303,7 @@ typedef NS_ENUM(NSUInteger, Code) {
                         }
                     }
                     else if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
-                        if ([type rangeOfString:@"*"].location == NSNotFound) {
+                        if ([[Utils modelTypeConvertDictionary][[type lowercaseString]] rangeOfString:@"*"].location == NSNotFound) {
                             [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                         } else {
                             [result appendFormat:@"@property (readwrite, nonatomic, strong) %@ %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
