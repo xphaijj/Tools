@@ -160,8 +160,6 @@ static NSDictionary *configDictionary;
     NSString *regexRequest = @"request (get|post|upload|iget|ipost|iupload)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     
-    
-    
     @autoreleasepool {
         for (NSArray *items in requestList) {
             NSString *requestType = @"get";
@@ -401,37 +399,25 @@ static NSDictionary *configDictionary;
             case TYPE_METHOD:
             {
                 if ([style isEqualToString:@"repeated"]) {
-//#warning 上传数组的处理
-                    [result appendFormat:@" %@:(NSArray *)%@List", fieldname, fieldname];
+                    if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
+                        [result appendFormat:@" %@:(NSArray<%@> * _Nonnull)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                    } else {
+                        [result appendFormat:@" %@:(NSArray<%@ *> * _Nonnull)%@", fieldname, type, fieldname];
+                    }
                 }
                 else if ([style isEqualToString:@"class"]) {
                     [result appendFormat:@" %@:(%@ *)%@", fieldname, type, fieldname];
                 }
+                else if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]){
+                    if ([[Utils modelTypeConvertDictionary][[type lowercaseString]] rangeOfString:@"*"].location == NSNotFound) {
+                        [result appendFormat:@" %@:(%@)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                    } else {
+                        [result appendFormat:@" %@:(%@ _Nullable)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                    }
+                }
                 else {
-                    if (IS_BASE_TYPE(type)) {
-                        if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
-                            [result appendFormat:@" %@:(NSInteger)%@", fieldname, fieldname];
-                        }
-                        else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
-                            [result appendFormat:@" %@:(CGFloat)%@", fieldname, fieldname];
-                        }
-                        else if ([[type lowercaseString] isEqualToString:@"long"]) {
-                            [result appendFormat:@" %@:(long long)%@", fieldname, fieldname];
-                        }
-                        else if ([[type lowercaseString] isEqualToString:@"bool"]) {
-                            [result appendFormat:@" %@:(BOOL)%@", fieldname, fieldname];
-                        }
-                        else  {
-                        }
-                    }
-                    else if ([type isEqualToString:@"string"]){
-                        [result appendFormat:@" %@:(NSString * _Nullable)%@", fieldname, fieldname];
-                    }
-                    else {
-#warning 非简单数据类型的处理 包含枚举类型和model类型
-                        //首先 区分开枚举类型与数据类型   所有的枚举类型  使用整型替代
-                        [result appendFormat:@" %@:(%@ * _Nullable)%@", fieldname, type, fieldname];
-                    }
+                    //首先 区分开枚举类型与数据类型   所有的枚举类型  使用整型替代
+                    [result appendFormat:@" %@:(%@ * _Nullable)%@", fieldname, type, fieldname];
                 }
             }
                 break;
@@ -457,8 +443,7 @@ static NSDictionary *configDictionary;
                     case TYPE_REQUEST:
                     {
                         if ([style isEqualToString:@"repeated"]) {
-//#warning 上传数组的处理
-                            [result appendFormat:@"\t[params setObj:[%@List componentsJoinedByString:@\",\"] forKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\t[params setObj:%@ forKey:@\"%@\"];\n", fieldname, keyname];
                         }
                         else if ([style isEqualToString:@"class"]) {
                             [result appendFormat:@"\t[params addEntriesFromDictionary:[%@ dictionaryValue]];\n", fieldname];

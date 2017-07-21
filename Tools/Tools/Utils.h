@@ -31,6 +31,7 @@ typedef enum MethodType {//方法类型
     TYPE_PROPERTY,//属性解析
     TYPE_INIT,//初始化
     TYPE_KEYMAPPER,//静态方法
+    TYPE_CLASS_IN_ARRAY,//数组中类的映射
     
     TYPE_ADD,//增加
     TYPE_DEL,//删除
@@ -56,6 +57,12 @@ typedef enum TypeIndex {//增删改查 的选择索引
 
 @interface Utils : NSObject
 
+/**
+ model类型转化字典
+
+ @return 类型转化字典
+ */
++ (NSDictionary *)modelTypeConvertDictionary;
 /**
  * @brief  为文件创建版权
  * @prama  filename:需要创建版权的文件名

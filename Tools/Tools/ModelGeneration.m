@@ -210,6 +210,7 @@ typedef NS_ENUM(NSUInteger, Code) {
     [result appendString:[self propertyFromContents:modelClass fileType:fileType]]; //属性的生成
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_INIT]];//初始化方法
     [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_KEYMAPPER]];
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_CLASS_IN_ARRAY]];
     
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
@@ -294,28 +295,19 @@ typedef NS_ENUM(NSUInteger, Code) {
                 case TYPE_PROPERTY:
                 {
                     [result appendString:[Utils note:notes]];//添加注释
-                    if ([style isEqualToString:@"repeated"]) {//数组类型单独处理
-                        [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray *%@List;\n", fieldname];
+                    if ([style isEqualToString:@"repeated"]) {
+                        if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
+                            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray<%@> * %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                        } else {
+                            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray<%@ *> * %@;\n", type, fieldname];
+                        }
                     }
-                    else if (IS_BASE_TYPE(type)) {//数据的基本类型 int | float | double | bool
-                        if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"]) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) NSInteger %@;\n", fieldname];
+                    else if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
+                        if ([type rangeOfString:@"*"].location == NSNotFound) {
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                        } else {
+                            [result appendFormat:@"@property (readwrite, nonatomic, strong) %@ %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                         }
-                        else if ([[type lowercaseString] isEqualToString:@"float"] || [[type lowercaseString] isEqualToString:@"double"]) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) CGFloat %@;\n", fieldname];
-                        }
-                        else if([[type lowercaseString] isEqualToString:@"long"]) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) long long %@;\n", fieldname];
-                        }
-                        else if ([[type lowercaseString] isEqualToString:@"bool"]){
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) BOOL %@;\n", fieldname];
-                        }
-                        else {}
-                        
-                        
-                    }
-                    else if ([[type lowercaseString] isEqualToString:@"string"]){
-                        [result appendFormat:@"@property (readwrite, nonatomic, strong) NSString *%@;\n", fieldname];
                     }
                     else if ([enumList containsObject:type]) {//枚举类型
                         [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;\n", type, fieldname];
@@ -333,6 +325,10 @@ typedef NS_ENUM(NSUInteger, Code) {
                 {
                 }
                     break;
+                case TYPE_CLASS_IN_ARRAY:
+                {
+                }
+                    break;
                     
                 default:
                     break;
@@ -345,22 +341,17 @@ typedef NS_ENUM(NSUInteger, Code) {
             switch (methodType) {
                 case TYPE_PROPERTY:
                 {
-                    if ([style isEqualToString:@"repeated"]) {
-                        [result appendFormat:@"@synthesize %@List;\n", fieldname];
-                    }
-                    else {
-                        [result appendFormat:@"@synthesize %@;\n", fieldname];
-                    }
+                    [result appendFormat:@"@synthesize %@;\n", fieldname];
                 }
                     break;
                 case TYPE_INIT:
                 {
                     if ([[style lowercaseString] isEqualToString:@"repeated"]) {
                         if ([defaultValue isEqualToString:@"nil"] || [defaultValue isEqualToString:@"0"]) {
-                            [result appendFormat:@"\t\tself.%@List = [[NSMutableArray alloc] init];\n", fieldname];
+                            [result appendFormat:@"\t\tself.%@ = [[NSMutableArray alloc] init];\n", fieldname];
                         }
                         else {
-                            [result appendFormat:@"\t\tself.%@List = [[NSMutableArray alloc] initWithArray:[%@ componentsSeparatedByString:@\",\"]];\n", fieldname, defaultValue];
+                            [result appendFormat:@"\t\tself.%@ = [[NSMutableArray alloc] initWithArray:[%@ componentsSeparatedByString:@\",\"]];\n", fieldname, defaultValue];
                         }
                     }
                     else if (IS_BASE_TYPE(type)) {
@@ -400,6 +391,13 @@ typedef NS_ENUM(NSUInteger, Code) {
                             [result appendFormat:@"@\"%@\"", singleKeyname];
                         }
                         [result appendFormat:@"],\n"];
+                    }
+                }
+                    break;
+                case TYPE_CLASS_IN_ARRAY:
+                {
+                    if ([style isEqualToString:@"repeated"]) {
+                        [result appendFormat:@"\t\t\t@\"%@\":@\"%@\",\n", fieldname, type];
                     }
                 }
                     break;
@@ -448,6 +446,10 @@ typedef NS_ENUM(NSUInteger, Code) {
                 {
                 }
                     break;
+                case TYPE_CLASS_IN_ARRAY:
+                {
+                }
+                    break;
                     
                 default:
                     break;
@@ -475,6 +477,15 @@ typedef NS_ENUM(NSUInteger, Code) {
                 case TYPE_KEYMAPPER:
                 {
                     [result appendFormat:@"+ (NSDictionary *)ph_keyMapper {\n"];
+                    [result appendString:@"\treturn @{\n"];
+                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
+                    [result appendString:@"\t\t\t\t};\n"];
+                    [result appendFormat:@"}\n"];
+                }
+                    break;
+                case TYPE_CLASS_IN_ARRAY:
+                {
+                    [result appendFormat:@"+ (NSDictionary *)ph_classInArray {\n"];
                     [result appendString:@"\treturn @{\n"];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
                     [result appendString:@"\t\t\t\t};\n"];

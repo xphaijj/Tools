@@ -11,10 +11,35 @@
 @implementation Utils
 
 /**
+ model类型转化字典
+ 
+ @return 类型转化字典
+ */
++ (NSDictionary *)modelTypeConvertDictionary {
+    return @{
+             @"bool":@"BOOL",
+             @"byte":@"Byte",
+             @"char":@"Char",
+             @"short":@"NSInteger",
+             @"int":@"NSInteger",
+             @"long":@"NSInteger",
+             @"long long":@"long long",
+             @"longlong":@"long long",
+             @"time":@"long long",
+             @"float":@"CGFloat",
+             @"double":@"CGFloat",
+             @"string":@"NSString *",
+             @"list":@"NSMutableArray *",
+             @"array":@"NSMutableArray *",
+             @"map":@"NSMutableDictionary *",
+             @"dic":@"NSMutableDictionary *"};
+}
+/**
  * @brief  为文件创建版权
  * @prama  filename:需要创建版权的文件名
  */
 +(NSString *)createCopyrightByFilename:(NSString *)filename config:(NSDictionary *)config{
+    
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.dateFormat = @"yyyy/MM/dd";
     
