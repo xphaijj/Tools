@@ -41,6 +41,9 @@ typedef enum MethodType {//方法类型
     
 #pragma mark ++ Request
     TYPE_NOTES,//获取注释
+    TYPE_RACSIGNAL,//订阅者模式
+    TYPE_NORMALREQUEST,//普通网络请求
+    TYPE_NORMALRAC,//订阅者普通网络请求
     TYPE_METHOD,//获取方法名
     TYPE_REQUEST,//网络请求的实现
 }MethodType;

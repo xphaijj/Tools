@@ -59,34 +59,38 @@
 /**
  * @brief  单个model的解析
  * @prama  contentsList:所有属性列表
+ * @prama  keypath:model的基础路径
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  methodType:方法类别
  */
-+ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType;
++ (NSString *)allPropertys:(NSArray *)contentsList keypath:(NSString *)keypath fileType:(FileType)fileType methodType:(MethodType)methodType;
 
 /**
  * @brief  单个model的所有property解析
  * @prama  contents:单个model的所有属性
+ * @prama  keypath:model的基础路径
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)propertyFromContents:(NSString *)contents fileType:(FileType)fileType;
++ (NSString *)propertyFromContents:(NSString *)contents keypath:(NSString *)keypath fileType:(FileType)fileType;
 
 /**
  * @brief  解析单条属性
  * @prama  fields:单条属性的所有字段
+ * @prama  keypath:model的基础路径
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  methodType:方法类别 多个方法解析
  */
-+ (NSString *)singleProperty:(NSArray *)fields fileType:(FileType)fileType methodType:(MethodType)methodType;
++ (NSString *)singleProperty:(NSArray *)fields keypath:(NSString *)keypath fileType:(FileType)fileType methodType:(MethodType)methodType;
 
 /**
  * @brief  方法的生成
  * @prama  classname:类名
+ * @prama  keypath:key的基础路径
  * @prama  contents:单个的model列表
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  methodType:方法类别 多个方法解析
  */
-+ (NSString *)methodWithClass:(NSString *)classname contents:(NSString *)contents FileType:(FileType)fileType methodType:(MethodType)methodType;
++ (NSString *)methodWithClass:(NSString *)classname keypath:(NSString *)keypath contents:(NSString *)contents FileType:(FileType)fileType methodType:(MethodType)methodType;
 
 
 

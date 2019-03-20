@@ -62,15 +62,16 @@ static NSDictionary *configDictionary;
         {
             [result appendFormat:@"#import <UIKit/UIKit.h>\n"];
             [result appendFormat:@"#import <Foundation/Foundation.h>\n"];
-            [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
-            [result appendFormat:@"#import <MJExtension/MJExtension.h>\n"];
-            [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n\n\n"];
+            [result appendFormat:@"#import \"BaseCollection.h\"\n"];
         }
             break;
             
         case M_FILE:
         {
-            [result appendFormat:@"#import \"%@Model.h\"", configDictionary[@"filename"]];
+            [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
+            [result appendFormat:@"#import <MJExtension/MJExtension.h>\n"];
+            [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n"];
+            [result appendFormat:@"#import \"PHRequest.h\"\n"];
         }
             break;
         default:
@@ -185,6 +186,13 @@ typedef NS_ENUM(NSUInteger, Code) {
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSString *classname = [contents objectAtIndex:2];//获取类名称
+    NSString *nameRegex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
+    NSArray *classnameList = [[classname arrayOfCaptureComponentsMatchedByRegex:nameRegex] firstObject];
+    NSString *keypath = nil;
+    if (classnameList.count >= 3) {
+        classname = classnameList[1];
+        keypath = classnameList[2];
+    }
     NSString *superClassname = [contents objectAtIndex:4];//获取父类名称
     if (superClassname.length == 0) {
         superClassname = @"YLT_BaseModel";
@@ -207,10 +215,10 @@ typedef NS_ENUM(NSUInteger, Code) {
     }
     
     NSString *modelClass = [contents objectAtIndex:5];//获取属性
-    [result appendString:[self propertyFromContents:modelClass fileType:fileType]]; //属性的生成
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_INIT]];//初始化方法
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_KEYMAPPER]];
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_CLASS_IN_ARRAY]];
+    [result appendString:[self propertyFromContents:modelClass keypath:keypath fileType:fileType]]; //属性的生成
+    [result appendString:[self methodWithClass:classname keypath:keypath contents:modelClass FileType:fileType methodType:TYPE_INIT]];//初始化方法
+    [result appendString:[self methodWithClass:classname keypath:keypath contents:modelClass FileType:fileType methodType:TYPE_KEYMAPPER]];
+    [result appendString:[self methodWithClass:classname keypath:keypath contents:modelClass FileType:fileType methodType:TYPE_CLASS_IN_ARRAY]];
     
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
@@ -221,9 +229,10 @@ typedef NS_ENUM(NSUInteger, Code) {
 /**
  * @brief  单个model的所有property解析
  * @prama  contents:单个model的所有属性
+ * @prama  keypath:model的基础路径
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)propertyFromContents:(NSString *)contents fileType:(FileType)fileType
++ (NSString *)propertyFromContents:(NSString *)contents keypath:(NSString *)keypath fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSMutableArray *contentsList = (NSMutableArray *)[contents componentsSeparatedByString:@"\n"];
@@ -231,7 +240,7 @@ typedef NS_ENUM(NSUInteger, Code) {
     [contentsList removeObjectAtIndex:0];
     [contentsList removeLastObject];
     
-    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_PROPERTY]];
+    [result appendString:[self allPropertys:contentsList keypath:keypath fileType:fileType methodType:TYPE_PROPERTY]];
     
     return result;
 }
@@ -239,11 +248,11 @@ typedef NS_ENUM(NSUInteger, Code) {
 /**
  * @brief  单个model的解析
  * @prama  contentsList:所有属性列表
+ * @prama  keypath:model的基础路径
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  methodType:方法类别
  */
-+ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType
-{
++ (NSString *)allPropertys:(NSArray *)contentsList keypath:(NSString *)keypath fileType:(FileType)fileType methodType:(MethodType)methodType {
     NSMutableString *result = [[NSMutableString alloc] init];
     for (NSString *propertyString in contentsList) {
         NSString *regex = @"^(?:[\\s]*)(primary|required|optional|repeated)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
@@ -257,7 +266,7 @@ typedef NS_ENUM(NSUInteger, Code) {
         if (fields.count < 6) {
             continue;
         }
-        [result appendString:[self singleProperty:fields fileType:fileType methodType:methodType]];
+        [result appendString:[self singleProperty:fields keypath:keypath fileType:fileType methodType:methodType]];
         
     }
     return result;
@@ -266,11 +275,11 @@ typedef NS_ENUM(NSUInteger, Code) {
 /**
  * @brief  解析单条属性
  * @prama  fields:单条属性的所有字段
+ * @prama  keypath:model的基础路径
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  methodType:方法类别 多个方法解析
  */
-+ (NSString *)singleProperty:(NSArray *)fields fileType:(FileType)fileType methodType:(MethodType)methodType
-{
++ (NSString *)singleProperty:(NSArray *)fields keypath:(NSString *)keypath fileType:(FileType)fileType methodType:(MethodType)methodType {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSString *style = [fields objectAtIndex:1];//required | optional | repeated | primary...
     NSString *type = [fields objectAtIndex:2];//数据类型 string | int | float | double ....
@@ -297,16 +306,16 @@ typedef NS_ENUM(NSUInteger, Code) {
                     [result appendString:[Utils note:notes]];//添加注释
                     if ([style isEqualToString:@"repeated"]) {
                         if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray<%@> * %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray<%@> *%@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                         } else {
-                            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray<%@ *> * %@;\n", type, fieldname];
+                            [result appendFormat:@"@property (readwrite, nonatomic, strong) NSMutableArray<%@ *> *%@;\n", type, fieldname];
                         }
                     }
                     else if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
-                        if ([[Utils modelTypeConvertDictionary][[type lowercaseString]] rangeOfString:@"*"].location == NSNotFound) {
-                            [result appendFormat:@"@property (readwrite, nonatomic, assign) %@ %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                        if ([[Utils modelTypeConvertDictionary][[type lowercaseString]] rangeOfString:@"*"].location == NSNotFound && ![[type lowercaseString] isEqualToString:@"id"] && ![[Utils modelTypeConvertDictionary][[type lowercaseString]] isEqualToString:@"id "]) {
+                            [result appendFormat:@"@property (readwrite, nonatomic, assign) %@%@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                         } else {
-                            [result appendFormat:@"@property (readwrite, nonatomic, strong) %@ %@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                            [result appendFormat:@"@property (readwrite, nonatomic, strong) %@%@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                         }
                     }
                     else if ([enumList containsObject:type]) {//枚举类型
@@ -373,13 +382,30 @@ typedef NS_ENUM(NSUInteger, Code) {
                         [result appendFormat:@"\t\tself.%@ = %@;\n", fieldname, defaultValue];
                     }
                     else {
-                        [result appendFormat:@"\t\tself.%@ = [[%@ alloc] init];\n", fieldname, type];
+                        [result appendFormat:@"\t\tself.%@ = nil;\n", fieldname];
                     }
                 }
                     break;
                 case TYPE_KEYMAPPER:
                 {
-                    if (![fieldname isEqualToString:keyname]) {
+                    keypath = [keypath stringByReplacingOccurrencesOfString:@"(" withString:@""];
+                    keypath = [keypath stringByReplacingOccurrencesOfString:@")" withString:@""];
+                    if (keypath.length != 0) {
+                        if ([fieldname isEqualToString:keyname]) {
+                            [result appendFormat:@"\t\t\t@\"%@\":@[@\"%@.%@\"],\n", fieldname, keypath, fieldname];
+                        } else {
+                            [result appendFormat:@"\t\t\t@\"%@\":@[", fieldname];
+                            NSArray *keyNames = [keyname componentsSeparatedByString:@","];
+                            for (int i = 0; i < keyNames.count; i++) {
+                                NSString *singleKeyname = keyNames[i];
+                                if (i != 0) {
+                                    [result appendFormat:@","];
+                                }
+                                [result appendFormat:@"@\"%@.%@\"", keypath, singleKeyname];
+                            }
+                            [result appendFormat:@"],\n"];
+                        }
+                    } else if (![fieldname isEqualToString:keyname]) {
                         [result appendFormat:@"\t\t\t@\"%@\":@[", fieldname];
                         NSArray *keyNames = [keyname componentsSeparatedByString:@","];
                         for (int i = 0; i < keyNames.count; i++) {
@@ -417,11 +443,12 @@ typedef NS_ENUM(NSUInteger, Code) {
 /**
  * @brief  方法的生成
  * @prama  classname:类名
+ * @prama  keypath:key的基础路径
  * @prama  contents:单个的model列表
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  methodType:方法类别 多个方法解析
  */
-+ (NSString *)methodWithClass:(NSString *)classname contents:(NSString *)contents FileType:(FileType)fileType methodType:(MethodType)methodType;
++ (NSString *)methodWithClass:(NSString *)classname keypath:(NSString *)keypath contents:(NSString *)contents FileType:(FileType)fileType methodType:(MethodType)methodType;
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSMutableArray *contentsList = (NSMutableArray *)[contents componentsSeparatedByString:@"\n"];
@@ -467,7 +494,7 @@ typedef NS_ENUM(NSUInteger, Code) {
                     [result appendString:@"\n- (id)init {\n"];
                     [result appendString:@"\tself = [super init];\n"];
                     [result appendString:@"\tif (self) {\n"];
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
+                    [result appendString:[self allPropertys:contentsList keypath:keypath fileType:fileType methodType:methodType]];
                     [result appendString:@"\t}\n"];
                     [result appendString:@"\treturn self;\n"];
                     [result appendString:@"}\n\n"];
@@ -475,19 +502,23 @@ typedef NS_ENUM(NSUInteger, Code) {
                     break;
                 case TYPE_KEYMAPPER:
                 {
-                    [result appendFormat:@"+ (NSDictionary *)YLT_KeyMapper {\n"];
-                    [result appendString:@"\treturn @{\n"];
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
-                    [result appendString:@"\t\t\t\t};\n"];
+                    [result appendFormat:@"+ (NSDictionary *)ylt_keyMapper {\n"];
+                    [result appendFormat:@"\tNSMutableDictionary *result = [super ylt_keyMapper].mutableCopy;\n"];
+                    [result appendFormat:@"\t[result addEntriesFromDictionary: @{\n"];
+                    [result appendString:[self allPropertys:contentsList keypath:keypath fileType:fileType methodType:methodType]];
+                    [result appendString:@"\t\t\t\t}];\n"];
+                    [result appendFormat:@"\treturn result;\n"];
                     [result appendFormat:@"}\n\n"];
                 }
                     break;
                 case TYPE_CLASS_IN_ARRAY:
                 {
-                    [result appendFormat:@"+ (NSDictionary *)YLT_ClassInArray {\n"];
-                    [result appendString:@"\treturn @{\n"];
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType]];
-                    [result appendString:@"\t\t\t\t};\n"];
+                    [result appendFormat:@"+ (NSDictionary *)ylt_classInArray {\n"];
+                    [result appendFormat:@"\tNSMutableDictionary *result = [super ylt_classInArray].mutableCopy;\n"];
+                    [result appendFormat:@"\t[result addEntriesFromDictionary: @{\n"];
+                    [result appendString:[self allPropertys:contentsList keypath:keypath fileType:fileType methodType:methodType]];
+                    [result appendString:@"\t\t\t\t}];\n"];
+                    [result appendFormat:@"\treturn result;\n"];
                     [result appendFormat:@"}\n"];
                 }
                     break;

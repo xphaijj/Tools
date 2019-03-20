@@ -18,6 +18,11 @@ static NSDictionary *configDictionary;
 + (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath config:(NSDictionary *)config
 {
     configDictionary = config;
+    if (![configDictionary.allKeys containsObject:@"baseurl"]) {
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] initWithDictionary:configDictionary];
+        [dic setObject:@NO forKey:@"baseurl"];
+        configDictionary = [dic copy];
+    }
     NSError *error;
     NSString *sourceString = [[NSString alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForAuxiliaryExecutable:sourcepath] encoding:NSUTF8StringEncoding error:&error];
     
@@ -49,7 +54,7 @@ static NSDictionary *configDictionary;
     [m appendString:[self messageFromSourceString:sourceString fileType:M_FILE]];
     
     
-    [h appendFormat:@"#pragma clang diagnostic pop\n"];
+    [h appendFormat:@"\n#pragma clang diagnostic pop\n"];
     [m appendFormat:@"#pragma clang diagnostic pop\n"];
     [h appendFormat:@"\n@end\n\n\n"];
     [m appendFormat:@"\n@end\n\n\n"];
@@ -68,30 +73,28 @@ static NSDictionary *configDictionary;
     switch (fileType) {
         case H_FILE:
         {
+            [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n"];
+            [result appendFormat:@"#import <ReactiveObjC/ReactiveObjC.h>\n"];
+            [result appendFormat:@"#import <AFNetworking/AFNetworking.h>\n"];
+            [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
+        }
+            break;
+        case M_FILE:
+        {
+            [result appendFormat:@"#import \"PHRequest.h\"\n"];
+            [result appendFormat:@"#import \"%@Request.h\"\n", configDictionary[@"filename"]];
             if ([configDictionary[@"pods"] boolValue]) {
                 [result appendString:@"#import <AFNetworking/AFNetworking.h>\n"];
                 if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                     [result appendString:@"#import <XMLDictionary/XMLDictionary.h>\n"];
                 }
-                [result appendFormat:@"#import <SVProgressHUD/SVProgressHUD.h>\n"];
             }
             else {
                 [result appendString:@"#import \"AFNetworking.h\"\n"];
                 if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                     [result appendString:@"#import \"XMLDictionary.h\"\n"];
                 }
-                [result appendFormat:@"#import \"SVProgressHUD.h\"\n"];
-                [result appendFormat:@"#import \"NSDictionary+Safe.h\"\n"];
             }
-            [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n"];
-            [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
-            
-        }
-            break;
-        case M_FILE:
-        {
-            [result appendFormat:@"#import \"PHTools.h\"\n"];
-            [result appendFormat:@"#import \"%@Request.h\"\n", configDictionary[@"filename"]];
         }
             break;
             
@@ -112,12 +115,10 @@ static NSDictionary *configDictionary;
     switch (fileType) {
         case H_FILE:
         {
-            [result appendFormat:@"\n\n@interface %@Request : AFHTTPSessionManager {\n", configDictionary[@"filename"]];
+            [result appendFormat:@"\n\n@interface %@Request : NSObject {\n", configDictionary[@"filename"]];
             [result appendFormat:@"}\n"];
             [result appendFormat:@"#pragma clang diagnostic push\n"];
             [result appendFormat:@"#pragma clang diagnostic ignored \"-Wdocumentation\"\n"];
-            [result appendFormat:@"\n+ (instancetype _Nonnull)sharedClient;\n"];
-            [result appendFormat:@"+ (void)resetClient;\n\n\n"];
         }
             break;
         case M_FILE:
@@ -125,37 +126,6 @@ static NSDictionary *configDictionary;
             [result appendFormat:@"\n@implementation %@Request\n", configDictionary[@"filename"]];
             [result appendFormat:@"#pragma clang diagnostic push\n"];
             [result appendFormat:@"#pragma clang diagnostic ignored \"-Wundeclared-selector\"\n"];
-            [result appendFormat:@"\nstatic %@Request *_sharedClient;\n", configDictionary[@"filename"]];
-            [result appendFormat:@"+ (instancetype _Nonnull)sharedClient {\n"];
-            [result appendFormat:@"\tstatic dispatch_once_t onceToken;\n"];
-            [result appendFormat:@"\tdispatch_once(&onceToken, ^{ \n"];
-            [result appendFormat:@"\t\t[self resetClient];\n"];
-            [result appendFormat:@"\t});\n"];
-            [result appendFormat:@"\tif ([self respondsToSelector:@selector(configRequest:)]) {\n"];
-            [result appendFormat:@"\t\t[self performSelector:@selector(configRequest:) withObject:_sharedClient];\n"];
-            [result appendFormat:@"\t}\n"];
-            [result appendFormat:@"\treturn _sharedClient;\n"];
-            [result appendFormat:@"}\n\n"];
-            
-            [result appendFormat:@"+ (void)resetClient {\n"];
-            [result appendFormat:@"\t_sharedClient = [[%@Request alloc] initWithBaseURL:[NSURL URLWithString:HOST_NAME]];\n", configDictionary[@"filename"]];
-            [result appendFormat:@"\t_sharedClient.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];\n"];
-            if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
-                [result appendFormat:@"\t_sharedClient.responseSerializer = [AFXMLParserResponseSerializer serializer];//申明返回的结果是json类型\n"];
-            }
-            else if ([configDictionary[@"response"] isEqualToString:@"json"]){
-                [result appendFormat:@"\t_sharedClient.responseSerializer = [AFJSONResponseSerializer serializer];//申明返回的结果是json类型\n"];
-            }
-            if ([configDictionary.allKeys containsObject:@"content_type"]) {
-                [result appendFormat:@"\t_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"%@\"];//如果报接受类型不一致请替换一致text/html或别的\n", configDictionary[@"content_type"]];
-            }
-            else {
-                [result appendFormat:@"\t_sharedClient.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@\"text/html\"];//如果报接受类型不一致请替换一致text/html或别的\n"];
-            }
-            if ([configDictionary[@"request"] isEqualToString:@"json"]) {
-                [result appendFormat:@"\t_sharedClient.requestSerializer = [AFJSONRequestSerializer serializer];//申明请求的数据是json类型\n"];
-            }
-            [result appendFormat:@"}\n\n\n"];
         }
             break;
             
@@ -174,7 +144,7 @@ static NSDictionary *configDictionary;
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     
     @autoreleasepool {
@@ -184,17 +154,22 @@ static NSDictionary *configDictionary;
             NSString *interface = [items objectAtIndex:2];
             
             NSString *returnType = [items objectAtIndex:3];
+            if ([returnType isEqualToString:@"nil"]) {
+                returnType = @"BaseCollection";
+            }
             NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
             
             [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES]];
             [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD]];
             [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST]];
-            
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC]];
         }
     }
     
     /// 匹配带路径的网络请求
-    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -203,12 +178,18 @@ static NSDictionary *configDictionary;
             NSString *interface = [items objectAtIndex:2];
             
             NSString *returnType = [items objectAtIndex:3];
+            if ([returnType isEqualToString:@"nil"]) {
+                returnType = @"BaseCollection";
+            }
             NSString *baseUrl = [items objectAtIndex:4];
             NSArray *contents = [[items objectAtIndex:5] componentsSeparatedByString:@"\n"];
             
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES]];
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD]];
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC]];
             
         }
     }
@@ -229,6 +210,9 @@ static NSDictionary *configDictionary;
 + (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
+    NSMutableString *res1 = [[NSMutableString alloc] init];
+    NSMutableString *res2 = [[NSMutableString alloc] init];
+    NSMutableString *res3 = [[NSMutableString alloc] init];
     
     NSMutableString *interfacename = (NSMutableString *)interface;
     NSString *regex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
@@ -251,10 +235,50 @@ static NSDictionary *configDictionary;
             [result appendFormat:@" **/\n"];
         }
             break;
-            
+        
+        case TYPE_NORMALREQUEST:
+        case TYPE_NORMALRAC: {
+            if (methodType == TYPE_NORMALREQUEST) {
+                if ([configDictionary[@"baseurl"] boolValue]) {
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                } else {
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                }
+            } else {
+                if ([configDictionary[@"baseurl"] boolValue]) {
+                    [result appendFormat:@"+(RACSignal *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                } else {
+                    [result appendFormat:@"+(RACSignal *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                }
+            }
+            //判断是否是上传接口  上传接口需要提取出来单独处理
+            if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
+                [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
+            }
+            [result appendFormat:@" iparams:(NSDictionary *)iparams"];
+            if (methodType == TYPE_NORMALREQUEST) {
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+            } else {
+                [result appendFormat:@";"];
+            }
+        }
+            break;
         case TYPE_METHOD:
+        case TYPE_RACSIGNAL:
         {
-            [result appendFormat:@"+(NSURLSessionDataTask * _Nonnull)%@RequestUrl:(NSString * _Nullable)baseurl", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+            if (methodType == TYPE_METHOD) {
+                if ([configDictionary[@"baseurl"] boolValue]) {
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                } else {
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                }
+            } else {
+                if ([configDictionary[@"baseurl"] boolValue]) {
+                    [result appendFormat:@"+(RACSignal *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                } else {
+                    [result appendFormat:@"+(RACSignal *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                }
+            }
             
             //判断是否是上传接口  上传接口需要提取出来单独处理
             if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
@@ -285,22 +309,29 @@ static NSDictionary *configDictionary;
                     NSString *defaultValue = [fields objectAtIndex:4];
                     NSString *notes = [fields objectAtIndex:5];
                     
-                    [result appendFormat:@" formDataBlock:(void(^ _Nullable)(id<AFMultipartFormData> _Nullable formData))formDataBlock"];
+                    [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                 }
             }
             else if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
             }
             else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
-            } else if ([requestType isEqualToString:@"put"] || [requestType isEqualToString:@"iput"]) {
-            } else if ([requestType isEqualToString:@"delete"] || [requestType isEqualToString:@"idelete"]) {
+            }
+            else if ([requestType isEqualToString:@"patch"] || [requestType isEqualToString:@"ipatch"]) {
+            }
+            else if ([requestType isEqualToString:@"put"] || [requestType isEqualToString:@"iput"]) {
+            }
+            else if ([requestType isEqualToString:@"delete"] || [requestType isEqualToString:@"idelete"]) {
             }
             else {
                 NSLog(@"ERROR -- 网络请求接口参数有误");
             }
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
-            [result appendFormat:@" success:(void (^ _Nullable)(NSURLSessionDataTask * _Nonnull task, %@ * _Nullable result))success  failure:(void (^ _Nullable)(NSURLSessionDataTask * _Nonnull task, NSError * _Nonnull error))failure;", returnType];
             
-            
+            if (methodType == TYPE_METHOD) {
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+            } else {
+                [result appendFormat:@";"];
+            }
         }
             break;
         default:
@@ -314,8 +345,11 @@ static NSDictionary *configDictionary;
         {
             switch (methodType) {
                 case TYPE_REQUEST:
+                case TYPE_RACSIGNAL:
+                case TYPE_NORMALREQUEST:
+                case TYPE_NORMALRAC:
                 {
-                    [result appendFormat:@"\n\n"];
+                    [result appendFormat:@"\n"];
                 }
                     break;
                     
@@ -327,70 +361,207 @@ static NSDictionary *configDictionary;
         case M_FILE:
         {
             switch (methodType) {
-                case TYPE_REQUEST:
-                {
-                    NSString *processString = [requestType hasPrefix:@"i"]?@"//":@"";
-                    
+                case TYPE_METHOD: {
+                }
+                    break;
+                case TYPE_RACSIGNAL: {
+                    [res1 appendFormat:@" {\n"];
+                    [res1 appendFormat:@"\t@weakify(self);\n"];
+                    [res1 appendFormat:@"\tRACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {\n"];
+                    [res1 appendFormat:@"\t\t@strongify(self);\n"];
+                    if ([configDictionary[@"baseurl"] boolValue]) {
+                        [res1 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    } else {
+                        [res1 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    }
+                    //判断是否是上传接口  上传接口需要提取出来单独处理
+                    if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
+                        [res1 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
+                    }
+                    [res1 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+                    [res1 appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+                    [res1 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
+                    [res1 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
+                    [res1 appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
+                    [res1 appendFormat:@"\t\t\t[subscriber sendNext:error];\n"];
+                    [res1 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
+                    [res1 appendFormat:@"\t\t}];\n"];
+                    [res1 appendFormat:@"\t\treturn [RACDisposable disposableWithBlock:^{\n"];
+                    [res1 appendFormat:@"\t\t\t[task cancel];\n"];
+                    [res1 appendFormat:@"\t\t}];\n"];
+                    [res1 appendFormat:@"\t}];\n"];
+                    [res1 appendFormat:@"\treturn [signal replayLazily];\n"];
+                    [res1 appendString:@"}\n\n"];
+                    [result appendString:res1];
+                }
+                    break;
+                case TYPE_NORMALRAC: {
+                    [res2 appendFormat:@" {\n"];
+                    [res2 appendFormat:@"\t@weakify(self);\n"];
+                    [res2 appendFormat:@"\tRACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {\n"];
+                    [res2 appendFormat:@"\t\t@strongify(self);\n"];
+                    if ([configDictionary[@"baseurl"] boolValue]) {
+                        [res2 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    } else {
+                        [res2 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    }
+                    //判断是否是上传接口  上传接口需要提取出来单独处理
+                    if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
+                        [res2 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
+                    }
+                    [res2 appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+                    [res2 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
+                    [res2 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
+                    [res2 appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
+                    [res2 appendFormat:@"\t\t\t[subscriber sendNext:error];\n"];
+                    [res2 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
+                    [res2 appendFormat:@"\t\t}];\n"];
+                    [res2 appendFormat:@"\t\treturn [RACDisposable disposableWithBlock:^{\n"];
+                    [res2 appendFormat:@"\t\t\t[task cancel];\n"];
+                    [res2 appendFormat:@"\t\t}];\n"];
+                    [res2 appendFormat:@"\t}];\n"];
+                    [res2 appendFormat:@"\treturn [signal replayLazily];\n"];
+                    [res2 appendString:@"}\n\n"];
+                    [result appendString:res2];
+                }
+                    break;
+                case TYPE_NORMALREQUEST: {
+                    BOOL hideHud = [requestType hasPrefix:@"i"];
                     [result appendFormat:@"{\n"];
                     
-                    [result appendFormat:@"\tvoid (^show)(void) = ^{\n"];
-                    [result appendFormat:@"\t\t%@[SVProgressHUD showProgress:0];\n", processString];
-                    [result appendFormat:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;\n"];
-                    [result appendFormat:@"\t};\n"];
-                    [result appendFormat:@"\tYLT_MAIN(show);\n\n"];
+                    if (!hideHud) {
+                        [result appendFormat:@"\tif (showHUD) {\n"];
+                        [result appendFormat:@"\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
+                        [result appendFormat:@"\t\t\t[PHRequest showRequestHUD];\n"];
+                        [result appendFormat:@"\t\t});\n"];
+                        [result appendFormat:@"\t}\n"];
+                    }
                     
-                    [result appendFormat:@"\tNSMutableDictionary *params = [[NSMutableDictionary alloc] initWithDictionary:([@{@\"action\":@\"%@\"} baseParams])];\n", interfacename];
-                    [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+                    
+                    [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"action\":@\"%@\"}])];\n", interfacename];
+                    [result appendFormat:@"\t[requestParams addEntriesFromDictionary:iparams];\n"];
+                    [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@]];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
+                    [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams]);\n"];
+                    
+                    [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, parameters);\n"];
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] GET:[[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, baseurl] baseURL] parameters:([params uploadParams]) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n", configDictionary[@"filename"], baseURL, processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] GET:baseUrl parameters:parameters progress:^(NSProgress * uploadProgress) {\n", interfacename];
+                        
+                        if (!hideHud) {
+                            [result appendFormat:@"\t\tif (showHUD) {\n"];
+                            [result appendFormat:@"\t\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
+                            [result appendFormat:@"\t\t\t\t[PHRequest showPercentHUD:(((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount))];\n"];
+                            
+                            [result appendFormat:@"\t\t\t});\n"];
+                            [result appendFormat:@"\t\t}\n"];
+                        }
+                        
+                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, baseurl] baseURL] parameters:([params uploadParams]) progress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t} success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n", configDictionary[@"filename"], baseURL, processString];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters progress:^(NSProgress * uploadProgress) {\n", interfacename];
+                        
+                        if (!hideHud) {
+                            [result appendFormat:@"\t\tif (showHUD) {\n"];
+                            [result appendFormat:@"\t\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
+                            [result appendFormat:@"\t\t\t\t[PHRequest showPercentHUD:(((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount))];\n"];
+                            [result appendFormat:@"\t\t\t});\n"];
+                            [result appendFormat:@"\t\t}\n"];
+                        }
+                        
+                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
+                    }
+                    else if ([requestType isEqualToString:@"patch"] || [requestType isEqualToString:@"ipatch"]) {
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PATCH:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] POST:[[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, baseurl] baseURL] parameters:([params uploadParams])  constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", configDictionary[@"filename"], baseURL];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", interfacename];
                         [result appendFormat:@"\t\tif (formDataBlock) {\n"];
                         [result appendFormat:@"\t\t\tformDataBlock(formData);\n"];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendFormat:@"\t}\n"];
-                        [result appendFormat:@"\tprogress:^(NSProgress * _Nonnull uploadProgress) {\n\t\t%@[SVProgressHUD showProgress:((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount)];\n\t}", processString];
-                        [result appendFormat:@" success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n"];
+                        [result appendFormat:@"\tprogress:^(NSProgress * uploadProgress) {\n"];
+                        
+                        if (!hideHud) {
+                            [result appendFormat:@"\t\tif (showHUD) {\n"];
+                            [result appendFormat:@"\t\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
+                            [result appendFormat:@"\t\t\t\t[PHRequest showPercentHUD:(((CGFloat)uploadProgress.completedUnitCount)/((CGFloat)uploadProgress.totalUnitCount))];\n"];
+                            [result appendFormat:@"\t\t\t});\n"];
+                            [result appendFormat:@"\t\t}\n"];
+                        }
+                        
+                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"put"] || [requestType isEqualToString:@"iput"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] PUT:[[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, baseurl] baseURL] parameters:([params uploadParams]) success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n", configDictionary[@"filename"], baseURL];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PUT:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"delete"] || [requestType isEqualToString:@"idelete"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[%@Request sharedClient] DELETE:[[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, baseurl] baseURL] parameters:([params uploadParams]) success:^(NSURLSessionDataTask * _Nonnull task, NSDictionary* _Nullable result) {\n", configDictionary[@"filename"], baseURL];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] DELETE:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n", interfacename];
                     }
                     
-                    [result appendFormat:@"\t\t%@[SVProgressHUD dismiss];\n", processString];
-                    [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
-                    [result appendFormat:@"\t\t%@ *info;\n", returnType];
+                    if (!hideHud) {
+                        [result appendFormat:@"\t\tif (showHUD) {\n"];
+                        [result appendFormat:@"\t\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
+                        [result appendFormat:@"\t\t\t\t[PHRequest hideRequestHUD];\n"];
+                        [result appendFormat:@"\t\t\t});\n"];
+                        [result appendFormat:@"\t\t}\n"];
+                    }
+                    
                     if ([configDictionary[@"response"] isEqualToString:@"xml"]) {
                         [result appendString:@"\t\tresult = [[XMLDictionaryParser sharedInstance] dictionaryWithParser:result];\n"];
                     }
                     else if ([configDictionary[@"response"] isEqualToString:@"json"]){
                     }
-                    [result appendString:@"\t\tresult = ([result responseParams]);\n"];
-                    [result appendString:@"\t\tif (result && result.allKeys.count > 0) {\n"];
-                    [result appendFormat:@"\t\t\tinfo = [%@ ylt_objectWithKeyValues:result];\n", returnType];
-                    [result appendString:@"\t\t\tif (info) {\n"];
-                    [result appendString:@"\t\t\t\tsuccess(task, info);\n"];
-                    [result appendString:@"\t\t\t}\n"];
-                    [result appendString:@"\t\t} else {\n"];
-                    [result appendString:@"\t\t\tNSError *error = [NSError errorWithDomain:@\"Request\" code:9999 userInfo:@{@\"localizedDescription\":@\"数据为空\"}];\n"];
-                    [result appendString:@"\t\t\tfailure(task, error);\n"];
-                    [result appendString:@"\t\t}\n"];
-                    [result appendString:@"\t} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {\n"];
-                    [result appendString:@"\t\tYLT_LogError(@\"%@\", task);\n"];
-                    [result appendFormat:@"\t\t%@[SVProgressHUD dismiss];\n", processString];
-                    [result appendString:@"\t\t[SVProgressHUD showErrorWithStatus:@\"网络异常\"];\n"];
-                    [result appendString:@"\t\t[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;\n"];
+                    [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
+                    if (![returnType isEqualToString:@"BaseCollection"]) {
+                        [result appendString:@"\t\tid data = ([PHRequest responseParams:result]);\n"];
+                        [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                        [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
+                        [result appendString:@"\t\t\tsuccess(task, res, info, result);\n"];
+                        [result appendFormat:@"\t\t} else {\n"];
+                        [result appendString:@"\t\t\tsuccess(task, res, data, result);\n"];
+                        [result appendFormat:@"\t\t}\n"];
+                    } else {
+                        [result appendString:@"\t\tNSDictionary *data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
+                        [result appendString:@"\t\tsuccess(task, res, data, result);\n"];
+                    }
+                    [result appendString:@"\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
+                    [result appendFormat:@"\t\tYLT_LogError(@\"%%@ %%@ %%@\", baseUrl, parameters, task);\n"];
+                    
+                    [result appendString:@"\t\t[PHRequest responseError:error baseUrl:baseUrl parameters:parameters];\n"];
+                    
+                    if (!hideHud) {
+                        [result appendFormat:@"\t\tif (showHUD) {\n"];
+                        [result appendFormat:@"\t\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
+                        [result appendFormat:@"\t\t\t\t[PHRequest errorRequestHUD:task error:error];\n"];
+                        [result appendFormat:@"\t\t\t});\n"];
+                        [result appendFormat:@"\t\t}\n"];
+                    }
+                    
                     [result appendFormat:@"\t\tfailure(task, error);\n"];
                     [result appendString:@"\t}];\n"];
                     [result appendString:@"\treturn op;\n"];
-                    [result appendString:@"}\n\n\n"];
+                    [result appendString:@"}\n\n"];
+                }
+                    break;
+                case TYPE_REQUEST: {
+                    [res3 appendFormat:@"{\n"];
+                    [res3 appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] init];\n"];
+                    [res3 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+                    if ([configDictionary[@"baseurl"] boolValue]) {
+                        [res3 appendFormat:@"\tNSURLSessionDataTask *task = [self %@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    } else {
+                        [res3 appendFormat:@"\tNSURLSessionDataTask *task = [self %@RequestShowHUD:showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    }
+                    //判断是否是上传接口  上传接口需要提取出来单独处理
+                    if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
+                        [res3 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
+                    }
+                    [res3 appendFormat:@" iparams:(NSDictionary *)requestParams success:success failure:failure];\n"];
+                    [res3 appendFormat:@"\treturn task;\n"];
+                    [res3 appendFormat:@"}\n\n"];
+                    [result appendString:res3];
                 }
                     break;
                     
@@ -453,12 +624,13 @@ static NSDictionary *configDictionary;
                 break;
                 
             case TYPE_METHOD:
+            case TYPE_RACSIGNAL:
             {
                 if ([style isEqualToString:@"repeated"]) {
                     if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
-                        [result appendFormat:@" %@:(NSArray<%@> * _Nonnull)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                        [result appendFormat:@" %@:(NSArray<%@> *)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                     } else {
-                        [result appendFormat:@" %@:(NSArray<%@ *> * _Nonnull)%@", fieldname, type, fieldname];
+                        [result appendFormat:@" %@:(NSArray<%@ *> *)%@", fieldname, type, fieldname];
                     }
                 }
                 else if ([style isEqualToString:@"class"]) {
@@ -468,12 +640,12 @@ static NSDictionary *configDictionary;
                     if ([[Utils modelTypeConvertDictionary][[type lowercaseString]] rangeOfString:@"*"].location == NSNotFound) {
                         [result appendFormat:@" %@:(%@)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                     } else {
-                        [result appendFormat:@" %@:(%@ _Nullable)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                        [result appendFormat:@" %@:(%@)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                     }
                 }
                 else {
                     //首先 区分开枚举类型与数据类型   所有的枚举类型  使用整型替代
-                    [result appendFormat:@" %@:(%@ * _Nullable)%@", fieldname, type, fieldname];
+                    [result appendFormat:@" %@:(%@ *)%@", fieldname, type, fieldname];
                 }
             }
                 break;
@@ -499,35 +671,26 @@ static NSDictionary *configDictionary;
                     case TYPE_REQUEST:
                     {
                         if ([style isEqualToString:@"repeated"]) {
-                            [result appendFormat:@"\t[params setObj:%@ forKey:@\"%@\"];\n", fieldname, keyname];
+                            [result appendFormat:@"\trequestParams[@\"%@\"] = %@;\n", keyname, fieldname];
                         }
                         else if ([style isEqualToString:@"class"]) {
-                            [result appendFormat:@"\tif ([%@ respondsToSelector:@selector(dictionaryValue)] && [[%@ performSelector:@selector(dictionaryValue)] isKindOfClass:[NSDictionary class]]) {\n", fieldname, fieldname];
-                            [result appendFormat:@"\t\t[params addEntriesFromDictionary:[%@ performSelector:@selector(dictionaryValue)]];\n", fieldname];
-                            [result appendFormat:@"\t} else {\n"];
-                            [result appendFormat:@"\t\t[params setObj:%@ forKey:@\"%@\"];\n", fieldname, keyname];
-                            [result appendFormat:@"\t}\n"];
+                            [result appendFormat:@"\trequestParams[@\"%@\"] = %@;\n", keyname, fieldname];
                         }
                         else {
                             if (IS_BASE_TYPE(type) || [enumList containsObject:type]) {
                                 if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"] || [enumList containsObject:type]) {
-                                    [result appendFormat:@"\t[params setObj:[NSNumber numberWithInteger:%@] forKey:@\"%@\"];\n", fieldname, keyname];
+                                    [result appendFormat:@"\trequestParams[@\"%@\"] = [NSNumber numberWithInteger:%@];\n", keyname, fieldname];
                                 }
                                 else {
-                                    [result appendFormat:@"\t[params setObj:[NSNumber numberWith%@:%@] forKey:@\"%@\"];\n", [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname, keyname];
+                                    [result appendFormat:@"\trequestParams[@\"%@\"] = [NSNumber numberWith%@:%@];\n", keyname, [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname];
                                 }
                             }
                             else if ([type isEqualToString:@"string"] || [NSClassFromString(type) isKindOfClass:[NSObject class]]){
-                                [result appendFormat:@"\t[params setObj:%@ forKey:@\"%@\"];\n", fieldname, keyname];
+                                [result appendFormat:@"\trequestParams[@\"%@\"] = %@;\n", keyname, fieldname];
                             }
                             else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
-                                [result appendFormat:@"\tif ([%@ respondsToSelector:@selector(dictionaryValue)] && [[%@ performSelector:@selector(dictionaryValue)] isKindOfClass:[NSDictionary class]]) {\n", fieldname, fieldname];
-                                [result appendFormat:@"\t\t[params addEntriesFromDictionary:[%@ performSelector:@selector(dictionaryValue)]];\n", fieldname];
-                                [result appendFormat:@"\t} else {\n"];
-                                [result appendFormat:@"\t\t[params setObj:%@ forKey:@\"%@\"];\n", fieldname, keyname];
-                                [result appendFormat:@"\t}\n"];
-//                                [result appendFormat:@"\t[params addEntriesFromDictionary:[%@ dictionaryValue]];\n", fieldname];
+                                [result appendFormat:@"\trequestParams[@\"%@\"] = %@;\n", keyname, fieldname];
                             }
                         }
                     }
@@ -550,6 +713,7 @@ static NSDictionary *configDictionary;
 }
 
 @end
+
 
 
 

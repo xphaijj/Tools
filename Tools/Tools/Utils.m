@@ -34,22 +34,26 @@ static Utils *shareData;
  */
 + (NSDictionary *)modelTypeConvertDictionary {
     return @{
-             @"bool":@"BOOL",
-             @"byte":@"Byte",
-             @"char":@"Char",
-             @"short":@"NSInteger",
-             @"int":@"NSInteger",
-             @"long":@"NSInteger",
-             @"long long":@"long long",
-             @"longlong":@"long long",
-             @"time":@"long long",
-             @"float":@"CGFloat",
-             @"double":@"CGFloat",
+             @"bool":@"BOOL ",
+             @"byte":@"Byte ",
+             @"char":@"Char ",
+             @"short":@"NSInteger ",
+             @"int":@"NSInteger ",
+             @"long":@"NSInteger ",
+             @"long long":@"long long ",
+             @"longlong":@"long long ",
+             @"time":@"long long ",
+             @"float":@"CGFloat ",
+             @"double":@"CGFloat ",
              @"string":@"NSString *",
+             @"number":@"NSNumber *",
              @"list":@"NSMutableArray *",
              @"array":@"NSMutableArray *",
              @"map":@"NSMutableDictionary *",
-             @"dic":@"NSMutableDictionary *"};
+             @"dic":@"NSMutableDictionary *",
+             @"dictionary":@"NSMutableDictionary *",
+             @"id":@"id ",
+             };
 }
 
 /**
