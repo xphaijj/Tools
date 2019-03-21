@@ -314,6 +314,9 @@ typedef NS_ENUM(NSUInteger, Code) {
                     else if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]) {
                         if ([[Utils modelTypeConvertDictionary][[type lowercaseString]] rangeOfString:@"*"].location == NSNotFound && ![[type lowercaseString] isEqualToString:@"id"] && ![[Utils modelTypeConvertDictionary][[type lowercaseString]] isEqualToString:@"id "]) {
                             [result appendFormat:@"@property (readwrite, nonatomic, assign) %@%@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
+                        } else if ([[type lowercaseString] isEqualToString:@"string"] && [Utils modelTypeConvertDictionary][[type lowercaseString]]) {
+                            //字符串
+                            [result appendFormat:@"@property (readwrite, nonatomic, copy) %@%@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                         } else {
                             [result appendFormat:@"@property (readwrite, nonatomic, strong) %@%@;\n", [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                         }
