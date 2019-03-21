@@ -41,9 +41,7 @@ static NSDictionary *configDictionary;
     //头文件的导入
     [h appendString:[self introductionPackages:H_FILE]];
     [m appendString:[self introductionPackages:M_FILE]];
-    
     enumList = [Utils enumList:sourceString];
-    
     //匹配出所有的Model类型
     [h appendString:[self messageFromSourceString:sourceString fileType:H_FILE]];
     [m appendString:[self messageFromSourceString:sourceString fileType:M_FILE]];
@@ -62,13 +60,15 @@ static NSDictionary *configDictionary;
         case H_FILE:
         {
             if ([configDictionary[@"pods"] boolValue]) {
-                [result appendFormat:@"#import <FMDB/FMDatabase.h>\n"];
+                [result appendFormat:@"#import <FMDB/FMDB.h>\n"];
             }
             else {
-                [result appendFormat:@"#import \"FMDatabase.h\"\n"];
+                [result appendFormat:@"#import \"FMDB.h\"\n"];
             }
             [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n"];
+            [result appendFormat:@"#import \"YLT_DBHelper+Common.h\"\n"];
             [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
+            [result appendFormat:@"\n//数据库操作完成回调\ntypedef void(^YLT_DBComplete)(id response);"];
         }
             break;
             
@@ -91,7 +91,9 @@ static NSDictionary *configDictionary;
  **/
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regex = @"message(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+//    NSString *regex = @"message(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    
+    NSString *regex = @"message((?:\\s+)(\\S+)(?:\\s*)(:(?:\\s+)(\\S+)(?:\\s*))?)\\{([\\s\\S]*?)\\}((?:\\s+)(\\S+)?)";
     NSArray *classes = [sourceString arrayOfCaptureComponentsMatchedByRegex:regex];
     [result appendFormat:@"\n\n"];
 
@@ -125,7 +127,7 @@ static NSDictionary *configDictionary;
 + (NSString *)modelFromClass:(NSArray *)contents fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *classname = [contents objectAtIndex:1];//获取类名称
+    NSString *classname = [contents objectAtIndex:2];//获取类名称
     switch (fileType) {
         case H_FILE:
         {
@@ -143,16 +145,25 @@ static NSDictionary *configDictionary;
             break;
     }
     
-    NSString *modelClass = [contents objectAtIndex:2];//获取属性
-    
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_ADD]];//增
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DEL]];//删
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_UPDATE]];//改
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_SEL]];//查
-    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_MAX]];
+    NSString *modelClass = [contents objectAtIndex:5];//获取属性
+    //是否是用户关联数据库,TCRUD是否全都需要,默认全都需要‘T用户关联,C增加, R查询, U更新, D删除’
+    NSString *tcrud = [contents objectAtIndex:6] ;
+    BOOL userDb = [tcrud containsString:@"T"];
+    if ([tcrud containsString:@"C"]) {
+        [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_ADD userDb:userDb]];//增
+    }
+    if ([tcrud containsString:@"R"]) {
+        [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_SEL userDb:userDb]];//查
+    }
+    if ([tcrud containsString:@"U"]) {
+        [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_UPDATE userDb:userDb]];//改
+    }
+    if ([tcrud containsString:@"D"]) {
+        [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DEL userDb:userDb]];//删
+    }
+//    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_MAX userDb:userDb]];
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
-    
     return result;
 }
 
@@ -162,8 +173,9 @@ static NSDictionary *configDictionary;
  * @prama  contents:单个的model列表
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  * @prama  methodType:方法类别 多个方法解析
+ * @prama  userDb:是否使用用户关联数据库
  */
-+ (NSString *)methodWithClass:(NSString *)classname contents:(NSString *)contents FileType:(FileType)fileType methodType:(MethodType)methodType;
++ (NSString *)methodWithClass:(NSString *)classname contents:(NSString *)contents FileType:(FileType)fileType methodType:(MethodType)methodType userDb:(BOOL)userDb;
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSMutableArray *contentsList = (NSMutableArray *)[contents componentsSeparatedByString:@"\n"];
@@ -185,29 +197,29 @@ static NSDictionary *configDictionary;
             switch (methodType) {
                 case TYPE_ADD:
                 {
-                    [result appendString:@"- (NSInteger)saveDB:(FMDatabase *)db;\n"];
+                    [result appendString:@"- (void)saveDB:(YLT_DBComplete)complete;\n"];
                 }
                     break;
                 case TYPE_DEL:
                 {
-                    [result appendString:@"- (BOOL)delDB:(FMDatabase *)db;\n"];
-                    [result appendString:@"+ (BOOL)delDB:(FMDatabase *)db forConditions:(NSString *)sender;\n"];
+                    [result appendString:@"- (void)delDB:(YLT_DBComplete)complete;\n"];
+                    [result appendString:@"+ (void)delDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete;\n"];
                 }
                     break;
                 case TYPE_UPDATE:
                 {
-                    [result appendString:@"- (BOOL)updateDB:(FMDatabase *)db;\n"];
-                    [result appendString:@"+ (BOOL)updateDB:(FMDatabase *)db forConditions:(NSString *)sender;\n"];
+                    [result appendString:@"- (void)updateDB:(YLT_DBComplete)complete;\n"];
+                    [result appendString:@"+ (void)updateDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete;\n"];
                 }
                     break;
                 case TYPE_SEL:
                 {
-                    [result appendString:@"+ (NSArray *)findDB:(FMDatabase *)db forConditions:(NSString *)sender;\n"];
+                    [result appendString:@"+ (void)findDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete;\n"];
                 }
                     break;
                 case TYPE_MAX:
                 {
-                    [result appendFormat:@"+ (NSInteger)maxKeyValueDB:(FMDatabase *)db;\n"];
+                    [result appendFormat:@"+ (NSInteger)maxKeyValueDB:(FMDatabaseQueue *)db;\n"];
                 }
                     break;
                     
@@ -222,64 +234,59 @@ static NSDictionary *configDictionary;
                 case TYPE_ADD:
                 {
                     /** * 同步 */
-                    [result appendString:@"\n- (NSInteger)saveDB:(FMDatabase *)db {\n"];
-                    [result appendString:[self dbbaseControl2:classname]];
-                    [result appendFormat:@"\tNSInteger result = 0;\n"];
-                    [result appendFormat:@"\t[db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", DB_NAME(classname)];
+                    [result appendString:@"\n- (void)saveDB:(YLT_DBComplete)complete {\n"];
+                    [result appendString:[self db_funcHeader:userDb]];
+                    [result appendFormat:@"\t\t\tif ([db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", DB_NAME(classname)];
                     if ([keyType isEqualToString:@"int"]) {
                         [result appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", key];
-                    }
-                    else if ([keyType isEqualToString:@"string"]){
+                    } else if ([keyType isEqualToString:@"string"]){
                         [result appendFormat:@"%@ TEXT PRIMARY KEY AUTOINCREMENT", key];
                     }
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
-                    [result appendFormat:@")\"];\n"];
-                    [result appendFormat:@"\tresult = [db executeUpdate:@\"INSERT INTO %@(", DB_NAME(classname)];
+                    [result appendFormat:@")\"]) {\n"];
+                    [result appendFormat:@"\t\t\t\tif ([db executeUpdate:@\"INSERT INTO %@(", DB_NAME(classname)];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_TWO key:key keyType:keyType keyfieldname:keyfieldname]];
                     [result appendFormat:@") VALUES ("];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_THREE key:key keyType:keyType keyfieldname:keyfieldname]];
                     [result appendFormat:@")\""];
                     
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_FOUR key:key keyType:keyType keyfieldname:keyfieldname]];
-                    [result appendFormat:@"];\n"];
-                    [result appendString:@"\tresult = [db lastInsertRowId];\n"];
-                    [result appendString:[self footControl]];
-                    [result appendFormat:@"\treturn result;\n"];
-                    [result appendFormat:@"}\n"];
+                    [result appendFormat:@"]) {\n"];
+                    [result appendFormat:@"\t\t\t\t\tresult = YES;\n"];
+                    [result appendFormat:@"\t\t\t\t}\n"];
+                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendString:[self db_funcFooter]];
                 }
                     break;
                 case TYPE_DEL:
                 {
                     /** *同步 */
-                    [result appendFormat:@"\n- (BOOL)delDB:(FMDatabase *)db {\n"];
-                    [result appendString:[self dbbaseControl2:classname]];
-                    [result appendFormat:@"\tBOOL result = NO;\n"];
+                    [result appendFormat:@"\n- (void)delDB:(YLT_DBComplete)complete {\n"];
+                    [result appendString:[self db_funcHeader:userDb]];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@"\tresult = [db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", [NSNumber numberWithInteger:self.%@]];\n", DB_NAME(classname), key, keyfieldname];
+                        [result appendFormat:@"\t\t\tif ([db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", [NSNumber numberWithInteger:self.%@]]) {\n", DB_NAME(classname), key, keyfieldname];
                     }
                     else if ([keyType isEqualToString:@"string"]) {
-                        [result appendFormat:@"\tresult = [db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", self.%@];\n", classname, key, keyfieldname];
+                        [result appendFormat:@"\t\t\tif ([db executeUpdate:@\"DELETE FROM %@ WHERE %@ = ?\", self.%@]) {\n", classname, key, keyfieldname];
                     }
-                    [result appendString:[self footControl]];
-                    [result appendFormat:@"\treturn result;\n"];
-                    [result appendFormat:@"}\n"];
+                    [result appendFormat:@"\t\t\t\tresult = YES;\n"];
+                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendString:[self db_funcFooter]];
                     
-                    [result appendFormat:@"\n+ (BOOL)delDB:(FMDatabase *)db forConditions:(NSString *)sender {\n"];
-                    [result appendString:[self dbbaseControl2:classname]];
-                    [result appendFormat:@"\tBOOL result = NO;\n"];
-                    [result appendFormat:@"\tresult = [db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@ WHERE %%@\", sender]];\n", DB_NAME(classname)];
-                    [result appendString:[self footControl]];
-                    [result appendFormat:@"\treturn result;\n"];
-                    [result appendFormat:@"}\n"];
+                    [result appendFormat:@"\n+ (void)delDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete {\n"];
+                    [result appendString:[self db_funcHeader:userDb]];
+                    [result appendFormat:@"\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@ WHERE %%@\", sender]]) {\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\t\tresult = YES;\n"];
+                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendString:[self db_funcFooter]];
                 }
                     break;
                 case TYPE_UPDATE:
                 {
                     /** *同步 */
-                    [result appendString:@"\n- (BOOL)updateDB:(FMDatabase *)db {\n"];
-                    [result appendString:[self dbbaseControl2:classname]];
-                    [result appendFormat:@"\tBOOL result = NO;\n"];
-                    [result appendFormat:@"\tresult = [db executeUpdate:@\"UPDATE %@ SET ", DB_NAME(classname)];
+                    [result appendString:@"\n- (void)updateDB:(YLT_DBComplete)complete {\n"];
+                    [result appendString:[self db_funcHeader:userDb]];
+                    [result appendFormat:@"\t\t\tif ([db executeUpdate:@\"UPDATE %@ SET ", DB_NAME(classname)];
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
                     [result deleteCharactersInRange:NSMakeRange(result.length-1, 1)];
                     [result appendFormat:@" WHERE %@ = ?\"", key];
@@ -290,53 +297,60 @@ static NSDictionary *configDictionary;
                     else {
                         [result appendFormat:@", self.%@", keyfieldname];
                     }
-                    [result appendFormat:@"];\n"];
-                    [result appendString:[self footControl]];
-                    [result appendFormat:@"\treturn result;\n"];
-                    [result appendFormat:@"}\n"];
+                    [result appendFormat:@"]) {\n"];
+                    [result appendFormat:@"\t\t\t\tresult = YES;\n"];
+                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendString:[self db_funcFooter]];
                     
-                    [result appendString:@"\n+ (BOOL)updateDB:(FMDatabase *)db forConditions:(NSString *)sender {\n"];
-                    [result appendString:[self dbbaseControl2:classname]];
-                    [result appendFormat:@"\tBOOL result = NO;\n"];
-                    [result appendFormat:@"\tresult = [db executeUpdate:[NSString stringWithFormat:@\"UPDATE %@ SET %%@\", sender]];\n", DB_NAME(classname)];
-                    [result appendString:[self footControl]];
-                    [result appendString:@"\treturn result;\n"];
-                    [result appendString:@"}\n"];
+                    [result appendString:@"\n+ (void)updateDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete {\n"];
+                    [result appendString:[self db_funcHeader:userDb]];
+                    [result appendFormat:@"\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"UPDATE %@ SET %%@\", sender]]) {\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\t\tresult = YES;\n"];
+                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendString:[self db_funcFooter]];
                 }
                     break;
                 case TYPE_SEL:
                 {
                     /** *同步 */
-                    [result appendString:@"\n+ (NSArray *)findDB:(FMDatabase *)db forConditions:(NSString *)sender {\n"];
-                    [result appendString:[self dbbaseControl:classname]];
-                    [result appendString:@"\tNSMutableArray *result = [[NSMutableArray alloc] init];\n"];
-                    [result appendString:@"\tFMResultSet* set;\n"];
-                    [result appendString:@"\tif (sender.length == 0) {\n"];
-                    [result appendFormat:@"\t\tset = [db executeQuery:@\"SELECT * FROM %@\"];\n", DB_NAME(classname)];
-                    [result appendFormat:@"\t}\n"];
-                    [result appendFormat:@"\telse {\n"];
-                    [result appendFormat:@"\t\tset = [db executeQuery:[NSString stringWithFormat:@\"SELECT * FROM %@ WHERE %%@\", sender]];\n", DB_NAME(classname)];
-                    [result appendFormat:@"\t}\n"];
-                    [result appendFormat:@"\twhile ([set next]) {\n"];
-                    [result appendFormat:@"\t\t%@ *item = [[%@ alloc] init];\n", classname, classname];
+                    [result appendString:@"\n+ (void)findDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete {\n"];
+                    NSString *dbqueue = userDb ? @"ylt_userDbQueue" : @"ylt_databaseQueue";
+                    [result appendFormat:@"\t[[YLT_DBHelper shareInstance].%@ inDatabase:^(FMDatabase * _Nonnull db) {\n",dbqueue];
+                    [result appendFormat:@"\t\tNSMutableArray *result = nil;\n"];
+                    [result appendFormat:@"\t\tif (!db.isOpen) {\n"];
+                    [result appendFormat:@"\t\t\tYLT_LogWarn(@\"数据库错误\");\n"];
+                    [result appendFormat:@"\t\t} else {\n"];
+                    [result appendFormat:@"\t\t\tresult = [[NSMutableArray alloc] init];\n"];
+                    [result appendFormat:@"\t\t\tFMResultSet* set;\n"];
+                    [result appendFormat:@"\t\t\tif (sender.ylt_isValid) {\n"];
+                
+                    [result appendFormat:@"\t\t\t\tset = [db executeQuery:@\"SELECT * FROM %@\"];\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\t} else {\n"];
+                    [result appendFormat:@"\t\t\t\tset = [db executeQuery:[NSString stringWithFormat:@\"SELECT * FROM %@ WHERE %%@\", sender]];\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendFormat:@"\t\t\twhile ([set next]) {\n"];
+                    [result appendFormat:@"\t\t\t\t%@ *item = [[%@ alloc] init];\n", classname, classname];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set intForColumn:@\"%@\"];\n", keyfieldname, key];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set intForColumn:@\"%@\"];\n", keyfieldname, key];
                     }
                     else if ([keyType isEqualToString:@"string"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", keyfieldname, key];
+                        [result appendFormat:@"\t\t\t\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", keyfieldname, key];
                     }
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:methodType index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
-                    [result appendString:@"\t\t[result addObject:item];\n"];
-                    [result appendFormat:@"\t}\n"];
-                    [result appendString:[self footControl]];
-                    [result appendString:@"\treturn result;\n"];
-                    [result appendString:@"}\n"];
+                    [result appendString:@"\t\t\t\t[result addObject:item];\n"];
+                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendFormat:@"\t\t}\n"];
+                    [result appendFormat:@"\t\tif (complete) {\n"];
+                    [result appendFormat:@"\t\t\tcomplete(result);\n"];
+                    [result appendFormat:@"\t\t}\n"];
+                    [result appendFormat:@"\t}];\n"];
+                    [result appendFormat:@"}\n"];
                 }
                     break;
                 case TYPE_MAX:
                 {
                     /** *同步 */
-                    [result appendFormat:@"\n+ (NSInteger)maxKeyValueDB:(FMDatabase *)db {\n"];
+                    [result appendFormat:@"\n+ (NSInteger)maxKeyValueDB:(FMDatabaseQueue *)db {\n"];
                     [result appendString:[self dbbaseControl2:classname]];
                     [result appendFormat:@"\tFMResultSet* set = [db executeQuery:@\"SELECT MAX(CAST(%@ as INT)) FROM %@\"];\n", key, DB_NAME(classname)];
                     [result appendFormat:@"\tNSInteger result = 0;\n"];
@@ -617,28 +631,28 @@ static NSDictionary *configDictionary;
                 case TYPE_SEL:
                 {
                     if ([type isEqualToString:@"int"] || [enumList containsObject:type]) {
-                        [result appendFormat:@"\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                     else if ([type isEqualToString:@"short"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                     else if ([type isEqualToString:@"bool"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set boolForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set boolForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                     else if ([type isEqualToString:@"long"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set longForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set longForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                     else if ([type isEqualToString:@"float"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                     else if ([type isEqualToString:@"double"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                     else if ([type isEqualToString:@"char"]) {
-                        [result appendFormat:@"\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                     else {
-                        [result appendFormat:@"\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, fieldname];
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, fieldname];
                     }
                 }
                     break;
@@ -674,7 +688,7 @@ static NSDictionary *configDictionary;
     [result appendString:@"\tBOOL sync = NO;\n"];
     [result appendString:@"\tif (db == nil) {\n"];
     [result appendString:@"\t\tsync = YES;\n"];
-    [result appendString:@"\t\tdb = [FMDatabase databaseWithPath:[YLT_DBHelper shareInstance].ylt_dbPath];\n"];
+    [result appendString:@"\t\tdb = [FMDatabaseQueue databaseWithPath:[YLT_DBHelper shareInstance].ylt_dbPath];\n"];
     [result appendString:@"\t}\n"];
     [result appendString:@"\tif (![db open]) {\n"];
     [result appendString:@"\t\tYLT_LogWarn(@\"数据库错误\");\n"];
@@ -687,18 +701,39 @@ static NSDictionary *configDictionary;
  * @brief  数据库操作的基本生成
  * @prama  classname: 表名称
  **/
-+ (NSString *)dbbaseControl2:(NSString *)classname
-{
++ (NSString *)dbbaseControl2:(NSString *)classname {
     NSMutableString *result = [[NSMutableString alloc] init];
     [result appendString:@"\tBOOL sync = NO;\n"];
     [result appendString:@"\tif (db == nil) {\n"];
     [result appendString:@"\t\tsync = YES;\n"];
-    [result appendString:@"\t\tdb = [FMDatabase databaseWithPath:[YLT_DBHelper shareInstance].ylt_dbPath];\n"];
+    [result appendString:@"\t\tdb = [FMDatabaseQueue databaseWithPath:[YLT_DBHelper shareInstance].ylt_dbPath];\n"];
     [result appendString:@"\t}\n"];
     [result appendString:@"\tif (![db open]) {\n"];
     [result appendString:@"\t\tYLT_LogWarn(@\"数据库错误\");\n"];
     [result appendString:@"\t\treturn 0;\n"];
     [result appendString:@"\t}\n"];
+    return result;
+}
+
++ (NSString *)db_funcHeader:(BOOL)userDb {
+    NSMutableString *result = [[NSMutableString alloc] init];
+    NSString *dbqueue = userDb ? @"ylt_userDbQueue" : @"ylt_databaseQueue";
+    [result appendFormat:@"\t[[YLT_DBHelper shareInstance].%@ inDatabase:^(FMDatabase * _Nonnull db) {\n",dbqueue];
+    [result appendFormat:@"\t\tBOOL result = NO;\n"];
+    [result appendFormat:@"\t\tif (!db.isOpen) {\n"];
+    [result appendFormat:@"\t\t\tYLT_LogWarn(@\"数据库错误\");\n"];
+    [result appendFormat:@"\t\t} else {\n"];
+    return result;
+}
+
++ (NSString *)db_funcFooter {
+    NSMutableString *result = [[NSMutableString alloc] init];
+    [result appendFormat:@"\t\t}\n"];
+    [result appendFormat:@"\t\tif (complete) {\n"];
+    [result appendFormat:@"\t\t\tcomplete(@(result));\n"];
+    [result appendFormat:@"\t\t}\n"];
+    [result appendFormat:@"\t}];\n"];
+    [result appendFormat:@"}\n"];
     return result;
 }
 
