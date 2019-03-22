@@ -223,6 +223,19 @@ static NSDictionary *configDictionary;
         [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
         [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
     }
+    NSArray *returnTypeList = [[returnType arrayOfCaptureComponentsMatchedByRegex:regex] firstObject];
+    BOOL returnIsList = NO;//返回数据是否是数组类型
+    NSString *modelname = returnType;
+    if (returnTypeList.count >= 3) {
+        modelname = returnTypeList[1];
+        NSMutableString *returnTypeName = [[NSMutableString alloc] initWithString:[returnTypeList objectAtIndex:2]];
+        [returnTypeName deleteCharactersInRange:[returnTypeName rangeOfString:@"("]];
+        [returnTypeName deleteCharactersInRange:[returnTypeName rangeOfString:@")"]];
+        if ([returnTypeName isEqualToString:@"list"] || [returnTypeName isEqualToString:@"array"]) {
+            returnIsList = YES;
+            returnType = [NSString stringWithFormat:@"NSMutableArray<%@ *>", modelname];
+        }
+    }
     
     NSString *uploadKey = @"";
     // h m 文件中均需导入的
@@ -515,10 +528,27 @@ static NSDictionary *configDictionary;
                     }
                     [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
                     if (![returnType isEqualToString:@"BaseCollection"]) {
-                        [result appendString:@"\t\tid data = ([PHRequest responseParams:result]);\n"];
-                        [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                        [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
-                        [result appendString:@"\t\t\tsuccess(task, res, info, result);\n"];
+                        [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
+                        if (returnIsList) {//返回的数据类型是数组
+                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
+                            [result appendString:@"\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
+                            [result appendString:@"\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
+                            [result appendFormat:@"\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
+                            [result appendFormat:@"\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
+                            [result appendFormat:@"\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
+                            [result appendFormat:@"\t\t\t\t} else {\n"];
+                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:obj];\n"];
+                            [result appendFormat:@"\t\t\t\t}\n"];
+                            [result appendFormat:@"\t\t\t}];\n"];
+                            [result appendFormat:@"\t\t\tsuccess(task, res, resultList, result);\n"];
+                        } else {
+                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
+                            [result appendString:@"\t\t\tsuccess(task, res, info, result);\n"];
+                        }
+                        
                         [result appendFormat:@"\t\t} else {\n"];
                         [result appendString:@"\t\t\tsuccess(task, res, data, result);\n"];
                         [result appendFormat:@"\t\t}\n"];
