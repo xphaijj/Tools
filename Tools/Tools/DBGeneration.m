@@ -93,7 +93,7 @@ static NSDictionary *configDictionary;
     NSMutableString *result = [[NSMutableString alloc] init];
 //    NSString *regex = @"message(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     
-    NSString *regex = @"message((?:\\s+)(\\S+)(?:\\s*)(:(?:\\s+)(\\S+)(?:\\s*))?)\\{([\\s\\S]*?)\\}((?:\\s+)(\\S+)?)";
+    NSString *regex = @"message((?:\\s+)(\\S+)(?:\\s*)(:(?:\\s+)(\\S+)(?:\\s*))?)\\{([\\s\\S]*?)\\}(?:\\s+)([TCRUD]{0,5})";
     NSArray *classes = [sourceString arrayOfCaptureComponentsMatchedByRegex:regex];
     [result appendFormat:@"\n\n"];
 
@@ -111,6 +111,7 @@ static NSDictionary *configDictionary;
 + (NSString *)generationModelsFromClasses:(NSArray *)classes fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
+    NSLog(@"classname::%@",classes);
     @autoreleasepool {
         for (NSArray *contents in classes) {
             [result appendString:[self modelFromClass:contents fileType:fileType]];

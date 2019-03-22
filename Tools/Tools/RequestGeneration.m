@@ -513,9 +513,10 @@ static NSDictionary *configDictionary;
                     }
                     else if ([configDictionary[@"response"] isEqualToString:@"json"]){
                     }
+                    [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, parameters, result);\n"];
                     [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
                     if (![returnType isEqualToString:@"BaseCollection"]) {
-                        [result appendString:@"\t\tid data = ([PHRequest responseParams:result]);\n"];
+                        [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
                         [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
                         [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
                         [result appendString:@"\t\t\tsuccess(task, res, info, result);\n"];
