@@ -66,7 +66,6 @@ static NSDictionary *configDictionary;
                 [result appendFormat:@"#import \"FMDB.h\"\n"];
             }
             [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n"];
-            [result appendFormat:@"#import \"YLT_DBHelper+Common.h\"\n"];
             [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
             [result appendFormat:@"\n//数据库操作完成回调\ntypedef void(^YLT_DBComplete)(id response);"];
         }
