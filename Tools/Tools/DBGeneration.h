@@ -58,6 +58,8 @@
  * @prama  contentlist: 数据列表
  */
 + (NSDictionary *)findKeyAndType:(NSArray *)contentList;
+
++ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType index:(TypeIndex)index key:(NSString *)key keyType:(NSString *)keyType keyfieldname:(NSString *)keyfieldname;
 /**
  * @brief  单个model的解析
  * @prama  contentsList:所有属性列表
@@ -67,8 +69,9 @@
  * @prama  key:数据库的key
  * @prama  keyType:数据库key的类型 string int
  * @prama  keyfieldname:数据库字段
+ * @prama  create:创建数据库
  */
-+ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType index:(TypeIndex)index key:(NSString *)key keyType:(NSString *)keyType keyfieldname:(NSString *)keyfieldname;
++ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType index:(TypeIndex)index key:(NSString *)key keyType:(NSString *)keyType keyfieldname:(NSString *)keyfieldname insert:(BOOL)insert ;
 
 /**
  * @brief  解析单条属性
