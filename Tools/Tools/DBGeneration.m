@@ -93,7 +93,7 @@ static NSDictionary *configDictionary;
     NSMutableString *result = [[NSMutableString alloc] init];
 //    NSString *regex = @"message(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
     
-    NSString *regex = @"message((?:\\s+)(\\S+)(?:\\s*)(:(?:\\s+)(\\S+)(?:\\s*))?)\\{([\\s\\S]*?)\\}((?:\\s+)(\\S+)?)";
+    NSString *regex = @"message((?:\\s+)(\\S+)(?:\\s*)(:(?:\\s+)(\\S+)(?:\\s*))?)\\{([\\s\\S]*?)\\}(?:\\s+)([TCRUD]{0,5})";
     NSArray *classes = [sourceString arrayOfCaptureComponentsMatchedByRegex:regex];
     [result appendFormat:@"\n\n"];
 
@@ -236,24 +236,23 @@ static NSDictionary *configDictionary;
                     /** * 同步 */
                     [result appendString:@"\n- (void)saveDB:(YLT_DBComplete)complete {\n"];
                     [result appendString:[self db_funcHeader:userDb]];
-                    [result appendFormat:@"\t\t\tif ([db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\t[db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", DB_NAME(classname)];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", key];
+                        [result appendFormat:@"%@ INTEGER PRIMARY KEY", key];
                     } else if ([keyType isEqualToString:@"string"]){
-                        [result appendFormat:@"%@ TEXT PRIMARY KEY AUTOINCREMENT", key];
+                        [result appendFormat:@"%@ TEXT PRIMARY KEY", key];
                     }
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
-                    [result appendFormat:@")\"]) {\n"];
-                    [result appendFormat:@"\t\t\t\tif ([db executeUpdate:@\"INSERT INTO %@(", DB_NAME(classname)];
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_TWO key:key keyType:keyType keyfieldname:keyfieldname]];
+                    [result appendFormat:@")\"];\n"];
+                    [result appendFormat:@"\t\t\tif ([db executeUpdate:@\"INSERT INTO %@(", DB_NAME(classname)];
+                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_TWO key:key keyType:keyType keyfieldname:keyfieldname insert:YES]];
                     [result appendFormat:@") VALUES ("];
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_THREE key:key keyType:keyType keyfieldname:keyfieldname]];
+                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_THREE key:key keyType:keyType keyfieldname:keyfieldname insert:YES]];
                     [result appendFormat:@")\""];
                     
-                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_FOUR key:key keyType:keyType keyfieldname:keyfieldname]];
+                    [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_FOUR key:key keyType:keyType keyfieldname:keyfieldname insert:YES]];
                     [result appendFormat:@"]) {\n"];
-                    [result appendFormat:@"\t\t\t\t\tresult = YES;\n"];
-                    [result appendFormat:@"\t\t\t\t}\n"];
+                    [result appendFormat:@"\t\t\t\tresult = YES;\n"];
                     [result appendFormat:@"\t\t\t}\n"];
                     [result appendString:[self db_funcFooter]];
                 }
@@ -322,7 +321,7 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\t\t} else {\n"];
                     [result appendFormat:@"\t\t\tresult = [[NSMutableArray alloc] init];\n"];
                     [result appendFormat:@"\t\t\tFMResultSet* set;\n"];
-                    [result appendFormat:@"\t\t\tif (sender.ylt_isValid) {\n"];
+                    [result appendFormat:@"\t\t\tif (!sender.ylt_isValid) {\n"];
                 
                     [result appendFormat:@"\t\t\t\tset = [db executeQuery:@\"SELECT * FROM %@\"];\n", DB_NAME(classname)];
                     [result appendFormat:@"\t\t\t} else {\n"];
@@ -375,7 +374,9 @@ static NSDictionary *configDictionary;
     
     return result;
 }
-
++ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType index:(TypeIndex)index key:(NSString *)key keyType:(NSString *)keyType keyfieldname:(NSString *)keyfieldname {
+    return [self allPropertys:contentsList fileType:fileType methodType:methodType index:index key:key keyType:keyType keyfieldname:keyfieldname insert:NO];
+}
 /**
  * @brief  单个model的解析
  * @prama  contentsList:所有属性列表
@@ -383,13 +384,14 @@ static NSDictionary *configDictionary;
  * @prama  methodType:方法类别
  * @prama  index:增删改查方法的索引
  */
-+ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType index:(TypeIndex)index key:(NSString *)key keyType:(NSString *)keyType keyfieldname:(NSString *)keyfieldname
-{
++ (NSString *)allPropertys:(NSArray *)contentsList fileType:(FileType)fileType methodType:(MethodType)methodType index:(TypeIndex)index key:(NSString *)key keyType:(NSString *)keyType keyfieldname:(NSString *)keyfieldname insert:(BOOL)insert {
     NSMutableString *result = [[NSMutableString alloc] init];
-    
     for (int j = 0; j < contentsList.count; j++) {
         NSString *propertyString = contentsList[j];
         NSString *regex = @"^(?:[\\s]*)(required|optional|repeated)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
+        if (insert) {
+            regex = @"^(?:[\\s]*)(required|optional|repeated|primary)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
+        }
         NSArray *propertys = [propertyString arrayOfCaptureComponentsMatchedByRegex:regex];
         //判断是否有属性
         if (propertys.count == 0) {
@@ -403,6 +405,7 @@ static NSDictionary *configDictionary;
         if ((methodType == TYPE_ADD) && (result.length != 0) && (index == INDEX_TWO || index == INDEX_THREE)) {
             [result appendFormat:@","];
         }
+        NSLog(@"fields:%@ propertys:%@ \n",fields,propertys);
         [result appendString:[self singleProperty:fields fileType:fileType methodType:methodType index:index key:key keyType:keyType keyfieldname:keyfieldname]];
         
     }
@@ -514,7 +517,7 @@ static NSDictionary *configDictionary;
                         case INDEX_ONE://创建
                         {
                             NSString *typeValue = @"INTEGER";//默认整形
-                            if ([type isEqualToString:@"int"] || [enumList containsObject:type]) {
+                            if ([type isEqualToString:@"int"] || [enumList containsObject:type] || [type isEqualToString:@"longlong"] || [type isEqualToString:@"number"]) {
                                 typeValue = @"INTEGER";
                             }
                             else if ([type isEqualToString:@"short"]) {
@@ -555,24 +558,22 @@ static NSDictionary *configDictionary;
                         {
                             if ([type isEqualToString:@"int"] || [type isEqualToString:@"short"] || [enumList containsObject:type]) {
                                 [result appendFormat:@", [NSNumber numberWithInteger:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"bool"]) {
+                            } else if ([type isEqualToString:@"bool"]) {
                                 [result appendFormat:@", [NSNumber numberWithBool:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"long"]) {
+                            } else if ([type isEqualToString:@"long"]) {
                                 [result appendFormat:@", [NSNumber numberWithLong:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"float"]) {
+                            } else if ([type isEqualToString:@"float"]) {
                                 [result appendFormat:@", [NSNumber numberWithFloat:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"double"]) {
+                            } else if ([type isEqualToString:@"double"]) {
                                 [result appendFormat:@", [NSNumber numberWithDouble:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"char"]) {
+                            } else if ([type isEqualToString:@"char"]) {
                                 [result appendFormat:@", [NSNumber numberWithChar:self.%@]", fieldname];
-                            }
-                            else {
+                            } else if ([type isEqualToString:@"string"] || [type isEqualToString:@"number"]) {
                                 [result appendFormat:@", self.%@", fieldname];
+                            } else if ([type isEqualToString:@"longlong"]) {
+                                [result appendFormat:@", [NSNumber numberWithLongLong:self.%@]", fieldname];
+                            } else {
+                                [result appendFormat:@", [self.%@ mj_JSONString]", fieldname];
                             }
                         }
                             break;
@@ -598,27 +599,24 @@ static NSDictionary *configDictionary;
                         {
                             if ([type isEqualToString:@"int"] || [enumList containsObject:type]) {
                                 [result appendFormat:@", [NSNumber numberWithInteger:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"short"]) {
+                            } else if ([type isEqualToString:@"short"]) {
                                 [result appendFormat:@", [NSNumber numberWithShort:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"bool"]) {
+                            } else if ([type isEqualToString:@"bool"]) {
                                 [result appendFormat:@", [NSNumber numberWithBool:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"long"]) {
+                            } else if ([type isEqualToString:@"long"]) {
                                 [result appendFormat:@", [NSNumber numberWithLong:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"float"]) {
+                            } else if ([type isEqualToString:@"float"]) {
                                 [result appendFormat:@", [NSNumber numberWithFloat:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"double"]) {
+                            } else if ([type isEqualToString:@"double"]) {
                                 [result appendFormat:@", [NSNumber numberWithDouble:self.%@]", fieldname];
-                            }
-                            else if ([type isEqualToString:@"char"]) {
+                            } else if ([type isEqualToString:@"char"]) {
                                 [result appendFormat:@", [NSNumber numberWithChar:self.%@]", fieldname];
-                            }
-                            else {
+                            } else if ([type isEqualToString:@"string"] || [type isEqualToString:@"number"]) {
                                 [result appendFormat:@", self.%@", fieldname];
+                            } else if ([type isEqualToString:@"longlong"]) {
+                                [result appendFormat:@", [NSNumber numberWithLongLong:self.%@]", fieldname];
+                            } else {
+                                [result appendFormat:@", [self.%@ mj_JSONString]", fieldname];
                             }
                         }
                             break;
@@ -632,27 +630,31 @@ static NSDictionary *configDictionary;
                 {
                     if ([type isEqualToString:@"int"] || [enumList containsObject:type]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, fieldname];
-                    }
-                    else if ([type isEqualToString:@"short"]) {
+                    } else if ([type isEqualToString:@"short"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set intForColumn:@\"%@\"];\n", fieldname, fieldname];
-                    }
-                    else if ([type isEqualToString:@"bool"]) {
+                    } else if ([type isEqualToString:@"bool"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set boolForColumn:@\"%@\"];\n", fieldname, fieldname];
-                    }
-                    else if ([type isEqualToString:@"long"]) {
+                    } else if ([type isEqualToString:@"long"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set longForColumn:@\"%@\"];\n", fieldname, fieldname];
-                    }
-                    else if ([type isEqualToString:@"float"]) {
+                    } else if ([type isEqualToString:@"float"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, fieldname];
-                    }
-                    else if ([type isEqualToString:@"double"]) {
+                    } else if ([type isEqualToString:@"double"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set doubleForColumn:@\"%@\"];\n", fieldname, fieldname];
-                    }
-                    else if ([type isEqualToString:@"char"]) {
+                    } else if ([type isEqualToString:@"char"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, fieldname];
-                    }
-                    else {
+                    } else if ([type isEqualToString:@"dic"] || [type isEqualToString:@"dictionary"] || [type isEqualToString:@"map"]) {
+                        [result appendFormat:@"\t\t\t\titem.%@ = [NSMutableDictionary dictionaryWithDictionary:[[set stringForColumn:@\"%@\"] mj_JSONObject]];\n", fieldname, fieldname];
+                    } else if ([type isEqualToString:@"array"] || [type isEqualToString:@"list"]) {
+                        [result appendFormat:@"\t\t\t\titem.%@ = [NSMutableArray arrayWithArray:[[set stringForColumn:@\"%@\"] mj_JSONObject]];\n", fieldname, fieldname];
+                    } else if ([type isEqualToString:@"string"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [set stringForColumn:@\"%@\"];\n", fieldname, fieldname];
+                    } else if ([type isEqualToString:@"longlong"]) {
+                        [result appendFormat:@"\t\t\t\titem.%@ = [set longLongIntForColumn:@\"%@\"];\n", fieldname, fieldname];
+                    } else if ([type isEqualToString:@"number"]) {
+                        [result appendFormat:@"\t\t\t\titem.%@ = [NSNumber numberWithInt:[set intForColumn:@\"%@\"]];\n",fieldname, fieldname];
+                    } else {
+                        //自定义对象
+                        [result appendFormat:@"\t\t\t\titem.%@ = [%@ mj_objectWithKeyValues:[[set stringForColumn:@\"%@\"] mj_JSONObject]];\n",fieldname, type, fieldname];
                     }
                 }
                     break;

@@ -526,6 +526,7 @@ static NSDictionary *configDictionary;
                     }
                     else if ([configDictionary[@"response"] isEqualToString:@"json"]){
                     }
+                    [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, parameters, result);\n"];
                     [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
                     if (![returnType isEqualToString:@"BaseCollection"]) {
                         [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
