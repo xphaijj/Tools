@@ -66,7 +66,6 @@ static NSDictionary *configDictionary;
                 [result appendFormat:@"#import \"FMDB.h\"\n"];
             }
             [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n"];
-            [result appendFormat:@"#import \"YLT_DBHelper+Common.h\"\n"];
             [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
             [result appendFormat:@"\n//数据库操作完成回调\ntypedef void(^YLT_DBComplete)(id response);"];
         }
@@ -274,7 +273,7 @@ static NSDictionary *configDictionary;
                     
                     [result appendFormat:@"\n+ (void)delDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete {\n"];
                     [result appendString:[self db_funcHeader:userDb]];
-                    [result appendFormat:@"\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@ WHERE %%@\", sender]]) {\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@%%@\", sender]]) {\n", DB_NAME(classname)];
                     [result appendFormat:@"\t\t\t\tresult = YES;\n"];
                     [result appendFormat:@"\t\t\t}\n"];
                     [result appendString:[self db_funcFooter]];
