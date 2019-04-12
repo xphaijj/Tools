@@ -76,12 +76,12 @@ static NSDictionary *configDictionary;
             [result appendFormat:@"#import <YLT_BaseLib/YLT_BaseLib.h>\n"];
             [result appendFormat:@"#import <ReactiveObjC/ReactiveObjC.h>\n"];
             [result appendFormat:@"#import <AFNetworking/AFNetworking.h>\n"];
+            [result appendFormat:@"#import \"PHRequest.h\"\n"];
             [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
         }
             break;
         case M_FILE:
         {
-            [result appendFormat:@"#import \"PHRequest.h\"\n"];
             [result appendFormat:@"#import \"%@Request.h\"\n", configDictionary[@"filename"]];
             if ([configDictionary[@"pods"] boolValue]) {
                 [result appendString:@"#import <AFNetworking/AFNetworking.h>\n"];
