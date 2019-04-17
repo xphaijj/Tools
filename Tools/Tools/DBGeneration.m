@@ -273,7 +273,7 @@ static NSDictionary *configDictionary;
                     
                     [result appendFormat:@"\n+ (void)delDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete {\n"];
                     [result appendString:[self db_funcHeader:userDb]];
-                    [result appendFormat:@"\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@ WHERE %%@\", sender]]) {\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@%%@\", sender]]) {\n", DB_NAME(classname)];
                     [result appendFormat:@"\t\t\t\tresult = YES;\n"];
                     [result appendFormat:@"\t\t\t}\n"];
                     [result appendString:[self db_funcFooter]];
@@ -571,6 +571,8 @@ static NSDictionary *configDictionary;
                                 [result appendFormat:@", self.%@", fieldname];
                             } else if ([type isEqualToString:@"longlong"]) {
                                 [result appendFormat:@", [NSNumber numberWithLongLong:self.%@]", fieldname];
+                            } else if ([style isEqualToString:@"repeated"]) {
+                                [result appendFormat:@", [[%@ mj_keyValuesArrayWithObjectArray:self.%@] mj_JSONString]",type, fieldname];
                             } else {
                                 [result appendFormat:@", [self.%@ mj_JSONString]", fieldname];
                             }
@@ -651,6 +653,8 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t\t\titem.%@ = [set longLongIntForColumn:@\"%@\"];\n", fieldname, fieldname];
                     } else if ([type isEqualToString:@"number"]) {
                         [result appendFormat:@"\t\t\t\titem.%@ = [NSNumber numberWithInt:[set intForColumn:@\"%@\"]];\n",fieldname, fieldname];
+                    } else if ([style isEqualToString:@"repeated"]) {
+                        [result appendFormat:@"\t\t\t\titem.%@ = [%@ mj_objectArrayWithKeyValuesArray:[[set stringForColumn:@\"%@\"] mj_JSONObject]];\n",fieldname, type, fieldname];
                     } else {
                         //自定义对象
                         [result appendFormat:@"\t\t\t\titem.%@ = [%@ mj_objectWithKeyValues:[[set stringForColumn:@\"%@\"] mj_JSONObject]];\n",fieldname, type, fieldname];
