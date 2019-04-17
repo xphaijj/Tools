@@ -404,7 +404,6 @@ static NSDictionary *configDictionary;
         if ((methodType == TYPE_ADD) && (result.length != 0) && (index == INDEX_TWO || index == INDEX_THREE)) {
             [result appendFormat:@","];
         }
-        NSLog(@"fields:%@ propertys:%@ \n",fields,propertys);
         [result appendString:[self singleProperty:fields fileType:fileType methodType:methodType index:index key:key keyType:keyType keyfieldname:keyfieldname]];
         
     }
