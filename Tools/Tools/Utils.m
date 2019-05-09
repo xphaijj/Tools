@@ -63,12 +63,12 @@ static Utils *shareData;
  */
 + (NSDictionary *)viewTypeConvertDictionary {
     return @{
-             @"label":@"UILabel",
-             @"button":@"UIButton",
-             @"btn":@"UIButton",
-             @"view":@"UIView",
-             @"imageview":@"UIImageView",
-             @"image":@"UIImageView",
+             @"label":@"UILabel *",
+             @"button":@"UIButton *",
+             @"btn":@"UIButton *",
+             @"view":@"UIView *",
+             @"imageview":@"UIImageView *",
+             @"image":@"UIImageView *",
              };
 }
 /**
