@@ -144,9 +144,8 @@ static NSDictionary *configDictionary;
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\} (save)?(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
-    
     @autoreleasepool {
         for (NSArray *items in requestList) {
             NSString *requestType = @"get";
@@ -158,18 +157,19 @@ static NSDictionary *configDictionary;
                 returnType = @"BaseCollection";
             }
             NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
+            BOOL hasSave = ![[items objectAtIndex:6] isEqualToString:@""];//是否需要保存
             
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC hasSave:hasSave]];
         }
     }
     
     /// 匹配带路径的网络请求
-    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\} (save)?(?:\\s*?)";
     requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -183,13 +183,14 @@ static NSDictionary *configDictionary;
             }
             NSString *baseUrl = [items objectAtIndex:4];
             NSArray *contents = [[items objectAtIndex:5] componentsSeparatedByString:@"\n"];
+            BOOL hasSave = ![[items objectAtIndex:6] isEqualToString:@""];//是否需要保存
             
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC hasSave:hasSave]];
             
         }
     }
@@ -207,7 +208,7 @@ static NSDictionary *configDictionary;
  * @prama  methodType:方法类型
  * @prama  contents:接口参数
  */
-+ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType
++ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType hasSave:(BOOL)hasSave
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSMutableString *res1 = [[NSMutableString alloc] init];
@@ -244,7 +245,7 @@ static NSDictionary *configDictionary;
         {
             [result appendFormat:@"/**\n"];
             [result appendFormat:@" * @brief %@\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
-            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
             [result appendFormat:@" **/\n"];
         }
             break;
@@ -338,7 +339,7 @@ static NSDictionary *configDictionary;
             else {
                 NSLog(@"ERROR -- 网络请求接口参数有误");
             }
-            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
             
             if (methodType == TYPE_METHOD) {
                 [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
@@ -391,7 +392,7 @@ static NSDictionary *configDictionary;
                     if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                         [res1 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                     }
-                    [res1 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+                    [res1 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
                     [res1 appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
                     [res1 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
                     [res1 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
@@ -455,8 +456,53 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\t[requestParams addEntriesFromDictionary:iparams];\n"];
                     [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@]];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
                     [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams]);\n"];
-                    
                     [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, parameters);\n"];
+                    
+                    [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, NSDictionary *result) = ^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
+                    [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, parameters, result);\n"];
+                    if (hasSave) {
+                        [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
+                        [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:result forKey:baseUrl];\n"];
+                        [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] synchronize];\n"];
+                        [result appendString:@"\t\t}\n"];
+                    }
+                    [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
+                    if (![returnType isEqualToString:@"BaseCollection"]) {
+                        [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
+                        if (returnIsList) {//返回的数据类型是数组
+                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
+                            [result appendString:@"\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
+                            [result appendString:@"\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
+                            [result appendFormat:@"\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
+                            [result appendFormat:@"\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
+                            [result appendFormat:@"\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
+                            [result appendFormat:@"\t\t\t\t} else {\n"];
+                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:obj];\n"];
+                            [result appendFormat:@"\t\t\t\t}\n"];
+                            [result appendFormat:@"\t\t\t}];\n"];
+                            [result appendFormat:@"\t\t\tsuccess(task, res, resultList, result);\n"];
+                        } else {
+                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
+                            [result appendString:@"\t\t\tsuccess(task, res, info, result);\n"];
+                        }
+                        
+                        [result appendFormat:@"\t\t} else {\n"];
+                        [result appendString:@"\t\t\tsuccess(task, res, data, result);\n"];
+                        [result appendFormat:@"\t\t}\n"];
+                    } else {
+                        [result appendString:@"\t\tNSDictionary *data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
+                        [result appendString:@"\t\tsuccess(task, res, data, result);\n"];
+                    }
+                    [result appendString:@"\t};\n"];
+                    if (hasSave) {
+                        [result appendString:@"\tif ([[NSUserDefaults standardUserDefaults].dictionaryRepresentation.allKeys containsObject:baseUrl]) {\n"];
+                        [result appendString:@"\t\tNSDictionary *result = [[NSUserDefaults standardUserDefaults] objectForKey:baseUrl];\n"];
+                        [result appendString:@"\t\tcallback(nil, result);\n"];
+                        [result appendString:@"\t}\n"];
+                    }
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
                         [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] GET:baseUrl parameters:parameters progress:^(NSProgress * uploadProgress) {\n", interfacename];
@@ -526,37 +572,9 @@ static NSDictionary *configDictionary;
                     }
                     else if ([configDictionary[@"response"] isEqualToString:@"json"]){
                     }
-                    [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, parameters, result);\n"];
-                    [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
-                    if (![returnType isEqualToString:@"BaseCollection"]) {
-                        [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
-                        if (returnIsList) {//返回的数据类型是数组
-                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
-                            [result appendString:@"\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
-                            [result appendString:@"\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
-                            [result appendFormat:@"\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
-                            [result appendFormat:@"\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
-                            [result appendFormat:@"\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
-                            [result appendFormat:@"\t\t\t\t} else {\n"];
-                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:obj];\n"];
-                            [result appendFormat:@"\t\t\t\t}\n"];
-                            [result appendFormat:@"\t\t\t}];\n"];
-                            [result appendFormat:@"\t\t\tsuccess(task, res, resultList, result);\n"];
-                        } else {
-                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
-                            [result appendString:@"\t\t\tsuccess(task, res, info, result);\n"];
-                        }
-                        
-                        [result appendFormat:@"\t\t} else {\n"];
-                        [result appendString:@"\t\t\tsuccess(task, res, data, result);\n"];
-                        [result appendFormat:@"\t\t}\n"];
-                    } else {
-                        [result appendString:@"\t\tNSDictionary *data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
-                        [result appendString:@"\t\tsuccess(task, res, data, result);\n"];
-                    }
+                    
+                    [result appendString:@"\t\tcallback(task, result);\n"];
+                    
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
                     [result appendFormat:@"\t\tYLT_LogError(@\"%%@ %%@ %%@\", baseUrl, parameters, task);\n"];
                     
@@ -579,7 +597,7 @@ static NSDictionary *configDictionary;
                 case TYPE_REQUEST: {
                     [res3 appendFormat:@"{\n"];
                     [res3 appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] init];\n"];
-                    [res3 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType]];
+                    [res3 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
                     if ([configDictionary[@"baseurl"] boolValue]) {
                         [res3 appendFormat:@"\tNSURLSessionDataTask *task = [self %@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     } else {
@@ -615,7 +633,7 @@ static NSDictionary *configDictionary;
  * @prama  methodType:方法类型
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType
++ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType hasSave:hasSave
 {
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {

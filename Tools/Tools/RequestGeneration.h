@@ -44,17 +44,19 @@
  * @prama  interface:接口名称
  * @prama  returnType:返回类型
  * @prama  methodType:方法类型
+ * @prama  hasSave:是否需要实现临时保存
  * @prama  contents:接口参数
  */
-+ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType;
++ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType hasSave:(BOOL)hasSave;
 
 /**
  * @brief  request请求的所有参数
  * @prama  contents:参数列表
  * @prama  methodType:方法类型
+ * @prama  hasSave:是否需要实现临时保存
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType;
++ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType hasSave:(BOOL)hasSave;
 
 
 
