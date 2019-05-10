@@ -467,35 +467,37 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t\t}\n"];
                     }
                     [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
+                    [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
+                    
+                    [result appendFormat:@"\t\tif (success) {\n"];
                     if (![returnType isEqualToString:@"BaseCollection"]) {
-                        [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
                         if (returnIsList) {//返回的数据类型是数组
-                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
-                            [result appendString:@"\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
-                            [result appendString:@"\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
-                            [result appendFormat:@"\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
-                            [result appendFormat:@"\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
-                            [result appendFormat:@"\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
-                            [result appendFormat:@"\t\t\t\t} else {\n"];
-                            [result appendFormat:@"\t\t\t\t\t[resultList addObject:obj];\n"];
-                            [result appendFormat:@"\t\t\t\t}\n"];
-                            [result appendFormat:@"\t\t\t}];\n"];
-                            [result appendFormat:@"\t\t\tsuccess(task, res, resultList, result);\n"];
+                            [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
+                            [result appendString:@"\t\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
+                            [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
+                            [result appendFormat:@"\t\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
+                            [result appendFormat:@"\t\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
+                            [result appendFormat:@"\t\t\t\t\t} else {\n"];
+                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:obj];\n"];
+                            [result appendFormat:@"\t\t\t\t\t}\n"];
+                            [result appendFormat:@"\t\t\t\t}];\n"];
+                            [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, result);\n"];
                         } else {
-                            [result appendFormat:@"\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
-                            [result appendString:@"\t\t\tsuccess(task, res, info, result);\n"];
+                            [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
+                            [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
                         }
                         
-                        [result appendFormat:@"\t\t} else {\n"];
-                        [result appendString:@"\t\t\tsuccess(task, res, data, result);\n"];
-                        [result appendFormat:@"\t\t}\n"];
+                        [result appendFormat:@"\t\t\t} else {\n"];
+                        [result appendString:@"\t\t\t\tsuccess(task, res, data, result);\n"];
+                        [result appendFormat:@"\t\t\t}\n"];
                     } else {
-                        [result appendString:@"\t\tNSDictionary *data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
-                        [result appendString:@"\t\tsuccess(task, res, data, result);\n"];
+                        [result appendString:@"\t\t\tsuccess(task, res, data, result);\n"];
                     }
+                    [result appendFormat:@"\t\t}\n"];
                     [result appendString:@"\t};\n"];
                     if (hasSave) {
                         [result appendString:@"\tif ([[NSUserDefaults standardUserDefaults].dictionaryRepresentation.allKeys containsObject:baseUrl]) {\n"];
@@ -588,7 +590,9 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t}\n"];
                     }
                     
-                    [result appendFormat:@"\t\tfailure(task, error);\n"];
+                    [result appendFormat:@"\t\tif (failure) {\n"];
+                    [result appendFormat:@"\t\t\tfailure(task, error);\n"];
+                    [result appendFormat:@"\t\t}\n"];
                     [result appendString:@"\t}];\n"];
                     [result appendString:@"\treturn op;\n"];
                     [result appendString:@"}\n\n"];
