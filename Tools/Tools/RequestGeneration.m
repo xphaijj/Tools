@@ -451,11 +451,11 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t}\n"];
                     }
                     
-                    
-                    [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"action\":@\"%@\"}])];\n", interfacename];
+                    [result appendFormat:@"\tNSMutableDictionary *extraData = [[NSMutableDictionary alloc] init];\n"];
+                    [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"action\":@\"%@\"} extraData:extraData])];\n", interfacename];
                     [result appendFormat:@"\t[requestParams addEntriesFromDictionary:iparams];\n"];
-                    [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@]];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
-                    [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams]);\n"];
+                    [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@] extraData:extraData];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
+                    [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams extraData:extraData]);\n"];
                     [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, parameters);\n"];
                     
                     [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, NSDictionary *result) = ^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
@@ -466,8 +466,9 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] synchronize];\n"];
                         [result appendString:@"\t\t}\n"];
                     }
-                    [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:result];\n"];
-                    [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters]);\n"];
+                    [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters extraData:extraData]);\n"];
+                    [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:data];\n"];
+                    [result appendString:@"\t\tid data = ([PHRequest analysisResult:result baseUrl:baseUrl parameters:parameters extraData:extraData]);\n"];
                     
                     [result appendFormat:@"\t\tif (success) {\n"];
                     if (![returnType isEqualToString:@"BaseCollection"]) {
