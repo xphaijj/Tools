@@ -450,25 +450,26 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t});\n"];
                         [result appendFormat:@"\t}\n"];
                     }
-                    
                     [result appendFormat:@"\tNSMutableDictionary *extraData = [[NSMutableDictionary alloc] init];\n"];
                     [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"action\":@\"%@\"} extraData:extraData])];\n", interfacename];
                     [result appendFormat:@"\t[requestParams addEntriesFromDictionary:iparams];\n"];
                     [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@] extraData:extraData];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
-                    [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams extraData:extraData]);\n"];
-                    [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, parameters);\n"];
                     
-                    [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, NSDictionary *result) = ^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
-                    [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, parameters, result);\n"];
+                    [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams extraData:extraData]);\n"];
+                    [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
+                    
+                    [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, id result) = ^(NSURLSessionDataTask *task, id result) {\n"];
                     if (hasSave) {
                         [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:result forKey:baseUrl];\n"];
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] synchronize];\n"];
                         [result appendString:@"\t\t}\n"];
                     }
-                    [result appendString:@"\t\tid data = ([PHRequest responseResult:result baseUrl:baseUrl parameters:parameters extraData:extraData]);\n"];
-                    [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:data];\n"];
-                    [result appendString:@"\t\tid data = ([PHRequest analysisResult:result baseUrl:baseUrl parameters:parameters extraData:extraData]);\n"];
+                    [result appendString:@"\t\tid decryptResult = ([PHRequest responseResult:result baseUrl:baseUrl parameters:extraData extraData:extraData]);\n"];
+                    [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, extraData, decryptResult);\n"];
+                    
+                    [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:decryptResult];\n"];
+                    [result appendString:@"\t\tid data = decryptResult[@\"data\"];\n"];
                     
                     [result appendFormat:@"\t\tif (success) {\n"];
                     if (![returnType isEqualToString:@"BaseCollection"]) {
@@ -485,24 +486,24 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:obj];\n"];
                             [result appendFormat:@"\t\t\t\t\t}\n"];
                             [result appendFormat:@"\t\t\t\t}];\n"];
-                            [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, result);\n"];
+                            [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, decryptResult);\n"];
                         } else {
                             [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
                             [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
-                            [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
+                            [result appendString:@"\t\t\t\tsuccess(task, res, info, decryptResult);\n"];
                         }
                         
                         [result appendFormat:@"\t\t\t} else {\n"];
-                        [result appendString:@"\t\t\t\tsuccess(task, res, data, result);\n"];
+                        [result appendString:@"\t\t\t\tsuccess(task, res, data, decryptResult);\n"];
                         [result appendFormat:@"\t\t\t}\n"];
                     } else {
-                        [result appendString:@"\t\t\tsuccess(task, res, data, result);\n"];
+                        [result appendString:@"\t\t\tsuccess(task, res, data, decryptResult);\n"];
                     }
                     [result appendFormat:@"\t\t}\n"];
                     [result appendString:@"\t};\n"];
                     if (hasSave) {
                         [result appendString:@"\tif ([[NSUserDefaults standardUserDefaults].dictionaryRepresentation.allKeys containsObject:baseUrl]) {\n"];
-                        [result appendString:@"\t\tNSDictionary *result = [[NSUserDefaults standardUserDefaults] objectForKey:baseUrl];\n"];
+                        [result appendString:@"\t\tid result = [[NSUserDefaults standardUserDefaults] objectForKey:baseUrl];\n"];
                         [result appendString:@"\t\tcallback(nil, result);\n"];
                         [result appendString:@"\t}\n"];
                     }
@@ -519,7 +520,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t}\n"];
                         }
                         
-                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
+                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
                         [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters progress:^(NSProgress * uploadProgress) {\n", interfacename];
@@ -532,10 +533,10 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t}\n"];
                         }
                         
-                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
+                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"patch"] || [requestType isEqualToString:@"ipatch"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PATCH:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PATCH:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, id result) {\n\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
                         [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", interfacename];
@@ -553,13 +554,13 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t}\n"];
                         }
                         
-                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n"];
+                        [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"put"] || [requestType isEqualToString:@"iput"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PUT:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PUT:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"delete"] || [requestType isEqualToString:@"idelete"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] DELETE:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, NSDictionary *result) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] DELETE:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
                     }
                     
                     if (!hideHud) {
@@ -579,7 +580,7 @@ static NSDictionary *configDictionary;
                     [result appendString:@"\t\tcallback(task, result);\n"];
                     
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
-                    [result appendFormat:@"\t\tYLT_LogError(@\"%%@ %%@ %%@\", baseUrl, parameters, task);\n"];
+                    [result appendFormat:@"\t\tYLT_LogError(@\"%%@ %%@ %%@\", baseUrl, extraData, task);\n"];
                     
                     [result appendString:@"\t\t[PHRequest responseError:error baseUrl:baseUrl parameters:parameters];\n"];
                     
