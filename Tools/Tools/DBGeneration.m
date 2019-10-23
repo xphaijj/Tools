@@ -273,9 +273,15 @@ static NSDictionary *configDictionary;
                     
                     [result appendFormat:@"\n+ (void)delDB_ForConditions:(NSString *)sender complete:(YLT_DBComplete)complete {\n"];
                     [result appendString:[self db_funcHeader:userDb]];
-                    [result appendFormat:@"\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@%%@\", sender]]) {\n", DB_NAME(classname)];
-                    [result appendFormat:@"\t\t\t\tresult = YES;\n"];
-                    [result appendFormat:@"\t\t\t}\n"];
+                    [result appendString:@"\t\t\tif (!sender.ylt_isValid) {\n"];
+                    [result appendFormat:@"\t\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@\"]]) {\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\t\t\tresult = YES;\n"];
+                    [result appendFormat:@"\t\t\t\t}\n"];
+                    [result appendString:@"\t\t\t} else {\n"];
+                    [result appendFormat:@"\t\t\t\tif ([db executeUpdate:[NSString stringWithFormat:@\"DELETE FROM %@ WHERE %%@\", sender]]) {\n", DB_NAME(classname)];
+                    [result appendFormat:@"\t\t\t\t\tresult = YES;\n"];
+                    [result appendFormat:@"\t\t\t\t}\n"];
+                    [result appendString:@"\t\t\t}\n"];
                     [result appendString:[self db_funcFooter]];
                 }
                     break;
