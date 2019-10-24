@@ -237,9 +237,9 @@ static NSDictionary *configDictionary;
                     [result appendString:[self db_funcHeader:userDb]];
                     [result appendFormat:@"\t\t\t[db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", DB_NAME(classname)];
                     if ([keyType isEqualToString:@"int"]) {
-                        [result appendFormat:@"%@ INTEGER PRIMARY KEY", key];
+                        [result appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", key];
                     } else if ([keyType isEqualToString:@"string"]){
-                        [result appendFormat:@"%@ TEXT PRIMARY KEY", key];
+                        [result appendFormat:@"%@ TEXT PRIMARY KEY AUTOINCREMENT", key];
                     }
                     [result appendString:[self allPropertys:contentsList fileType:fileType methodType:TYPE_ADD index:INDEX_ONE key:key keyType:keyType keyfieldname:keyfieldname]];
                     [result appendFormat:@")\"];\n"];
