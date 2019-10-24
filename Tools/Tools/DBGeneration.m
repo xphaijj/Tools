@@ -394,9 +394,6 @@ static NSDictionary *configDictionary;
     for (int j = 0; j < contentsList.count; j++) {
         NSString *propertyString = contentsList[j];
         NSString *regex = @"^(?:[\\s]*)(required|optional|repeated)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
-        if (insert) {
-            regex = @"^(?:[\\s]*)(required|optional|repeated|primary)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
-        }
         NSArray *propertys = [propertyString arrayOfCaptureComponentsMatchedByRegex:regex];
         //判断是否有属性
         if (propertys.count == 0) {
