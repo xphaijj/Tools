@@ -469,7 +469,7 @@ static NSDictionary *configDictionary;
                     [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, extraData, decryptResult);\n"];
                     
                     [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:decryptResult];\n"];
-                    [result appendString:@"\t\tid data = decryptResult[@\"data\"];\n"];
+                    [result appendString:@"\t\tid data = decryptResult[@\"body\"];\n"];
                     
                     [result appendFormat:@"\t\tif (success) {\n"];
                     if (![returnType isEqualToString:@"BaseCollection"]) {
@@ -478,14 +478,16 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
                             [result appendString:@"\t\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
                             [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
-                            [result appendFormat:@"\t\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
-                            [result appendFormat:@"\t\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
-                            [result appendFormat:@"\t\t\t\t\t} else {\n"];
-                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:obj];\n"];
-                            [result appendFormat:@"\t\t\t\t\t}\n"];
-                            [result appendFormat:@"\t\t\t\t}];\n"];
+                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [User mj_objectArrayWithKeyValuesArray:data];\n"];
+                            
+//                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
+//                            [result appendFormat:@"\t\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
+//                            [result appendFormat:@"\t\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
+//                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
+//                            [result appendFormat:@"\t\t\t\t\t} else {\n"];
+//                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:obj];\n"];
+//                            [result appendFormat:@"\t\t\t\t\t}\n"];
+//                            [result appendFormat:@"\t\t\t\t}];\n"];
                             [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, decryptResult);\n"];
                         } else {
                             [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
