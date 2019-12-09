@@ -478,7 +478,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
                             [result appendString:@"\t\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
                             [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [User mj_objectArrayWithKeyValuesArray:data];\n"];
+                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [%@ mj_objectArrayWithKeyValuesArray:data];\n", modelname];
                             
 //                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
 //                            [result appendFormat:@"\t\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
