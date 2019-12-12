@@ -692,15 +692,15 @@ static NSDictionary *configDictionary;
                 }
                 else if ([style isEqualToString:@"class"]) {
                     [result appendFormat:@" %@:(%@ *)%@", fieldname, type, fieldname];
-                }
-                else if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]){
+                } else if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[type lowercaseString]]){
                     if ([[Utils modelTypeConvertDictionary][[type lowercaseString]] rangeOfString:@"*"].location == NSNotFound) {
                         [result appendFormat:@" %@:(%@)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                     } else {
                         [result appendFormat:@" %@:(%@)%@", fieldname, [Utils modelTypeConvertDictionary][[type lowercaseString]], fieldname];
                     }
-                }
-                else {
+                } else if ([enumList containsObject:type]) {
+                    [result appendFormat:@" %@:(%@)%@", fieldname, type, fieldname];
+                } else {
                     //首先 区分开枚举类型与数据类型   所有的枚举类型  使用整型替代
                     [result appendFormat:@" %@:(%@ *)%@", fieldname, type, fieldname];
                 }
