@@ -23,7 +23,9 @@
     }
     if ([self.type isEqualToString:@"array"] && [self.sourceData.allKeys containsObject:@"items"]) {
         NSString *ref = [[self.sourceData objectForKey:@"items"] objectForKey:@"$ref"];
-        self.type = [[ref componentsSeparatedByString:@"/"] lastObject];
+        if (ref) {
+            self.type = [[ref componentsSeparatedByString:@"/"] lastObject];
+        }
         return [NSString stringWithFormat:@"\trepeated %@ %@ = nil;//%@\n", self.type, self.key, self.summary];;
     }
     

@@ -107,7 +107,11 @@
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
         [allRequests enumerateObjectsUsingBlock:^(SwaggerModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [h appendFormat:@"request %@ %@ %@ %@ { //%@\n", obj.method, obj.operationId, obj.responseObj, obj.basePath, obj.summary];
-            [obj.params enumerateObjectsUsingBlock:^(SwaggerParam * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+            [[obj.params sortedArrayUsingComparator:^NSComparisonResult(SwaggerParam *_Nonnull obj1, SwaggerParam *_Nonnull obj2) {
+                NSStringCompareOptions comparisonOptions = NSCaseInsensitiveSearch|NSNumericSearch|NSWidthInsensitiveSearch|NSForcedOrderingSearch;
+                return ([obj1.key compare:obj2.key options:comparisonOptions]);
+            }] enumerateObjectsUsingBlock:^(SwaggerParam * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 [h appendString:obj.codeString];
             }];
             [h appendFormat:@"}\n\n"];
