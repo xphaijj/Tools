@@ -31,9 +31,13 @@
 
 - (NSString *)operationId {
     _operationId = self.basePath;
-    while ([_operationId rangeOfString:@"/"].location != NSNotFound) {
-        _operationId = [_operationId stringByReplacingOccurrencesOfString:@"/" withString:@""];
-    }
+    NSArray<NSString *> *list = [[_operationId componentsSeparatedByString:@"/"] reverseObjectEnumerator].allObjects;
+    [list enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        _operationId = obj;
+        if (_operationId && _operationId.length != 0) {
+            *stop = YES;
+        }
+    }];
     return _operationId;
 }
 

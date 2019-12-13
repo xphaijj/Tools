@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 @interface SwaggerToJson : NSObject
 
 /**
@@ -19,5 +17,3 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath config:(NSDictionary *)config;
 
 @end
-
-NS_ASSUME_NONNULL_END
