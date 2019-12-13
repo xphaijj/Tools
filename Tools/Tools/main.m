@@ -12,6 +12,7 @@
 #import "RequestGeneration.h"
 #import "PictureGeneration.h"
 #import "Utils.h"
+#import "SwaggerToJson.h"
 
 void generation(NSString *sourcePath, NSString *outputPath, NSDictionary *config);
 
@@ -37,11 +38,14 @@ int main(int argc, const char * argv[]) {
                         [PictureGeneration generationSourcePath:sourcePath outPath:outputPath];
                     }
                     else {
+                        NSDictionary *config = [Utils configDictionary:sourcePath];
                         outputPath = [[NSMutableString alloc] initWithUTF8String:argv[1]];
                         outputPath = [outputPath substringToIndex:([outputPath rangeOfString:@"/" options:NSBackwardsSearch].location+1)];
-                        
-                        NSDictionary *config = [Utils configDictionary:sourcePath];
-                        generation(sourcePath, outputPath, config);
+                        if ([sourcePath hasSuffix:@".md"]) {
+                            [SwaggerToJson generationSourcePath:sourcePath outputPath:outputPath config:config];
+                        } else {
+                            generation(sourcePath, outputPath, config);
+                        }
                     }
                 }
             }
@@ -49,22 +53,25 @@ int main(int argc, const char * argv[]) {
             case 3:
             {
                 sourcePath = [NSString stringWithUTF8String:argv[1]];
-                BOOL isDirectory = NO;
-                BOOL exist = [[NSFileManager defaultManager] fileExistsAtPath:sourcePath isDirectory:&isDirectory];
-                if (exist) {
-                    if (isDirectory) {
-                        outputPath = sourcePath;
-                        [PictureGeneration generationSourcePath:sourcePath outPath:outputPath];
-                    }
-                    else {
-                        outputPath = (NSMutableString *)[NSString stringWithUTF8String:argv[2]];
-                        
-                        NSDictionary *config = [Utils configDictionary:sourcePath];
-                        generation(sourcePath, outputPath, config);
+                NSDictionary *config = [Utils configDictionary:sourcePath];
+                if ([sourcePath hasSuffix:@".md"]) {//说明读取的是swagger配置
+                    [SwaggerToJson generationSourcePath:sourcePath outputPath:outputPath config:config];
+                } else if ([sourcePath hasSuffix:@".h"]) {
+                    BOOL isDirectory = NO;
+                    BOOL exist = [[NSFileManager defaultManager] fileExistsAtPath:sourcePath isDirectory:&isDirectory];
+                    if (exist) {
+                        if (isDirectory) {
+                            outputPath = sourcePath;
+                            [PictureGeneration generationSourcePath:sourcePath outPath:outputPath];
+                        }
+                        else {
+                            outputPath = (NSMutableString *)[NSString stringWithUTF8String:argv[2]];
+                            
+                            
+                            generation(sourcePath, outputPath, config);
+                        }
                     }
                 }
-                
-                
             }
                 break;
                 

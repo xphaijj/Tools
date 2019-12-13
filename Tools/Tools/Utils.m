@@ -53,6 +53,8 @@ static Utils *shareData;
              @"dic":@"NSMutableDictionary *",
              @"dictionary":@"NSMutableDictionary *",
              @"id":@"id ",
+             @"integer":@"NSInteger ",
+             @"object":@"id "
              };
 }
 

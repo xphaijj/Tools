@@ -237,6 +237,12 @@ static NSDictionary *configDictionary;
             returnType = [NSString stringWithFormat:@"NSMutableArray<%@ *>", modelname];
         }
     }
+    if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[returnType lowercaseString]]) {
+        returnType = [Utils modelTypeConvertDictionary][[returnType lowercaseString]];
+        if ([returnType hasSuffix:@" *"]) {
+            returnType = [returnType stringByReplacingOccurrencesOfString:@" *" withString:@""];
+        }
+    }
     
     NSString *uploadKey = @"";
     // h m 文件中均需导入的
@@ -735,10 +741,9 @@ static NSDictionary *configDictionary;
                         }
                         else {
                             if (IS_BASE_TYPE(type) || [enumList containsObject:type]) {
-                                if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"] || [enumList containsObject:type]) {
+                                if ([[type lowercaseString] isEqualToString:@"int"] || [[type lowercaseString] isEqualToString:@"short"] || [enumList containsObject:type] || [type isEqualToString:@"integer"]) {
                                     [result appendFormat:@"\trequestParams[@\"%@\"] = [NSNumber numberWithInteger:%@];\n", keyname, fieldname];
-                                }
-                                else {
+                                } else {
                                     [result appendFormat:@"\trequestParams[@\"%@\"] = [NSNumber numberWith%@:%@];\n", keyname, [NSString stringWithFormat:@"%@%@", [[type substringToIndex:1] uppercaseString], [type substringFromIndex:1]], fieldname];
                                 }
                             }

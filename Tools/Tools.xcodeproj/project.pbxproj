@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CE75ED0B1CDC41C6007905F5 /* Config.json in Sources */ = {isa = PBXBuildFile; fileRef = CE75ED0A1CDC3ACF007905F5 /* Config.json */; };
+		FA7DF59123A23F5300D158FA /* SwaggerToJson.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7DF59023A23F5300D158FA /* SwaggerToJson.m */; };
+		FA7DF59423A2481B00D158FA /* SwaggerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7DF59323A2481B00D158FA /* SwaggerModel.m */; };
 		FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8016681A7CC09400F3215A /* RegexKitLite.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		FA80166C1A7CC0F400F3215A /* libicucore.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */; };
 		FA80166D1A7CC0F400F3215A /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FA80166B1A7CC0F400F3215A /* libicucore.dylib */; };
@@ -36,7 +37,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		CE75ED0A1CDC3ACF007905F5 /* Config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = Config.json; path = /Users/user/Code/Tools/Tools/Tools/Config.json; sourceTree = "<absolute>"; };
+		FA7DF58F23A23F5300D158FA /* SwaggerToJson.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwaggerToJson.h; sourceTree = "<group>"; };
+		FA7DF59023A23F5300D158FA /* SwaggerToJson.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SwaggerToJson.m; sourceTree = "<group>"; };
+		FA7DF59223A2481B00D158FA /* SwaggerModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwaggerModel.h; sourceTree = "<group>"; };
+		FA7DF59323A2481B00D158FA /* SwaggerModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SwaggerModel.m; sourceTree = "<group>"; };
 		FA8016671A7CC09400F3215A /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
 		FA8016681A7CC09400F3215A /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
 		FA80166A1A7CC0F400F3215A /* libicucore.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libicucore.A.dylib; path = usr/lib/libicucore.A.dylib; sourceTree = SDKROOT; };
@@ -79,7 +83,6 @@
 		35484D6A1FAC464E00D06920 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				CE75ED0A1CDC3ACF007905F5 /* Config.json */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -93,6 +96,17 @@
 				FA80166B1A7CC0F400F3215A /* libicucore.dylib */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		FA7DF58E23A23F3700D158FA /* 读取swagger文件 */ = {
+			isa = PBXGroup;
+			children = (
+				FA7DF58F23A23F5300D158FA /* SwaggerToJson.h */,
+				FA7DF59023A23F5300D158FA /* SwaggerToJson.m */,
+				FA7DF59223A2481B00D158FA /* SwaggerModel.h */,
+				FA7DF59323A2481B00D158FA /* SwaggerModel.m */,
+			);
+			name = "读取swagger文件";
 			sourceTree = "<group>";
 		};
 		FA8016631A7CBE3C00F3215A /* Lib */ = {
@@ -145,6 +159,7 @@
 		FAB0C1601A7C72C90032D14E /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				FA7DF58E23A23F3700D158FA /* 读取swagger文件 */,
 				FA95022E1CEFE16C0007E8FB /* 图片处理 */,
 				FAC026F51A85128700EE4721 /* 扩展的生成 */,
 				FA8016631A7CBE3C00F3215A /* Lib */,
@@ -240,6 +255,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = FAB0C1551A7C72C90032D14E;
@@ -257,12 +273,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE75ED0B1CDC41C6007905F5 /* Config.json in Sources */,
 				FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */,
+				FA7DF59423A2481B00D158FA /* SwaggerModel.m in Sources */,
 				FAC026F81A8512BD00EE4721 /* CategoryGeneration.m in Sources */,
 				FA9502311CEFE1970007E8FB /* PictureGeneration.m in Sources */,
 				FAB0C1621A7C72C90032D14E /* main.m in Sources */,
 				FAB0C16D1A7C73DB0032D14E /* ModelGeneration.m in Sources */,
+				FA7DF59123A23F5300D158FA /* SwaggerToJson.m in Sources */,
 				FAB0C1701A7C73E80032D14E /* DBGeneration.m in Sources */,
 				FAAB91221A7CADA20018E188 /* Utils.m in Sources */,
 				FA95025B1CEFE9A20007E8FB /* NSImage+Resizing.m in Sources */,
