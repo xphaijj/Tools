@@ -29,6 +29,14 @@
 
 @implementation SwaggerModel
 
+- (NSString *)operationId {
+    _operationId = self.basePath;
+    while ([_operationId rangeOfString:@"/"].location != NSNotFound) {
+        _operationId = [_operationId stringByReplacingOccurrencesOfString:@"/" withString:@""];
+    }
+    return _operationId;
+}
+
 - (NSString *)basePath {
     while ([_basePath hasSuffix:@"/"]) {
         _basePath = [_basePath substringToIndex:_basePath.length-1];

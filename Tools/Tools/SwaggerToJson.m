@@ -48,11 +48,10 @@
             [paths enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary<NSString *, NSDictionary *> *obj, BOOL * _Nonnull stop) {
                 SwaggerModel *model = [[SwaggerModel alloc] init];
                 model.basePath = [NSString stringWithFormat:@"%@%@", sourceObj[@"basePath"], key];
-                
                 model.method = [obj.allKeys.firstObject lowercaseString];//获取get、post
                 NSDictionary *more = [obj objectForKey:model.method];
                 model.summary = [more objectForKey:@"summary"];
-                model.operationId = [more objectForKey:@"operationId"];
+                
                 NSDictionary *parameters = ((NSArray *) [more objectForKey:@"parameters"]).firstObject;
                 //解析请求参数
                 if (parameters.count != 0) {
@@ -66,13 +65,14 @@
                 //解析返回参数
                 BOOL isList = NO;
                 NSString *ref = [[[[more objectForKey:@"responses"] objectForKey:@"200"] objectForKey:@"schema"] objectForKey:@"$ref"];
-                NSString *responseKey = [[ref componentsSeparatedByString:@"/"] lastObject];
+                ref = [[ref componentsSeparatedByString:@"/"] lastObject];
+                NSString *responseKey = ref;
                 responseKey = [[responseKey componentsSeparatedByString:@"«"] lastObject];
-                if ([responseKey hasPrefix:@"Resp«List«"]) {
+                if ([ref hasPrefix:@"Resp«List«"]) {
                     isList = YES;
                     responseKey = [NSString stringWithFormat:@"%@(list)", responseKey];
                 }
-                if ([responseKey hasPrefix:@"Resp«PageResp«"]) {
+                if ([ref hasPrefix:@"Resp«PageResp«"]) {
                     isList = YES;
                     responseKey = [NSString stringWithFormat:@"%@(list)", responseKey];
                 }
@@ -102,6 +102,8 @@
         // 执行 task
         [dataTask resume];
     }];
+    
+    __block BOOL isFinish = NO;
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
         [allRequests enumerateObjectsUsingBlock:^(SwaggerModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [h appendFormat:@"request %@ %@ %@ %@ { //%@\n", obj.method, obj.operationId, obj.responseObj, obj.basePath, obj.summary];
@@ -131,10 +133,12 @@
         }
         
         [h writeToFile:hFilePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        isFinish = YES;
     });
     
-    
-    [[NSRunLoop mainRunLoop] run];
+    if (!isFinish) {
+        [[NSRunLoop mainRunLoop] runUntilDate:[[NSDate date] dateByAddingTimeInterval:1.]];
+    }
 }
 
 + (NSArray<SwaggerParam *> *)dcodeProperties:(NSDictionary<NSString *, NSDictionary*> *)properties {
