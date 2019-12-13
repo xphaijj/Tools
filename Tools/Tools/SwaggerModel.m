@@ -20,8 +20,13 @@
     }
     if ([self.key isEqualToString:@"body"] || [self.key isEqualToString:@"message"] || [self.key isEqualToString:@"code"]) {
         return @"";
-        
     }
+    if ([self.type isEqualToString:@"array"] && [self.sourceData.allKeys containsObject:@"items"]) {
+        NSString *ref = [[self.sourceData objectForKey:@"items"] objectForKey:@"$ref"];
+        self.type = [[ref componentsSeparatedByString:@"/"] lastObject];
+        return [NSString stringWithFormat:@"\trepeated %@ %@ = nil;//%@\n", self.type, self.key, self.summary];;
+    }
+    
     return [NSString stringWithFormat:@"\toptional %@ %@ = nil;//%@\n", self.type, self.key, self.summary];
 }
 

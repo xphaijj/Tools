@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *key;
 /** <#注释#> */
 @property (nonatomic, strong) NSString *summary;
+/** <#注释#> */
+@property (nonatomic, strong) NSDictionary *sourceData;
 
 - (BOOL)isValid;
 

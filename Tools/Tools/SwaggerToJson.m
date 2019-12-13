@@ -149,6 +149,7 @@
         params.key = key;
         params.type = obj[@"type"];
         params.summary = obj[@"description"];
+        params.sourceData = obj;
         if (params.isValid) {
             [result addObject:params];
         }
