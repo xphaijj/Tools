@@ -38,6 +38,7 @@
             *stop = YES;
         }
     }];
+    _operationId = [NSString stringWithFormat:@"%@%@", list.lastObject, _operationId];
     return _operationId;
 }
 
