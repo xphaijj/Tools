@@ -38,12 +38,16 @@ int main(int argc, const char * argv[]) {
                         [PictureGeneration generationSourcePath:sourcePath outPath:outputPath];
                     }
                     else {
-                        NSDictionary *config = [Utils configDictionary:sourcePath];
                         outputPath = [[NSMutableString alloc] initWithUTF8String:argv[1]];
                         outputPath = [outputPath substringToIndex:([outputPath rangeOfString:@"/" options:NSBackwardsSearch].location+1)];
                         if ([sourcePath hasSuffix:@".md"]) {
-                            [SwaggerToJson generationSourcePath:sourcePath outputPath:outputPath config:config];
+                            [SwaggerToJson generationSourcePath:sourcePath outputPath:outputPath config:nil];
+                            NSLog(@"start");
+                            sourcePath = [NSString stringWithFormat:@"%@/source.h", outputPath];
+                            NSDictionary *config = [Utils configDictionary:sourcePath];
+                            generation(sourcePath, outputPath, config);
                         } else {
+                            NSDictionary *config = [Utils configDictionary:sourcePath];
                             generation(sourcePath, outputPath, config);
                         }
                     }
@@ -66,8 +70,6 @@ int main(int argc, const char * argv[]) {
                         }
                         else {
                             outputPath = (NSMutableString *)[NSString stringWithUTF8String:argv[2]];
-                            
-                            
                             generation(sourcePath, outputPath, config);
                         }
                     }

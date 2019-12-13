@@ -139,6 +139,7 @@
     if (!isFinish) {
         [[NSRunLoop mainRunLoop] runUntilDate:[[NSDate date] dateByAddingTimeInterval:1.]];
     }
+    NSLog(@"done");
 }
 
 + (NSArray<SwaggerParam *> *)dcodeProperties:(NSDictionary<NSString *, NSDictionary*> *)properties {
