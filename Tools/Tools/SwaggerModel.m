@@ -29,6 +29,20 @@
 
 @implementation SwaggerModel
 
+- (NSString *)basePath {
+    while ([_basePath hasSuffix:@"/"]) {
+        _basePath = [_basePath substringToIndex:_basePath.length-1];
+    }
+    while ([_basePath hasPrefix:@"/"]) {
+        _basePath = [_basePath substringFromIndex:1];
+    }
+    while ([_basePath hasSuffix:@"}"]) {
+        NSString *lastParams = [_basePath componentsSeparatedByString:@"/"].lastObject;
+        _basePath = [_basePath stringByReplacingOccurrencesOfString:lastParams withString:@""];
+    }
+    return _basePath;
+}
+
 - (NSMutableArray<SwaggerParam *> *)params {
     if (!_params) {
         _params = [[NSMutableArray alloc] init];

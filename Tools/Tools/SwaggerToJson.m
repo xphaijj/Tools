@@ -48,6 +48,7 @@
             [paths enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary<NSString *, NSDictionary *> *obj, BOOL * _Nonnull stop) {
                 SwaggerModel *model = [[SwaggerModel alloc] init];
                 model.basePath = [NSString stringWithFormat:@"%@%@", sourceObj[@"basePath"], key];
+                
                 model.method = [obj.allKeys.firstObject lowercaseString];//获取get、post
                 NSDictionary *more = [obj objectForKey:model.method];
                 model.summary = [more objectForKey:@"summary"];
@@ -124,7 +125,6 @@
             
             [h appendFormat:@"message %@ : BaseCollection {\n", key];
             [obj enumerateObjectsUsingBlock:^(SwaggerParam * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSLog(@"obj.key = %@  %@", key, obj.key);
                 [h appendString:obj.codeString];
             }];
             [h appendFormat:@"}\n\n"];
