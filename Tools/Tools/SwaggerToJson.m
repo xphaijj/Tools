@@ -164,13 +164,25 @@
 + (NSArray<SwaggerParam *> *)dcodeProperties:(NSDictionary<NSString *, NSDictionary*> *)properties {
     __block NSMutableArray<SwaggerParam *> *result = [[NSMutableArray alloc] init];
     [properties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
-        SwaggerParam *params = [[SwaggerParam alloc] init];
-        params.key = key;
-        params.type = obj[@"type"];
-        params.summary = obj[@"description"];
-        params.sourceData = obj;
-        if (params.isValid) {
-            [result addObject:params];
+        if (![obj.allKeys containsObject:@"type"] && [obj.allKeys containsObject:@"$ref"]) {
+            NSString *ref = [obj objectForKey:@"$ref"];
+            SwaggerParam *params = [[SwaggerParam alloc] init];
+            params.key = key;
+            params.type = [[ref componentsSeparatedByString:@"/"] lastObject];
+            params.summary = obj[@"description"];
+            params.sourceData = obj;
+            if (params.isValid) {
+                [result addObject:params];
+            }
+        } else {
+            SwaggerParam *params = [[SwaggerParam alloc] init];
+            params.key = key;
+            params.type = obj[@"type"];
+            params.summary = obj[@"description"];
+            params.sourceData = obj;
+            if (params.isValid) {
+                [result addObject:params];
+            }
         }
     }];
     return result;
