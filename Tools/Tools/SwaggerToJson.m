@@ -57,9 +57,18 @@
                 if (parameters.count != 0) {
                     //上传参数不为空
                     NSString *ref = [[parameters objectForKey:@"schema"] objectForKey:@"$ref"];
-                    NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
-                    if ([pagrams.allKeys containsObject:@"properties"]) {
-                        [model.params addObjectsFromArray:[self dcodeProperties:[pagrams objectForKey:@"properties"]]];
+                    if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
+                        NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
+                        if ([pagrams.allKeys containsObject:@"properties"]) {
+                            [model.params addObjectsFromArray:[self dcodeProperties:[pagrams objectForKey:@"properties"]]];
+                        }
+                    } else {
+                        SwaggerParam *params = [[SwaggerParam alloc] init];
+                        params.key = [parameters objectForKey:@"name"];
+                        params.type = [parameters objectForKey:@"type"];
+                        params.summary = [parameters objectForKey:@"description"];
+                        params.sourceData = parameters;
+                        [model.params addObject:params];
                     }
                 }
                 //解析返回参数
