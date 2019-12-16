@@ -57,6 +57,12 @@
                 if (parameters.count != 0) {
                     //上传参数不为空
                     NSString *ref = [[parameters objectForKey:@"schema"] objectForKey:@"$ref"];
+                    if ([parameters.allKeys containsObject:@"in"]) {
+                        NSString *inMethod = [parameters objectForKey:@"in"];
+                        if ([inMethod isEqualToString:@"query"]) {
+                            model.method = @"upload";
+                        }
+                    }
                     if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
                         NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
                         if ([pagrams.allKeys containsObject:@"properties"]) {
