@@ -328,9 +328,8 @@ static NSDictionary *configDictionary;
                     uploadKey = fieldname;
                     NSString *defaultValue = [fields objectAtIndex:4];
                     NSString *notes = [fields objectAtIndex:5];
-                    
-                    [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                 }
+                [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
             }
             else if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
             }
@@ -485,15 +484,6 @@ static NSDictionary *configDictionary;
                             [result appendString:@"\t\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
                             [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
                             [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [%@ mj_objectArrayWithKeyValuesArray:data];\n", modelname];
-                            
-//                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [[NSMutableArray alloc] init];\n"];
-//                            [result appendFormat:@"\t\t\t\t[((NSArray *) data) enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {\n"];
-//                            [result appendFormat:@"\t\t\t\t\tif ([obj isKindOfClass:[NSDictionary class]] || [obj isKindOfClass:[NSString class]]) {\n"];
-//                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:[%@ mj_objectWithKeyValues:obj]];\n", modelname];
-//                            [result appendFormat:@"\t\t\t\t\t} else {\n"];
-//                            [result appendFormat:@"\t\t\t\t\t\t[resultList addObject:obj];\n"];
-//                            [result appendFormat:@"\t\t\t\t\t}\n"];
-//                            [result appendFormat:@"\t\t\t\t}];\n"];
                             [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, decryptResult);\n"];
                         } else {
                             [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
