@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSString *host;
 /** <#注释#> */
 @property (nonatomic, strong) NSString *basePath;
+/// 请求头
+@property (nonatomic, strong) NSString *pre;
 /** <#注释#> */
 @property (nonatomic, strong) NSString *method;
 /** 注解 */

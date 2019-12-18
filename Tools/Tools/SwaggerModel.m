@@ -39,13 +39,16 @@
 - (NSString *)operationId {
     _operationId = self.basePath;
     NSArray<NSString *> *list = [[_operationId componentsSeparatedByString:@"/"] reverseObjectEnumerator].allObjects;
+    _operationId = @"";
+    __block BOOL sstop = NO;
     [list enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        _operationId = obj;
-        if (_operationId && _operationId.length != 0) {
-            *stop = YES;
+        if (obj && obj.length != 0) {
+            _operationId = [NSString stringWithFormat:@"%@%@", obj, _operationId];
+            *stop = sstop;
+            sstop = YES;
         }
     }];
-    _operationId = [NSString stringWithFormat:@"%@%@", list.lastObject, _operationId];
+    _operationId = [NSString stringWithFormat:@"%@%@", self.pre, _operationId];
     return _operationId;
 }
 

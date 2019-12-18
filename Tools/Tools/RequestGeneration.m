@@ -263,13 +263,13 @@ static NSDictionary *configDictionary;
         case TYPE_NORMALRAC: {
             if (methodType == TYPE_NORMALREQUEST) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
                     [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(RACSignal *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
                     [result appendFormat:@"+(RACSignal *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
@@ -291,13 +291,13 @@ static NSDictionary *configDictionary;
         {
             if (methodType == TYPE_METHOD) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
                     [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(RACSignal *)%@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
                     [result appendFormat:@"+(RACSignal *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
@@ -392,7 +392,7 @@ static NSDictionary *configDictionary;
                     [res1 appendFormat:@"\tRACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {\n"];
                     [res1 appendFormat:@"\t\t@strongify(self);\n"];
                     if ([configDictionary[@"baseurl"] boolValue]) {
-                        [res1 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                        [res1 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     } else {
                         [res1 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     }
@@ -423,7 +423,7 @@ static NSDictionary *configDictionary;
                     [res2 appendFormat:@"\tRACSignal *signal = [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {\n"];
                     [res2 appendFormat:@"\t\t@strongify(self);\n"];
                     if ([configDictionary[@"baseurl"] boolValue]) {
-                        [res2 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                        [res2 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     } else {
                         [res2 appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     }
@@ -610,7 +610,7 @@ static NSDictionary *configDictionary;
                     [res3 appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] init];\n"];
                     [res3 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
                     if ([configDictionary[@"baseurl"] boolValue]) {
-                        [res3 appendFormat:@"\tNSURLSessionDataTask *task = [self %@RequestUrl:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                        [res3 appendFormat:@"\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     } else {
                         [res3 appendFormat:@"\tNSURLSessionDataTask *task = [self %@RequestShowHUD:showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     }
