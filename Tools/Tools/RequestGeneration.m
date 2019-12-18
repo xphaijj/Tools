@@ -237,13 +237,16 @@ static NSDictionary *configDictionary;
             returnType = [NSString stringWithFormat:@"NSMutableArray<%@ *>", modelname];
         }
     }
+    BOOL isBaseType = NO;
     if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[returnType lowercaseString]]) {
         returnType = [Utils modelTypeConvertDictionary][[returnType lowercaseString]];
+        isBaseType = YES;
         if ([returnType hasSuffix:@" *"]) {
             returnType = [returnType stringByReplacingOccurrencesOfString:@" *" withString:@""];
         }
     }
     
+    returnType = ([returnType isEqualToString:@"BaseCollection"]||isBaseType)?@"NSDictionary":returnType;
     NSString *uploadKey = @"";
     // h m 文件中均需导入的
     switch (methodType) {
@@ -277,7 +280,7 @@ static NSDictionary *configDictionary;
             }
             [result appendFormat:@" iparams:(NSDictionary *)iparams"];
             if (methodType == TYPE_NORMALREQUEST) {
-                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
             } else {
                 [result appendFormat:@";"];
             }
@@ -347,7 +350,7 @@ static NSDictionary *configDictionary;
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
             
             if (methodType == TYPE_METHOD) {
-                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
             } else {
                 [result appendFormat:@";"];
             }
@@ -398,7 +401,7 @@ static NSDictionary *configDictionary;
                         [res1 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                     }
                     [res1 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
-                    [res1 appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+                    [res1 appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
                     [res1 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
                     [res1 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
                     [res1 appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
@@ -428,7 +431,7 @@ static NSDictionary *configDictionary;
                     if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                         [res2 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                     }
-                    [res2 appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", [returnType isEqualToString:@"BaseCollection"]?@"NSDictionary":returnType];
+                    [res2 appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
                     [res2 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
                     [res2 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
                     [res2 appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
@@ -477,7 +480,7 @@ static NSDictionary *configDictionary;
                     [result appendString:@"\t\tid data = decryptResult[@\"body\"];\n"];
                     
                     [result appendFormat:@"\t\tif (success) {\n"];
-                    if (![returnType isEqualToString:@"BaseCollection"]) {
+                    if (![returnType isEqualToString:@"BaseCollection"] && ![returnType isEqualToString:@"NSDictionary"]) {
                         if (returnIsList) {//返回的数据类型是数组
                             [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
                             [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
