@@ -746,10 +746,12 @@ static NSDictionary *configDictionary;
                             }
                             else if ([type isEqualToString:@"string"] || [NSClassFromString(type) isKindOfClass:[NSObject class]]){
                                 [result appendFormat:@"\trequestParams[@\"%@\"] = %@;\n", keyname, fieldname];
+                            } else if ([Utils.modelTypeConvertDictionary.allKeys containsObject:type]) {
+                                [result appendFormat:@"\trequestParams[@\"%@\"] = %@;\n", keyname, fieldname];
                             }
                             else {
 #warning 非简单数据类型的处理 包含枚举类型和model类型
-                                [result appendFormat:@"\trequestParams[@\"%@\"] = %@;\n", keyname, fieldname];
+                                [result appendFormat:@"\trequestParams[@\"%@\"] = %@.mj_JSONObject;\n", keyname, fieldname];
                             }
                         }
                     }
