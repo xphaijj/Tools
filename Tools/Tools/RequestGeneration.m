@@ -402,7 +402,7 @@ static NSDictionary *configDictionary;
                     }
                     [res1 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
                     [res1 appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
-                    [res1 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data?data:@{}, @\"sourceData\":sourceData}];\n"];
+                    [res1 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
                     [res1 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
                     [res1 appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
                     [res1 appendFormat:@"\t\t\t[subscriber sendNext:error];\n"];
@@ -432,7 +432,7 @@ static NSDictionary *configDictionary;
                         [res2 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                     }
                     [res2 appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
-                    [res2 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data?data:@{}, @\"sourceData\":sourceData}];\n"];
+                    [res2 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
                     [res2 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
                     [res2 appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
                     [res2 appendFormat:@"\t\t\t[subscriber sendNext:error];\n"];
