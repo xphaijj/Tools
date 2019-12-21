@@ -36,6 +36,13 @@
 
 @implementation SwaggerModel
 
+- (NSString *)responseObj {
+    if (_responseObj == nil || _responseObj.length == 0) {
+        _responseObj = @"BaseCollection";
+    }
+    return _responseObj;
+}
+
 - (NSString *)operationId {
     _operationId = self.basePath;
     NSArray<NSString *> *list = [[_operationId componentsSeparatedByString:@"/"] reverseObjectEnumerator].allObjects;
@@ -53,16 +60,19 @@
 }
 
 - (NSString *)basePath {
-    while ([_basePath hasSuffix:@"/"]) {
-        _basePath = [_basePath substringToIndex:_basePath.length-1];
+    while ([_basePath hasSuffix:@"/"] || [_basePath hasPrefix:@"/"] || [_basePath hasSuffix:@"}"]) {
+        if ([_basePath hasSuffix:@"/"]) {
+            _basePath = [_basePath substringToIndex:_basePath.length-1];
+        }
+        if ([_basePath hasPrefix:@"/"]) {
+            _basePath = [_basePath substringFromIndex:1];
+        }
+        if ([_basePath hasSuffix:@"}"]) {
+            NSString *lastParams = [_basePath componentsSeparatedByString:@"/"].lastObject;
+            _basePath = [_basePath stringByReplacingOccurrencesOfString:lastParams withString:@""];
+        }
     }
-    while ([_basePath hasPrefix:@"/"]) {
-        _basePath = [_basePath substringFromIndex:1];
-    }
-    while ([_basePath hasSuffix:@"}"]) {
-        NSString *lastParams = [_basePath componentsSeparatedByString:@"/"].lastObject;
-        _basePath = [_basePath stringByReplacingOccurrencesOfString:lastParams withString:@""];
-    }
+    
     return _basePath;
 }
 

@@ -83,12 +83,7 @@
                 NSString *ref = [[[[more objectForKey:@"responses"] objectForKey:@"200"] objectForKey:@"schema"] objectForKey:@"$ref"];
                 ref = [[ref componentsSeparatedByString:@"/"] lastObject];
                 NSString *responseKey = ref;
-                responseKey = [[responseKey componentsSeparatedByString:@"«"] lastObject];
                 if ([ref hasPrefix:@"Resp«List«"]) {
-                    isList = YES;
-                    responseKey = [NSString stringWithFormat:@"%@(list)", responseKey];
-                }
-                if ([ref hasPrefix:@"Resp«PageResp«"]) {
                     isList = YES;
                     responseKey = [NSString stringWithFormat:@"%@(list)", responseKey];
                 }
@@ -193,13 +188,16 @@
     if ([key hasPrefix:@"Resp«List«"]) {
         key = [[key stringByReplacingOccurrencesOfString:@"Resp«List«" withString:@""] stringByReplacingOccurrencesOfString:@"»»" withString:@""];
     }
-    if ([key hasPrefix:@"Resp«PageResp"]) {
-        key = [[key stringByReplacingOccurrencesOfString:@"Resp«PageResp«" withString:@""] stringByReplacingOccurrencesOfString:@"»»" withString:@""];
+    while (key && [key hasPrefix:@"Resp«"]) {
+        key = [key substringFromIndex:5];
     }
-    if ([key hasPrefix:@"Resp«"]) {
-        key = [[key stringByReplacingOccurrencesOfString:@"Resp«" withString:@""] stringByReplacingOccurrencesOfString:@"»" withString:@""];
+    while (key && [key rangeOfString:@"«"].location != NSNotFound) {
+        key = [key stringByReplacingOccurrencesOfString:@"«" withString:@""];
     }
-    return [[key stringByReplacingOccurrencesOfString:@"«" withString:@""] stringByReplacingOccurrencesOfString:@"»" withString:@""];
+    while (key && [key rangeOfString:@"»"].location != NSNotFound) {
+        key = [key stringByReplacingOccurrencesOfString:@"»" withString:@""];
+    }
+    return key;
 }
 
 + (NSDictionary *)dcodeSourceDic:(NSDictionary *)sourceDic router:(NSString *)router {
