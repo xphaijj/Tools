@@ -56,6 +56,9 @@
         }
     }];
     _operationId = [NSString stringWithFormat:@"%@%@", self.pre, _operationId];
+    while ([_operationId rangeOfString:@"{"].location != NSNotFound || [_operationId rangeOfString:@"}"].location != NSNotFound) {
+        _operationId = [[_operationId stringByReplacingOccurrencesOfString:@"{" withString:@""] stringByReplacingOccurrencesOfString:@"}" withString:@""];
+    }
     return _operationId;
 }
 
