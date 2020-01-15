@@ -61,7 +61,7 @@
                     if ([parameters.allKeys containsObject:@"in"]) {
                         NSString *inMethod = [parameters objectForKey:@"in"];
                         if ([inMethod isEqualToString:@"query"]) {
-                            model.method = @"upload";
+                            model.method = @"query";
                         }
                     }
                     if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
