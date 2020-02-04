@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 /** <#注释#> */
 @property (nonatomic, strong) NSString *operationId;
 /** <#注释#> */
+@property (nonatomic, strong) NSString *operationPath;
+/** <#注释#> */
 @property (nonatomic, strong) NSMutableArray<SwaggerParam *> *params;
 /** <#注释#> */
 @property (nonatomic, strong) NSString *responseObj;

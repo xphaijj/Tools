@@ -52,7 +52,7 @@
                 model.method = [obj.allKeys.firstObject lowercaseString];//获取get、post
                 NSDictionary *more = [obj objectForKey:model.method];
                 model.summary = [more objectForKey:@"summary"];
-                
+                model.operationId = [more objectForKey:@"operationId"];
                 NSDictionary *parameters = ((NSArray *) [more objectForKey:@"parameters"]).firstObject;
                 //解析请求参数
                 if (parameters.count != 0) {
@@ -117,7 +117,7 @@
     __block BOOL isFinish = NO;
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
         [allRequests enumerateObjectsUsingBlock:^(SwaggerModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [h appendFormat:@"request %@ %@ %@ %@ { //%@\n", obj.method, obj.operationId, obj.responseObj, obj.basePath, obj.summary];
+            [h appendFormat:@"request %@ %@ %@ %@ { //%@\n", obj.method, obj.operationPath, obj.responseObj, obj.basePath, obj.summary];
         
             [[obj.params sortedArrayUsingComparator:^NSComparisonResult(SwaggerParam *_Nonnull obj1, SwaggerParam *_Nonnull obj2) {
                 NSStringCompareOptions comparisonOptions = NSCaseInsensitiveSearch|NSNumericSearch|NSWidthInsensitiveSearch|NSForcedOrderingSearch;

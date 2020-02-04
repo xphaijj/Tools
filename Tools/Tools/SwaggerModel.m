@@ -26,6 +26,9 @@
         if (ref) {
             self.type = [[ref componentsSeparatedByString:@"/"] lastObject];
         }
+        if ([self.type isEqualToString:@"array"]) {
+            self.type = @"id";
+        }
         return [NSString stringWithFormat:@"\trepeated %@ %@ = nil;//%@\n", self.type, self.key, self.summary];;
     }
     
@@ -43,10 +46,10 @@
     return _responseObj;
 }
 
-- (NSString *)operationId {
-    _operationId = self.basePath;
-    NSArray<NSString *> *list = [[_operationId componentsSeparatedByString:@"/"] reverseObjectEnumerator].allObjects;
-    _operationId = @"";
+- (NSString *)operationPath {
+    _operationPath = self.basePath;
+    NSArray<NSString *> *list = [[_operationPath componentsSeparatedByString:@"/"] reverseObjectEnumerator].allObjects;
+    _operationPath = @"";
     __block BOOL sstop = NO;
     [list enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj && obj.length != 0) {
@@ -55,11 +58,14 @@
             sstop = YES;
         }
     }];
-    _operationId = [NSString stringWithFormat:@"%@%@", self.pre, _operationId];
-    while ([_operationId rangeOfString:@"{"].location != NSNotFound || [_operationId rangeOfString:@"}"].location != NSNotFound) {
-        _operationId = [[_operationId stringByReplacingOccurrencesOfString:@"{" withString:@""] stringByReplacingOccurrencesOfString:@"}" withString:@""];
+    _operationPath = [NSString stringWithFormat:@"%@%@%@", self.pre, _operationPath, self.operationId];
+    while ([_operationPath rangeOfString:@"{"].location != NSNotFound || [_operationPath rangeOfString:@"}"].location != NSNotFound) {
+        _operationPath = [[_operationPath stringByReplacingOccurrencesOfString:@"{" withString:@""] stringByReplacingOccurrencesOfString:@"}" withString:@""];
     }
-    return _operationId;
+    _operationPath = [_operationPath stringByReplacingOccurrencesOfString:@"UsingPOST" withString:@""];
+    _operationPath = [_operationPath stringByReplacingOccurrencesOfString:@"UsingGET" withString:@""];
+    
+    return _operationPath;
 }
 
 - (NSString *)basePath {
