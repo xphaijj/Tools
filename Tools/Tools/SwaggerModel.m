@@ -7,6 +7,7 @@
 //
 
 #import "SwaggerModel.h"
+#import "Utils.h"
 
 @implementation SwaggerParam
 
@@ -21,7 +22,14 @@
     if ([self.key isEqualToString:@"body"] || [self.key isEqualToString:@"message"] || [self.key isEqualToString:@"code"]) {
         return @"";
     }
-    if ([self.type isEqualToString:@"array"] && [self.sourceData.allKeys containsObject:@"items"]) {
+    if (IS_BASE_TYPE(self.type)) {
+        self.type = @"number";
+    }
+    
+    NSString *flag = @"optional";
+    if ([self.inType isEqualToString:@"query"]) {
+        flag = @"query";
+    } else if ([self.type isEqualToString:@"array"] && [self.sourceData.allKeys containsObject:@"items"]) {
         NSString *ref = [[self.sourceData objectForKey:@"items"] objectForKey:@"$ref"];
         if (ref) {
             self.type = [[ref componentsSeparatedByString:@"/"] lastObject];
@@ -29,10 +37,10 @@
         if ([self.type isEqualToString:@"array"]) {
             self.type = @"id";
         }
-        return [NSString stringWithFormat:@"\trepeated %@ %@ = nil;//%@\n", self.type, self.key, self.summary];;
+        flag = @"repeated";
     }
     
-    return [NSString stringWithFormat:@"\toptional %@ %@ = nil;//%@\n", self.type, self.key, self.summary];
+    return [NSString stringWithFormat:@"\t%@ %@ %@ = nil;//%@\n", flag, self.type, self.key, self.summary];
 }
 
 @end

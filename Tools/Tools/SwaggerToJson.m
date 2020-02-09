@@ -58,12 +58,6 @@
                 if (parameters.count != 0) {
                     //上传参数不为空
                     NSString *ref = [[parameters objectForKey:@"schema"] objectForKey:@"$ref"];
-                    if ([parameters.allKeys containsObject:@"in"]) {
-                        NSString *inMethod = [parameters objectForKey:@"in"];
-                        if ([inMethod isEqualToString:@"query"]) {
-                            model.method = @"query";
-                        }
-                    }
                     if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
                         NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
                         if ([pagrams.allKeys containsObject:@"properties"]) {
@@ -74,6 +68,9 @@
                         params.key = [parameters objectForKey:@"name"];
                         params.type = [parameters objectForKey:@"type"];
                         params.summary = [parameters objectForKey:@"description"];
+                        if ([parameters.allKeys containsObject:@"in"]) {
+                            params.inType = parameters[@"in"];
+                        }
                         params.sourceData = parameters;
                         [model.params addObject:params];
                     }
@@ -167,6 +164,9 @@
             params.type = [[ref componentsSeparatedByString:@"/"] lastObject];
             params.summary = obj[@"description"];
             params.sourceData = obj;
+            if ([obj.allKeys containsObject:@"in"]) {
+                params.inType = obj[@"in"];
+            }
             if (params.isValid) {
                 [result addObject:params];
             }
@@ -175,6 +175,9 @@
             params.key = key;
             params.type = obj[@"type"];
             params.summary = obj[@"description"];
+            if ([obj.allKeys containsObject:@"in"]) {
+                params.inType = obj[@"in"];
+            }
             params.sourceData = obj;
             if (params.isValid) {
                 [result addObject:params];

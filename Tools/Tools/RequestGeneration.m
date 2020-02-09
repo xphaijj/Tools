@@ -144,7 +144,7 @@ static NSDictionary *configDictionary;
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType
 {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regexRequest = @"request (get|query|post|upload|put|delete|iget|iquery|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(save)?(?:\\s*?)";
+    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(save)?(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -169,7 +169,7 @@ static NSDictionary *configDictionary;
     }
     
     /// 匹配带路径的网络请求
-    regexRequest = @"request (get|query|post|upload|put|delete|iget|iquery|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(save)?(?:\\s*?)";
+    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(save)?(?:\\s*?)";
     requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -336,7 +336,7 @@ static NSDictionary *configDictionary;
             }
             else if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
             }
-            else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"] || [requestType isEqualToString:@"query"] || [requestType isEqualToString:@"iquery"]) {
+            else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
             }
             else if ([requestType isEqualToString:@"patch"] || [requestType isEqualToString:@"ipatch"]) {
             }
@@ -465,7 +465,11 @@ static NSDictionary *configDictionary;
                     
                     [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams extraData:extraData]);\n"];
                     [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
-                    if ([requestType isEqualToString:@"query"] || [requestType isEqualToString:@"iquery"]) {
+                    
+                    NSString *queryString = [self allPramaFromContents:contents withType:TYPE_QUERY fileType:fileType hasSave:hasSave];
+                    if (queryString.length > 1) {
+                        [result appendFormat:@"\tNSMutableDictionary *queryParams = [[NSMutableDictionary alloc] init];\n"];
+                        [result appendString:queryString];
                         [result appendFormat:@"\tbaseUrl = [NSString stringWithFormat:@\"%%@?%%@\", baseUrl, AFQueryStringFromParameters(parameters)];\n"];
                     }
                     
@@ -526,7 +530,7 @@ static NSDictionary *configDictionary;
                         
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
-                    else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"] || [requestType isEqualToString:@"query"] || [requestType isEqualToString:@"iquery"]) {
+                    else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
                         [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters progress:^(NSProgress * uploadProgress) {\n", interfacename];
                         
                         if (!hideHud) {
@@ -652,7 +656,7 @@ static NSDictionary *configDictionary;
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {
         NSString *lineString = [contents objectAtIndex:i];
-        NSString *regexLine = @"^(?:[\\s]*)(class|required|optional|repeated|upload)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
+        NSString *regexLine = @"^(?:[\\s]*)(class|required|optional|repeated|upload|query)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
         NSArray *lineList = [lineString arrayOfCaptureComponentsMatchedByRegex:regexLine];
         
         if (lineList.count == 0) {
@@ -731,6 +735,12 @@ static NSDictionary *configDictionary;
             case M_FILE:
             {
                 switch (methodType) {
+                    case TYPE_QUERY: {
+                        if ([style isEqualToString:@"query"]) {
+                            [result appendFormat:@"\tqueryParams[@\"%@\"] = requestParams[@\"%@\"];\n", keyname, keyname];
+                        }
+                    }
+                        break;
                     case TYPE_REQUEST:
                     {
                         if ([style isEqualToString:@"repeated"]) {

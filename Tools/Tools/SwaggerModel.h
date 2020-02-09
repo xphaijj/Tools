@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /** <#注释#> */
 @property (nonatomic, strong) NSString *type;
+/** 参数类型 */
+@property (nonatomic, strong) NSString *inType;
 /** <#注释#> */
 @property (nonatomic, strong) NSString *key;
 /** <#注释#> */
