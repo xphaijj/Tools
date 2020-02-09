@@ -160,7 +160,7 @@ static NSDictionary *configDictionary;
     if ([tcrud containsString:@"D"]) {
         [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_DEL userDb:userDb]];//删
     }
-//    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_MAX userDb:userDb]];
+    [result appendString:[self methodWithClass:classname contents:modelClass FileType:fileType methodType:TYPE_MAX userDb:userDb]];
     //单个类的结束标志
     [result appendFormat:@"\n@end\n"];
     return result;
@@ -218,7 +218,7 @@ static NSDictionary *configDictionary;
                     break;
                 case TYPE_MAX:
                 {
-                    [result appendFormat:@"+ (NSInteger)maxKeyValueDB:(FMDatabaseQueue *)db;\n"];
+                    [result appendFormat:@"+ (NSInteger)maxKeyValueDB:(FMDatabase *)db;\n"];
                 }
                     break;
                     
@@ -234,7 +234,7 @@ static NSDictionary *configDictionary;
                 {
                     /** * 同步 */
                     [result appendString:@"\n- (void)saveDB:(YLT_DBComplete)complete {\n"];
-                    [result appendString:[self db_funcHeader:userDb]];
+                    [result appendString:[self db_funcAddHeader:userDb]];
                     [result appendFormat:@"\t\t\t[db executeUpdate:@\"CREATE TABLE IF NOT EXISTS %@(", DB_NAME(classname)];
                     if ([keyType isEqualToString:@"int"]) {
                         [result appendFormat:@"%@ INTEGER PRIMARY KEY AUTOINCREMENT", key];
@@ -253,6 +253,10 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"]) {\n"];
                     [result appendFormat:@"\t\t\t\tresult = YES;\n"];
                     [result appendFormat:@"\t\t\t}\n"];
+                    [result appendFormat:@"\t\t\tif (result) {\n"];
+                    [result appendFormat:@"\t\t\t\tresult = [%@ maxKeyValueDB:db];\n", classname];
+                    [result appendFormat:@"\t\t\t}\n"];
+                
                     [result appendString:[self db_funcFooter]];
                 }
                     break;
@@ -354,7 +358,7 @@ static NSDictionary *configDictionary;
                 case TYPE_MAX:
                 {
                     /** *同步 */
-                    [result appendFormat:@"\n+ (NSInteger)maxKeyValueDB:(FMDatabaseQueue *)db {\n"];
+                    [result appendFormat:@"\n+ (NSInteger)maxKeyValueDB:(FMDatabase *)db {\n"];
                     [result appendString:[self dbbaseControl2:classname]];
                     [result appendFormat:@"\tFMResultSet* set = [db executeQuery:@\"SELECT MAX(CAST(%@ as INT)) FROM %@\"];\n", key, DB_NAME(classname)];
                     [result appendFormat:@"\tNSInteger result = 0;\n"];
@@ -679,9 +683,9 @@ static NSDictionary *configDictionary;
 
 + (NSString *)footControl {
     NSMutableString *result = [[NSMutableString alloc] init];
-    [result appendString:@"\tif (sync) {\n"];
-    [result appendString:@"\t\t[db close];\n"];
-    [result appendString:@"\t}\n"];
+//    [result appendString:@"\tif (sync) {\n"];
+//    [result appendString:@"\t\t[db close];\n"];
+//    [result appendString:@"\t}\n"];
     return result;
 }
 
@@ -710,15 +714,21 @@ static NSDictionary *configDictionary;
  **/
 + (NSString *)dbbaseControl2:(NSString *)classname {
     NSMutableString *result = [[NSMutableString alloc] init];
-    [result appendString:@"\tBOOL sync = NO;\n"];
-    [result appendString:@"\tif (db == nil) {\n"];
-    [result appendString:@"\t\tsync = YES;\n"];
-    [result appendString:@"\t\tdb = [FMDatabaseQueue databaseWithPath:[YLT_DBHelper shareInstance].ylt_dbPath];\n"];
-    [result appendString:@"\t}\n"];
-    [result appendString:@"\tif (![db open]) {\n"];
-    [result appendString:@"\t\tYLT_LogWarn(@\"数据库错误\");\n"];
-    [result appendString:@"\t\treturn 0;\n"];
-    [result appendString:@"\t}\n"];
+//    [result appendString:@"\tif (![db open]) {\n"];
+//    [result appendString:@"\t\tYLT_LogWarn(@\"数据库错误\");\n"];
+//    [result appendString:@"\t\treturn 0;\n"];
+//    [result appendString:@"\t}\n"];
+    return result;
+}
+
++ (NSString *)db_funcAddHeader:(BOOL)userDb {
+    NSMutableString *result = [[NSMutableString alloc] init];
+    NSString *dbqueue = userDb ? @"ylt_userDbQueue" : @"ylt_databaseQueue";
+    [result appendFormat:@"\t[[YLT_DBHelper shareInstance].%@ inDatabase:^(FMDatabase * _Nonnull db) {\n",dbqueue];
+    [result appendFormat:@"\t\tNSInteger result = 0;\n"];
+    [result appendFormat:@"\t\tif (!db.isOpen) {\n"];
+    [result appendFormat:@"\t\t\tYLT_LogWarn(@\"数据库错误\");\n"];
+    [result appendFormat:@"\t\t} else {\n"];
     return result;
 }
 
