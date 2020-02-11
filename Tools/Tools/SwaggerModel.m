@@ -22,9 +22,6 @@
     if ([self.key isEqualToString:@"body"] || [self.key isEqualToString:@"message"] || [self.key isEqualToString:@"code"]) {
         return @"";
     }
-    if (IS_BASE_TYPE(self.type)) {
-        self.type = @"number";
-    }
     
     NSString *flag = @"optional";
     if ([self.inType isEqualToString:@"query"]) {
