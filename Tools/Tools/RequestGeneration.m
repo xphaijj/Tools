@@ -478,10 +478,10 @@ static NSDictionary *configDictionary;
                     if (cacheDay != 0) {
                         [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
                         if (cacheDay != -1) {
-                            [result appendFormat:@"\t\t\t[[NSUserDefaults standardUserDefaults] setFloat:NSDate.date.timeIntervalSince1970 forKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
+                            [result appendFormat:@"\t\t\t[NSUserDefaults.standardUserDefaults setFloat:NSDate.date.timeIntervalSince1970 forKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
                         }
-                        [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:result forKey:baseUrl];\n"];
-                        [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] synchronize];\n"];
+                        [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults setObject:result forKey:baseUrl];\n"];
+                        [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults synchronize];\n"];
                         [result appendString:@"\t\t}\n"];
                     }
                     [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" result:result baseUrl:baseUrl parameters:requestParams extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
@@ -514,12 +514,12 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\t\t}\n"];
                     [result appendString:@"\t};\n"];
                     if (cacheDay != 0) {
-                        [result appendString:@"\tif ([[NSUserDefaults standardUserDefaults].dictionaryRepresentation.allKeys containsObject:baseUrl]) {\n"];
-                        [result appendString:@"\t\tid result = [[NSUserDefaults standardUserDefaults] objectForKey:baseUrl];\n"];
+                        [result appendString:@"\tif ([NSUserDefaults.standardUserDefaults.dictionaryRepresentation.allKeys containsObject:baseUrl]) {\n"];
+                        [result appendString:@"\t\tid result = [NSUserDefaults.standardUserDefaults objectForKey:baseUrl];\n"];
                         [result appendString:@"\t\tcallback(nil, result);\n"];
                         if (cacheDay != -1) {
                             [result appendString:@"\t\t//判断是否缓存是否过期，如果没有过期，继续使用本地缓存\n"];
-                            [result appendFormat:@"\t\tNSTimeInterval cacheTime = [[NSUserDefaults standardUserDefaults] floatForKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
+                            [result appendFormat:@"\t\tNSTimeInterval cacheTime = [NSUserDefaults.standardUserDefaults floatForKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
                             [result appendFormat:@"\t\tif ([[NSDate date] timeIntervalSince1970]-cacheTime<%zd*24.*3600.) {\n", cacheDay];
                             [result appendFormat:@"\t\t\treturn;\n"];
                             [result appendFormat:@"\t\t}\n"];
