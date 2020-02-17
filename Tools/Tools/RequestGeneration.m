@@ -140,7 +140,7 @@ static NSDictionary *configDictionary;
  **/
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\} (\\d)?(?:\\s*?)";
+    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d)?(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -154,7 +154,9 @@ static NSDictionary *configDictionary;
             }
             NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
             NSInteger cacheDay = [[items objectAtIndex:6] integerValue];//是否需要保存,保存多少天
-            NSLog(@"cacheDay %zd", cacheDay);
+            if (cacheDay == 0 && [[items objectAtIndex:6] isEqualToString:@"0"]) {
+                cacheDay = -1;
+            }
 
             [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES cacheDay:cacheDay]];
             [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD cacheDay:cacheDay]];
@@ -166,7 +168,7 @@ static NSDictionary *configDictionary;
     }
     
     /// 匹配带路径的网络请求
-    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\} (\\d)?(?:\\s*?)";
+    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d)?(?:\\s*?)";
     requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -181,8 +183,10 @@ static NSDictionary *configDictionary;
             NSString *baseUrl = [items objectAtIndex:4];
             NSArray *contents = [[items objectAtIndex:5] componentsSeparatedByString:@"\n"];
             NSInteger cacheDay = [[items objectAtIndex:6] integerValue];//是否需要保存,保存多少天
-            NSLog(@"cacheDay %zd", cacheDay);
-            
+            if (cacheDay == 0 && [[items objectAtIndex:6] isEqualToString:@"0"]) {
+                cacheDay = -1;
+            }
+
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES cacheDay:cacheDay]];
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD cacheDay:cacheDay]];
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST cacheDay:cacheDay]];
@@ -473,6 +477,9 @@ static NSDictionary *configDictionary;
                     [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, id result) = ^(NSURLSessionDataTask *task, id result) {\n"];
                     if (cacheDay != 0) {
                         [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
+                        if (cacheDay != -1) {
+                            [result appendFormat:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:@(NSDate.date.timeIntervalSince1970) forKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
+                        }
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:result forKey:baseUrl];\n"];
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] synchronize];\n"];
                         [result appendString:@"\t\t}\n"];
@@ -510,6 +517,13 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\tif ([[NSUserDefaults standardUserDefaults].dictionaryRepresentation.allKeys containsObject:baseUrl]) {\n"];
                         [result appendString:@"\t\tid result = [[NSUserDefaults standardUserDefaults] objectForKey:baseUrl];\n"];
                         [result appendString:@"\t\tcallback(nil, result);\n"];
+                        if (cacheDay != -1) {
+                            [result appendString:@"\t\t//判断是否缓存是否过期，如果没有过期，继续使用本地缓存\n"];
+                            [result appendFormat:@"\t\tNSTimeInterval cacheTime = [[[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]] floatValue];\n"];
+                            [result appendFormat:@"\t\tif ([[NSDate date] timeIntervalSince1970]-cacheTime<%zd*24.*3600.) {\n", cacheDay];
+                            [result appendFormat:@"\t\t\treturn;\n"];
+                            [result appendFormat:@"\t\t}\n"];
+                        }
                         [result appendString:@"\t}\n"];
                     }
                     
