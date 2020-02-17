@@ -478,7 +478,7 @@ static NSDictionary *configDictionary;
                     if (cacheDay != 0) {
                         [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
                         if (cacheDay != -1) {
-                            [result appendFormat:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:@(NSDate.date.timeIntervalSince1970) forKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
+                            [result appendFormat:@"\t\t\t[[NSUserDefaults standardUserDefaults] setFloat:NSDate.date.timeIntervalSince1970 forKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
                         }
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:result forKey:baseUrl];\n"];
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] synchronize];\n"];
