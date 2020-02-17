@@ -519,7 +519,7 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t\tcallback(nil, result);\n"];
                         if (cacheDay != -1) {
                             [result appendString:@"\t\t//判断是否缓存是否过期，如果没有过期，继续使用本地缓存\n"];
-                            [result appendFormat:@"\t\tNSTimeInterval cacheTime = [[[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]] floatValue];\n"];
+                            [result appendFormat:@"\t\tNSTimeInterval cacheTime = [[NSUserDefaults standardUserDefaults] floatForKey:[NSString stringWithFormat:@\"%%@Time\", baseUrl]];\n"];
                             [result appendFormat:@"\t\tif ([[NSDate date] timeIntervalSince1970]-cacheTime<%zd*24.*3600.) {\n", cacheDay];
                             [result appendFormat:@"\t\t\treturn;\n"];
                             [result appendFormat:@"\t\t}\n"];
