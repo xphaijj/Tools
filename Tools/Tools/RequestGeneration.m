@@ -15,8 +15,7 @@ static NSDictionary *configDictionary;
  * @brief  Model类自动生成
  * @prama  sourcepath:资源路径   outputPath:资源生成路径
  */
-+ (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath config:(NSDictionary *)config
-{
++ (void)generationSourcePath:(NSString *)sourcepath outputPath:(NSString *)outputPath config:(NSDictionary *)config {
     configDictionary = config;
     if (![configDictionary.allKeys containsObject:@"baseurl"]) {
         NSMutableDictionary *dic = [[NSMutableDictionary alloc] initWithDictionary:configDictionary];
@@ -67,8 +66,7 @@ static NSDictionary *configDictionary;
  * @brief  导入头文件
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  **/
-+ (NSString *)introductionPackages:(FileType)fileType
-{
++ (NSString *)introductionPackages:(FileType)fileType {
     NSMutableString *result = [[NSMutableString alloc] init];
     switch (fileType) {
         case H_FILE:
@@ -109,8 +107,7 @@ static NSDictionary *configDictionary;
  * @brief  Request 基本类的功能
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  **/
-+ (NSString *)classOfRequest:(FileType)fileType
-{
++ (NSString *)classOfRequest:(FileType)fileType {
     NSMutableString *result = [[NSMutableString alloc] init];
     switch (fileType) {
         case H_FILE:
@@ -141,10 +138,9 @@ static NSDictionary *configDictionary;
  * @prama  sourceString:需要匹配的字符串
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  **/
-+ (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType
-{
++ (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(save)?(?:\\s*?)";
+    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\} (\\d)?(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -157,19 +153,20 @@ static NSDictionary *configDictionary;
                 returnType = @"BaseCollection";
             }
             NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
-            BOOL hasSave = ![[items objectAtIndex:6] isEqualToString:@""];//是否需要保存
-            
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC hasSave:hasSave]];
+            NSInteger cacheDay = [[items objectAtIndex:6] integerValue];//是否需要保存,保存多少天
+            NSLog(@"cacheDay %zd", cacheDay);
+
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:@"" requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC cacheDay:cacheDay]];
         }
     }
     
     /// 匹配带路径的网络请求
-    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(save)?(?:\\s*?)";
+    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\} (\\d)?(?:\\s*?)";
     requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -183,14 +180,15 @@ static NSDictionary *configDictionary;
             }
             NSString *baseUrl = [items objectAtIndex:4];
             NSArray *contents = [[items objectAtIndex:5] componentsSeparatedByString:@"\n"];
-            BOOL hasSave = ![[items objectAtIndex:6] isEqualToString:@""];//是否需要保存
+            NSInteger cacheDay = [[items objectAtIndex:6] integerValue];//是否需要保存,保存多少天
+            NSLog(@"cacheDay %zd", cacheDay);
             
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL hasSave:hasSave]];
-            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC hasSave:hasSave]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALREQUEST cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_RACSIGNAL cacheDay:cacheDay]];
+            [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NORMALRAC cacheDay:cacheDay]];
             
         }
     }
@@ -208,8 +206,7 @@ static NSDictionary *configDictionary;
  * @prama  methodType:方法类型
  * @prama  contents:接口参数
  */
-+ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType hasSave:(BOOL)hasSave
-{
++ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType cacheDay:(NSInteger)cacheDay {
     NSMutableString *result = [[NSMutableString alloc] init];
     NSMutableString *res1 = [[NSMutableString alloc] init];
     NSMutableString *res2 = [[NSMutableString alloc] init];
@@ -254,7 +251,7 @@ static NSDictionary *configDictionary;
         {
             [result appendFormat:@"/**\n"];
             [result appendFormat:@" * @brief %@\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
-            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
+            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay]];
             [result appendFormat:@" **/\n"];
         }
             break;
@@ -347,7 +344,7 @@ static NSDictionary *configDictionary;
             else {
                 NSLog(@"ERROR -- 网络请求接口参数有误");
             }
-            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
+            [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay]];
             
             if (methodType == TYPE_METHOD) {
                 [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
@@ -400,7 +397,7 @@ static NSDictionary *configDictionary;
                     if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                         [res1 appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                     }
-                    [res1 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
+                    [res1 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay]];
                     [res1 appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
                     [res1 appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
                     [res1 appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
@@ -466,7 +463,7 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams extraData:extraData]);\n"];
                     [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
                     
-                    NSString *queryString = [self allPramaFromContents:contents withType:TYPE_QUERY fileType:fileType hasSave:hasSave];
+                    NSString *queryString = [self allPramaFromContents:contents withType:TYPE_QUERY fileType:fileType cacheDay:cacheDay];
                     if (queryString.length > 1) {
                         [result appendFormat:@"\tNSMutableDictionary *queryParams = [[NSMutableDictionary alloc] init];\n"];
                         [result appendString:queryString];
@@ -474,7 +471,7 @@ static NSDictionary *configDictionary;
                     }
                     
                     [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, id result) = ^(NSURLSessionDataTask *task, id result) {\n"];
-                    if (hasSave) {
+                    if (cacheDay != 0) {
                         [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] setObject:result forKey:baseUrl];\n"];
                         [result appendString:@"\t\t\t[[NSUserDefaults standardUserDefaults] synchronize];\n"];
@@ -509,7 +506,7 @@ static NSDictionary *configDictionary;
                     }
                     [result appendFormat:@"\t\t}\n"];
                     [result appendString:@"\t};\n"];
-                    if (hasSave) {
+                    if (cacheDay != 0) {
                         [result appendString:@"\tif ([[NSUserDefaults standardUserDefaults].dictionaryRepresentation.allKeys containsObject:baseUrl]) {\n"];
                         [result appendString:@"\t\tid result = [[NSUserDefaults standardUserDefaults] objectForKey:baseUrl];\n"];
                         [result appendString:@"\t\tcallback(nil, result);\n"];
@@ -615,7 +612,7 @@ static NSDictionary *configDictionary;
                 case TYPE_REQUEST: {
                     [res3 appendFormat:@"{\n"];
                     [res3 appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] init];\n"];
-                    [res3 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType hasSave:hasSave]];
+                    [res3 appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay]];
                     if ([configDictionary[@"baseurl"] boolValue]) {
                         [res3 appendFormat:@"\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     } else {
@@ -651,8 +648,7 @@ static NSDictionary *configDictionary;
  * @prama  methodType:方法类型
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType hasSave:hasSave
-{
++ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType cacheDay:(NSInteger)cacheDay {
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {
         NSString *lineString = [contents objectAtIndex:i];
