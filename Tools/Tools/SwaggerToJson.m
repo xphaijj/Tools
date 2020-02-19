@@ -53,28 +53,31 @@
                 NSDictionary *more = [obj objectForKey:model.method];
                 model.summary = [more objectForKey:@"summary"];
                 model.operationId = [more objectForKey:@"operationId"];
-                NSDictionary *parameters = ((NSArray *) [more objectForKey:@"parameters"]).firstObject;
-                //解析请求参数
-                if (parameters.count != 0) {
-                    //上传参数不为空
-                    NSString *ref = [[parameters objectForKey:@"schema"] objectForKey:@"$ref"];
-                    if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
-                        NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
-                        if ([pagrams.allKeys containsObject:@"properties"]) {
-                            [model.params addObjectsFromArray:[self dcodeProperties:[pagrams objectForKey:@"properties"]]];
+                [[more objectForKey:@"parameters"] enumerateObjectsUsingBlock:^(NSDictionary *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    NSDictionary *parameters = obj;
+                    //解析请求参数
+                    if (parameters.count != 0) {
+                        //上传参数不为空
+                        NSString *ref = [[parameters objectForKey:@"schema"] objectForKey:@"$ref"];
+                        if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
+                            NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
+                            if ([pagrams.allKeys containsObject:@"properties"]) {
+                                [model.params addObjectsFromArray:[self dcodeProperties:[pagrams objectForKey:@"properties"]]];
+                            }
+                        } else {
+                            SwaggerParam *params = [[SwaggerParam alloc] init];
+                            params.key = [parameters objectForKey:@"name"];
+                            params.type = [parameters objectForKey:@"type"];
+                            params.summary = [parameters objectForKey:@"description"];
+                            if ([parameters.allKeys containsObject:@"in"]) {
+                                params.inType = parameters[@"in"];
+                            }
+                            params.sourceData = parameters;
+                            [model.params addObject:params];
                         }
-                    } else {
-                        SwaggerParam *params = [[SwaggerParam alloc] init];
-                        params.key = [parameters objectForKey:@"name"];
-                        params.type = [parameters objectForKey:@"type"];
-                        params.summary = [parameters objectForKey:@"description"];
-                        if ([parameters.allKeys containsObject:@"in"]) {
-                            params.inType = parameters[@"in"];
-                        }
-                        params.sourceData = parameters;
-                        [model.params addObject:params];
                     }
-                }
+                }];
+                
                 //解析返回参数
                 BOOL isList = NO;
                 NSString *ref = [[[[more objectForKey:@"responses"] objectForKey:@"200"] objectForKey:@"schema"] objectForKey:@"$ref"];
