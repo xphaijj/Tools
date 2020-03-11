@@ -375,7 +375,7 @@ typedef NS_ENUM(NSUInteger, Code) {
                     }
                     else if ([[type lowercaseString] isEqualToString:@"string"]) {
                         if ([defaultValue isEqualToString:@"nil"]) {
-                            [result appendFormat:@"\t\tself.%@ = @\"\";\n", fieldname];
+//                            [result appendFormat:@"\t\tself.%@ = @\"\";\n", fieldname];
                         }
                         else {
                             [result appendFormat:@"\t\tself.%@ = @\"%@\";\n", fieldname, defaultValue];

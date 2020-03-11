@@ -460,7 +460,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t}\n"];
                     }
                     [result appendFormat:@"\tNSMutableDictionary *extraData = [[NSMutableDictionary alloc] init];\n"];
-                    [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"action\":@\"%@\"} extraData:extraData])];\n", interfacename];
+                    [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"requestAction\":@\"%@\"} extraData:extraData])];\n", interfacename];
                     [result appendFormat:@"\t[requestParams addEntriesFromDictionary:iparams];\n"];
                     [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@] extraData:extraData];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
                     
