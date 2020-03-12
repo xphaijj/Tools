@@ -230,6 +230,9 @@ static NSDictionary *configDictionary;
     NSString *modelname = returnType;
     if (returnTypeList.count >= 3) {
         modelname = returnTypeList[1];
+        if ([Utils.modelTypeConvertDictionary.allKeys containsObject:modelname]) {
+            modelname = Utils.modelTypeConvertDictionary[modelname];
+        }
         NSMutableString *returnTypeName = [[NSMutableString alloc] initWithString:[returnTypeList objectAtIndex:2]];
         [returnTypeName deleteCharactersInRange:[returnTypeName rangeOfString:@"("]];
         [returnTypeName deleteCharactersInRange:[returnTypeName rangeOfString:@")"]];
@@ -237,6 +240,7 @@ static NSDictionary *configDictionary;
             returnIsList = YES;
             returnType = [NSString stringWithFormat:@"NSMutableArray<%@ *>", modelname];
         }
+        [returnType stringByReplacingOccurrencesOfString:@"* *" withString:@"*"];
     }
     BOOL isBaseType = NO;
     if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[returnType lowercaseString]]) {
