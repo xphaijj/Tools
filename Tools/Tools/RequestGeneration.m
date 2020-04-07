@@ -228,10 +228,17 @@ static NSDictionary *configDictionary;
     NSArray *returnTypeList = [[returnType arrayOfCaptureComponentsMatchedByRegex:regex] firstObject];
     BOOL returnIsList = NO;//返回数据是否是数组类型
     NSString *modelname = returnType;
+    BOOL returnIsValueType = [Utils.modelTypeConvertDictionary.allKeys containsObject:modelname];
+    if (returnIsValueType) {
+        modelname = Utils.modelTypeConvertDictionary[modelname];
+        modelname = [modelname stringByReplacingOccurrencesOfString:@" *" withString:@""];
+    }
     if (returnTypeList.count >= 3) {
         modelname = returnTypeList[1];
-        if ([Utils.modelTypeConvertDictionary.allKeys containsObject:modelname]) {
+        returnIsValueType = [Utils.modelTypeConvertDictionary.allKeys containsObject:modelname];
+        if (returnIsValueType) {
             modelname = Utils.modelTypeConvertDictionary[modelname];
+            modelname = [modelname stringByReplacingOccurrencesOfString:@" *" withString:@""];
         }
         NSMutableString *returnTypeName = [[NSMutableString alloc] initWithString:[returnTypeList objectAtIndex:2]];
         [returnTypeName deleteCharactersInRange:[returnTypeName rangeOfString:@"("]];
@@ -240,7 +247,6 @@ static NSDictionary *configDictionary;
             returnIsList = YES;
             returnType = [NSString stringWithFormat:@"NSMutableArray<%@ *>", modelname];
         }
-        [returnType stringByReplacingOccurrencesOfString:@"* *" withString:@"*"];
     }
     BOOL isBaseType = NO;
     if ([[Utils modelTypeConvertDictionary].allKeys containsObject:[returnType lowercaseString]]) {
@@ -496,17 +502,23 @@ static NSDictionary *configDictionary;
                     
                     [result appendFormat:@"\t\tif (success) {\n"];
                     if (![returnType isEqualToString:@"BaseCollection"] && ![returnType isEqualToString:@"NSDictionary"]) {
-                        if (returnIsList) {//返回的数据类型是数组
-                            [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
+                        if (returnIsValueType) {
+                            [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSObject class]]) {\n"];
+                            [result appendFormat:@"\t\t\t\t%@ *info = data;\n", modelname];
                             [result appendString:@"\t\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
-                            [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [%@ mj_objectArrayWithKeyValuesArray:data];\n", modelname];
-                            [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, decryptResult);\n"];
                         } else {
-                            [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
-                            [result appendString:@"\t\t\t\tsuccess(task, res, info, decryptResult);\n"];
+                            if (returnIsList) {//返回的数据类型是数组
+                                [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                                [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", modelname, modelname];
+                                [result appendString:@"\t\t\t\tsuccess(task, res, @[info].mutableCopy, result);\n"];
+                                [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
+                                [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [%@ mj_objectArrayWithKeyValuesArray:data];\n", modelname];
+                                [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, decryptResult);\n"];
+                            } else {
+                                [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                                [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
+                                [result appendString:@"\t\t\t\tsuccess(task, res, info, decryptResult);\n"];
+                            }
                         }
                         
                         [result appendFormat:@"\t\t\t} else {\n"];
@@ -532,7 +544,7 @@ static NSDictionary *configDictionary;
                     }
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] GET:baseUrl parameters:parameters progress:^(NSProgress * uploadProgress) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] GET:baseUrl parameters:parameters headers:nil progress:^(NSProgress * uploadProgress) {\n", interfacename];
                         
                         if (!hideHud) {
                             [result appendFormat:@"\t\tif (showHUD) {\n"];
@@ -546,7 +558,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters progress:^(NSProgress * uploadProgress) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters headers:nil progress:^(NSProgress * uploadProgress) {\n", interfacename];
                         
                         if (!hideHud) {
                             [result appendFormat:@"\t\tif (showHUD) {\n"];
@@ -559,10 +571,10 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"patch"] || [requestType isEqualToString:@"ipatch"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PATCH:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, id result) {\n\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PATCH:baseUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters headers:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", interfacename];
                         [result appendFormat:@"\t\tif (formDataBlock) {\n"];
                         [result appendFormat:@"\t\t\tformDataBlock(formData);\n"];
                         [result appendFormat:@"\t\t} else {\n"];
@@ -584,10 +596,10 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"put"] || [requestType isEqualToString:@"iput"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PUT:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PUT:baseUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"delete"] || [requestType isEqualToString:@"idelete"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] DELETE:baseUrl parameters:parameters success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] DELETE:baseUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
                     }
                     
                     if (!hideHud) {
