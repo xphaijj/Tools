@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FA08DAD2243D98A100F210D5 /* NSString+Hash.m in Sources */ = {isa = PBXBuildFile; fileRef = FA08DAD0243D98A100F210D5 /* NSString+Hash.m */; };
 		FA7DF59123A23F5300D158FA /* SwaggerToJson.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7DF59023A23F5300D158FA /* SwaggerToJson.m */; };
 		FA7DF59423A2481B00D158FA /* SwaggerModel.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7DF59323A2481B00D158FA /* SwaggerModel.m */; };
 		FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8016681A7CC09400F3215A /* RegexKitLite.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -37,6 +38,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FA08DAD0243D98A100F210D5 /* NSString+Hash.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Hash.m"; sourceTree = "<group>"; };
+		FA08DAD1243D98A100F210D5 /* NSString+Hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Hash.h"; sourceTree = "<group>"; };
 		FA7DF58F23A23F5300D158FA /* SwaggerToJson.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwaggerToJson.h; sourceTree = "<group>"; };
 		FA7DF59023A23F5300D158FA /* SwaggerToJson.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SwaggerToJson.m; sourceTree = "<group>"; };
 		FA7DF59223A2481B00D158FA /* SwaggerModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwaggerModel.h; sourceTree = "<group>"; };
@@ -98,6 +101,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		FA08DACF243D98A100F210D5 /* hash */ = {
+			isa = PBXGroup;
+			children = (
+				FA08DAD0243D98A100F210D5 /* NSString+Hash.m */,
+				FA08DAD1243D98A100F210D5 /* NSString+Hash.h */,
+			);
+			path = hash;
+			sourceTree = "<group>";
+		};
 		FA7DF58E23A23F3700D158FA /* 读取swagger文件 */ = {
 			isa = PBXGroup;
 			children = (
@@ -112,6 +124,7 @@
 		FA8016631A7CBE3C00F3215A /* Lib */ = {
 			isa = PBXGroup;
 			children = (
+				FA08DACF243D98A100F210D5 /* hash */,
 				FA8016671A7CC09400F3215A /* RegexKitLite.h */,
 				FA8016681A7CC09400F3215A /* RegexKitLite.m */,
 			);
@@ -274,6 +287,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA8016691A7CC09400F3215A /* RegexKitLite.m in Sources */,
+				FA08DAD2243D98A100F210D5 /* NSString+Hash.m in Sources */,
 				FA7DF59423A2481B00D158FA /* SwaggerModel.m in Sources */,
 				FAC026F81A8512BD00EE4721 /* CategoryGeneration.m in Sources */,
 				FA9502311CEFE1970007E8FB /* PictureGeneration.m in Sources */,
