@@ -35,6 +35,7 @@ static Utils *shareData;
 + (NSDictionary *)modelTypeConvertDictionary {
     return @{
              @"bool":@"BOOL ",
+             @"boolean":@"BOOL ",
              @"byte":@"Byte ",
              @"char":@"Char ",
              @"short":@"NSInteger ",
