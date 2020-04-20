@@ -37,6 +37,9 @@
         }
         flag = @"repeated";
     }
+    if ([self.type isEqualToString:@"boolean"]) {
+        self.type = @"bool";
+    }
     
     return [NSString stringWithFormat:@"\t%@ %@ %@ = nil;//%@\n", flag, self.type, self.key, self.summary];
 }
