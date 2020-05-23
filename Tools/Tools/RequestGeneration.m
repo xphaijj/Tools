@@ -476,6 +476,7 @@ static NSDictionary *configDictionary;
                     
                     [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest uploadParams:requestParams extraData:extraData]);\n"];
                     [result appendFormat:@"\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
+                    [result appendFormat:@"\tNSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];\n"];
                     
                     NSString *queryString = [self allPramaFromContents:contents withType:TYPE_QUERY fileType:fileType cacheDay:cacheDay];
                     if (queryString.length > 1) {
@@ -494,7 +495,8 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults synchronize];\n"];
                         [result appendString:@"\t\t}\n"];
                     }
-                    [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" result:result baseUrl:baseUrl parameters:requestParams extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"\t\tNSInteger duration = ([[NSDate date] timeIntervalSince1970]-startTime)*1000;\n"];
+                    [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" result:result baseUrl:baseUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     [result appendString:@"\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, extraData, decryptResult);\n"];
                     
                     [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:decryptResult];\n"];
@@ -620,8 +622,8 @@ static NSDictionary *configDictionary;
                     
                     [result appendString:@"\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
                     [result appendFormat:@"\t\tYLT_LogError(@\"%%@ %%@ %%@\", baseUrl, extraData, task);\n"];
-                    
-                    [result appendFormat:@"\t\t([PHRequest responseTitle:@\"%@\" error:error baseUrl:baseUrl parameters:requestParams extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"\t\tNSInteger duration = ([[NSDate date] timeIntervalSince1970]-startTime)*1000;\n"];
+                    [result appendFormat:@"\t\t([PHRequest responseTitle:@\"%@\" error:error baseUrl:baseUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                     
                     if (!hideHud) {
                         [result appendFormat:@"\t\tif (showHUD) {\n"];
