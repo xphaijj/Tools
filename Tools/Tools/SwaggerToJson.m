@@ -47,7 +47,11 @@
             // 遍历path 找出所有的网络请求
             [paths enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary<NSString *, NSDictionary *> *obj, BOOL * _Nonnull stop) {
                 SwaggerModel *model = [[SwaggerModel alloc] init];
-                model.basePath = [NSString stringWithFormat:@"%@%@", sourceObj[@"basePath"], key];
+                if ([key hasPrefix:@"/front/"]) {
+                    model.basePath = [NSString stringWithFormat:@"%@%@", sourceObj[@"basePath"], key];
+                } else {
+                    model.basePath = [NSString stringWithFormat:@"%@", key];
+                }
                 model.pre = sourceObj[@"pre"];
                 model.method = [obj.allKeys.firstObject lowercaseString];//获取get、post
                 NSDictionary *more = [obj objectForKey:model.method];
@@ -107,11 +111,11 @@
                 }
                 [allModels setObject:properties forKey:[self convertKey:key]];
             }
-            
             dispatch_group_leave(group);
         }];
         // 执行 task
         [dataTask resume];
+        [[NSRunLoop mainRunLoop] runUntilDate:[[NSDate date] dateByAddingTimeInterval:0.5]];
     }];
     
     __block BOOL isFinish = NO;
@@ -146,7 +150,6 @@
             }];
             [h appendFormat:@"}\n\n"];
         }
-        
         [h writeToFile:hFilePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
         isFinish = YES;
     });
