@@ -68,7 +68,12 @@
             sstop = YES;
         }
     }];
-    _operationPath = [NSString stringWithFormat:@"%@%@%@", self.pre, _operationPath, self.operationId];
+    if ([_operationPath hasPrefix:@"/front/"]) {
+        _operationPath = [NSString stringWithFormat:@"%@%@%@", self.pre, _operationPath, self.operationId];
+    } else {
+        _operationPath = [NSString stringWithFormat:@"%@%@", _operationPath, self.operationId];
+    }
+    
     while ([_operationPath rangeOfString:@"{"].location != NSNotFound || [_operationPath rangeOfString:@"}"].location != NSNotFound) {
         _operationPath = [[_operationPath stringByReplacingOccurrencesOfString:@"{" withString:@""] stringByReplacingOccurrencesOfString:@"}" withString:@""];
     }
