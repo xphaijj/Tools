@@ -511,32 +511,32 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSObject class]]) {\n"];
                             [result appendFormat:@"\t\t\t\t%@ *info = @[data].mutableCopy;\n", modelname];
                             [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
-                            [result appendFormat:@"\t\t\t\t[PHRequest responseSessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
+                            [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
                         } else {
                             if (returnIsList) {//返回的数据类型是数组
                                 [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
                                 [result appendFormat:@"\t\t\t\t%@ *info = @[[%@ mj_objectWithKeyValues:data]].mutableCopy;\n", modelname, modelname];
                                 [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
-                                [result appendFormat:@"\t\t\t\t[PHRequest responseSessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
+                                [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
                                 [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
                                 [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [%@ mj_objectArrayWithKeyValuesArray:data];\n", modelname];
                                 [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, decryptResult);\n"];
-                                [result appendFormat:@"\t\t\t\t[PHRequest responseSessionDataTask:task baseCollection:res data:resultList sourceData:decryptResult error:nil];\n"];
+                                [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:resultList sourceData:decryptResult error:nil];\n"];
                             } else {
                                 [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
                                 [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
                                 [result appendString:@"\t\t\t\tsuccess(task, res, info, decryptResult);\n"];
-                                [result appendFormat:@"\t\t\t\t[PHRequest responseSessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
+                                [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
                             }
                         }
                         
                         [result appendFormat:@"\t\t\t} else {\n"];
                         [result appendString:@"\t\t\t\tsuccess(task, res, data, decryptResult);\n"];
-                        [result appendFormat:@"\t\t\t\t[PHRequest responseSessionDataTask:task baseCollection:res data:data sourceData:decryptResult error:nil];\n"];
+                        [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:data sourceData:decryptResult error:nil];\n"];
                         [result appendFormat:@"\t\t\t}\n"];
                     } else {
                         [result appendString:@"\t\t\tsuccess(task, res, data, decryptResult);\n"];
-                        [result appendFormat:@"\t\t\t\t[PHRequest responseSessionDataTask:task baseCollection:res data:data sourceData:decryptResult error:nil];\n"];
+                        [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:data sourceData:decryptResult error:nil];\n"];
                     }
                     [result appendFormat:@"\t\t}\n"];
                     [result appendString:@"\t};\n"];
@@ -645,7 +645,7 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\t\tif (failure) {\n"];
                     [result appendFormat:@"\t\t\tfailure(task, error);\n"];
                     [result appendFormat:@"\t\t}\n"];
-                    [result appendFormat:@"\t\t[PHRequest responseSessionDataTask:task baseCollection:nil data:nil sourceData:nil error:error];\n"];
+                    [result appendFormat:@"\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:nil data:nil sourceData:nil error:error];\n"];
                     [result appendString:@"\t}];\n"];
                     [result appendString:@"\treturn op;\n"];
                     [result appendString:@"}\n\n"];
