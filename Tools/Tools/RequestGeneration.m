@@ -475,8 +475,9 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@] extraData:extraData];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
                     
                     [result appendFormat:@"\tNSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];\n"];
-                    [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest baseUrl:baseUrl uploadParams:requestParams currentTime:startTime extraData:extraData success:success failure:failure]);\n"];
-                    [result appendFormat:@"\tif (parameters == nil) {\n"];
+                    [result appendFormat:@"\tBOOL hasRequest;\n"];
+                    [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest baseUrl:baseUrl uploadParams:requestParams currentTime:startTime extraData:extraData hasRequest:&hasRequest success:success failure:failure]);\n"];
+                    [result appendFormat:@"\tif (hasRequest) {\n"];
                     [result appendFormat:@"\t\t return nil;\n"];
                     [result appendFormat:@"\t}\n"];
                     [result appendFormat:@"//\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
