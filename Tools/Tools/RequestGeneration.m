@@ -475,7 +475,7 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@] extraData:extraData];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
                     
                     [result appendFormat:@"\tNSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];\n"];
-                    [result appendFormat:@"\tBOOL hasRequest;\n"];
+                    [result appendFormat:@"\tBOOL hasRequest = NO;\n"];
                     [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest baseUrl:baseUrl uploadParams:requestParams currentTime:startTime extraData:extraData hasRequest:&hasRequest success:success failure:failure]);\n"];
                     [result appendFormat:@"\tif (hasRequest) {\n"];
                     [result appendFormat:@"\t\t return nil;\n"];
@@ -510,13 +510,13 @@ static NSDictionary *configDictionary;
                     if (![returnType isEqualToString:@"BaseCollection"] && ![returnType isEqualToString:@"NSDictionary"]) {
                         if (returnIsValueType) {
                             [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSObject class]]) {\n"];
-                            [result appendFormat:@"\t\t\t\t%@ *info = @[data].mutableCopy;\n", modelname];
+                            [result appendFormat:@"\t\t\t\tNSMutableArray<%@ *> *info = @[data].mutableCopy;\n", modelname];
                             [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
                             [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
                         } else {
                             if (returnIsList) {//返回的数据类型是数组
                                 [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                                [result appendFormat:@"\t\t\t\t%@ *info = @[[%@ mj_objectWithKeyValues:data]].mutableCopy;\n", modelname, modelname];
+                                [result appendFormat:@"\t\t\t\tNSMutableArray<%@ *> *info = @[[%@ mj_objectWithKeyValues:data]].mutableCopy;\n", modelname, modelname];
                                 [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
                                 [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
                                 [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
