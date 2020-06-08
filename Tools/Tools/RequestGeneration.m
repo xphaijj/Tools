@@ -476,6 +476,9 @@ static NSDictionary *configDictionary;
                     
                     [result appendFormat:@"\tNSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];\n"];
                     [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest baseUrl:baseUrl uploadParams:requestParams currentTime:startTime extraData:extraData success:success failure:failure]);\n"];
+                    [result appendFormat:@"\tif (parameters == nil) {\n"];
+                    [result appendFormat:@"\t\t return nil;\n"];
+                    [result appendFormat:@"\t}\n"];
                     [result appendFormat:@"//\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
                     
                     NSString *queryString = [self allPramaFromContents:contents withType:TYPE_QUERY fileType:fileType cacheDay:cacheDay];
