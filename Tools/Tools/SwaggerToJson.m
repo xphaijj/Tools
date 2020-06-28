@@ -29,11 +29,11 @@
     NSMutableDictionary<NSString *, NSMutableArray<SwaggerParam *> *> *allModels = [[NSMutableDictionary alloc] init];
     NSMutableArray<SwaggerModel *> *allRequests = [[NSMutableArray alloc] init];
     NSError *error;
-    NSDictionary *data = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForAuxiliaryExecutable:sourcepath]] options:NSJSONReadingAllowFragments error:&error];
-    [h appendFormat:@"Config config %@ \n\n", [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:data[@"config"] options:NSJSONWritingPrettyPrinted error:nil] encoding:NSUTF8StringEncoding]];
+    NSDictionary *configData = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForAuxiliaryExecutable:sourcepath]] options:NSJSONReadingAllowFragments error:&error];
+    [h appendFormat:@"Config config %@ \n\n", [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:configData[@"config"] options:NSJSONWritingPrettyPrinted error:nil] encoding:NSUTF8StringEncoding]];
     
     dispatch_group_t group = dispatch_group_create();
-    [data[@"list"] enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull sourceObj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [configData[@"list"] enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull sourceObj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *urlString = [sourceObj objectForKey:@"path"];
         //遍历请求网络
         NSURL *url = [NSURL URLWithString:urlString];
@@ -57,6 +57,7 @@
                 NSDictionary *more = [obj objectForKey:model.method];
                 model.summary = [more objectForKey:@"summary"];
                 model.operationId = [more objectForKey:@"operationId"];
+                
                 [[more objectForKey:@"parameters"] enumerateObjectsUsingBlock:^(NSDictionary *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     NSDictionary *parameters = obj;
                     //解析请求参数
@@ -129,7 +130,17 @@
             }] enumerateObjectsUsingBlock:^(SwaggerParam * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 [h appendString:obj.codeString];
             }];
-            [h appendFormat:@"}\n\n"];
+            [h appendFormat:@"}"];
+            if ([configData.allKeys containsObject:@"cache"]) {
+                NSArray *cacheList = configData[@"cache"];
+                for (NSInteger cacheIndex = 0; cacheIndex < cacheList.count; cacheIndex++) {
+                    NSDictionary *cacheSource = cacheList[cacheIndex];
+                    if ([cacheSource.allKeys containsObject:@"path"] && [cacheSource.allKeys containsObject:@"day"] && [obj.operationPath hasPrefix:cacheSource[@"path"]]) {
+                        [h appendFormat:@"%@", cacheSource[@"day"]];
+                    }
+                }
+            }
+            [h appendFormat:@"\n\n"];
         }];
         
         NSArray *allList = allModels.allKeys;
