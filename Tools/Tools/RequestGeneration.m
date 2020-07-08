@@ -482,14 +482,16 @@ static NSDictionary *configDictionary;
                     [result appendFormat:@"\t}\n"];
                     [result appendFormat:@"//\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
                     
+                    [result appendFormat:@"\tNSString *uploadUrl = baseUrl;\n"];
                     NSString *queryString = [self allPramaFromContents:contents withType:TYPE_QUERY fileType:fileType cacheDay:cacheDay];
                     if (queryString.length > 1) {
                         [result appendFormat:@"\tNSMutableDictionary *queryParams = [[NSMutableDictionary alloc] init];\n"];
                         [result appendString:queryString];
-                        [result appendFormat:@"\tbaseUrl = [NSString stringWithFormat:@\"%%@?%%@\", baseUrl, AFQueryStringFromParameters(parameters)];\n"];
+                        [result appendFormat:@"\tuploadUrl = [NSString stringWithFormat:@\"%%@?%%@\", baseUrl, AFQueryStringFromParameters(parameters)];\n"];
                     }
                     
                     [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, id result) = ^(NSURLSessionDataTask *task, id result) {\n"];
+                    [result appendFormat:@"\t\tNSInteger duration = ([[NSDate date] timeIntervalSince1970]-startTime)*1000;\n"];
                     if (cacheDay != 0) {
                         [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
                         if (cacheDay != -1) {
@@ -497,10 +499,15 @@ static NSDictionary *configDictionary;
                         }
                         [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults setObject:result forKey:[NSString stringWithFormat:@\"Request%@\", baseUrl]];\n"];
                         [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults synchronize];\n"];
-                        [result appendString:@"\t\t}\n"];
+                        [result appendString:@"\t\t} else {\n"];
+                        [result appendFormat:@"\t\t\tduration = 0;\n"];
+                        [result appendFormat:@"\t\t}\n"];
                     }
-                    [result appendFormat:@"\t\tNSInteger duration = ([[NSDate date] timeIntervalSince1970]-startTime)*1000;\n"];
+                    
                     [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" result:result baseUrl:baseUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"\t\tif (decryptResult == nil) {\n"];
+                    [result appendFormat:@"\t\t\treturn ;\n"];
+                    [result appendFormat:@"\t\t}\n"];
                     [result appendString:@"//\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, extraData, decryptResult);\n"];
                     
                     [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:decryptResult];\n"];
@@ -556,7 +563,7 @@ static NSDictionary *configDictionary;
                     }
                     
                     if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] GET:baseUrl parameters:parameters headers:nil progress:^(NSProgress * uploadProgress) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] GET:uploadUrl parameters:parameters headers:nil progress:^(NSProgress * uploadProgress) {\n", interfacename];
                         
                         if (!hideHud) {
                             [result appendFormat:@"\t\tif (showHUD) {\n"];
@@ -570,7 +577,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"post"] || [requestType isEqualToString:@"ipost"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters headers:nil progress:^(NSProgress * uploadProgress) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:uploadUrl parameters:parameters headers:nil progress:^(NSProgress * uploadProgress) {\n", interfacename];
                         
                         if (!hideHud) {
                             [result appendFormat:@"\t\tif (showHUD) {\n"];
@@ -583,10 +590,10 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"patch"] || [requestType isEqualToString:@"ipatch"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PATCH:baseUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PATCH:uploadUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]){
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:baseUrl parameters:parameters headers:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] POST:uploadUrl parameters:parameters headers:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {\n", interfacename];
                         [result appendFormat:@"\t\tif (formDataBlock) {\n"];
                         [result appendFormat:@"\t\t\tformDataBlock(formData);\n"];
                         [result appendFormat:@"\t\t} else {\n"];
@@ -608,10 +615,10 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t} success:^(NSURLSessionDataTask *task, id result) {\n"];
                     }
                     else if ([requestType isEqualToString:@"put"] || [requestType isEqualToString:@"iput"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PUT:baseUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] PUT:uploadUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
                     }
                     else if ([requestType isEqualToString:@"delete"] || [requestType isEqualToString:@"idelete"]) {
-                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] DELETE:baseUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
+                        [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] DELETE:uploadUrl parameters:parameters headers:nil success:^(NSURLSessionDataTask *task, id result) {\n", interfacename];
                     }
                     
                     if (!hideHud) {
