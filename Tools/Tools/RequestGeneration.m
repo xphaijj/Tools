@@ -351,15 +351,15 @@ static NSDictionary *configDictionary;
                 }
             } else if (rtype == REQUEST_RAC) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(RACSignal *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(RACSignal *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_PRO) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(FBLPromise *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(FBLPromise *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             }
             //判断是否是上传接口  上传接口需要提取出来单独处理
@@ -386,15 +386,15 @@ static NSDictionary *configDictionary;
                 }
             } else if (rtype == REQUEST_RAC) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(RACSignal *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(RACSignal *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_PRO) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(FBLPromise *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(FBLPromise *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             }
             
