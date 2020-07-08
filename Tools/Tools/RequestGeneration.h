@@ -21,20 +21,20 @@
  * @brief  导入头文件
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  **/
-+ (NSString *)introductionPackages:(FileType)fileType;
++ (NSString *)introductionPackages:(FileType)fileType rtype:(RequestType)rtype;
 
 /**
  * @brief  Request 基本类的功能
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  **/
-+ (NSString *)classOfRequest:(FileType)fileType;
++ (NSString *)classOfRequest:(FileType)fileType rtype:(RequestType)rtype;
 
 /**
  * @brief  匹配出所有的Request类型
  * @prama  sourceString:需要匹配的字符串
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  **/
-+ (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType;
++ (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType rtype:(RequestType)rtype;
 
 /**
  * @brief  生成方法名
@@ -47,7 +47,7 @@
  * @prama  hasSave:是否需要实现临时保存
  * @prama  contents:接口参数
  */
-+ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType cacheDay:(NSInteger)cacheDay;
++ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType cacheDay:(NSInteger)cacheDay rtype:(RequestType)rtype;
 
 /**
  * @brief  request请求的所有参数
@@ -56,7 +56,7 @@
  * @prama  hasSave:是否需要实现临时保存
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType cacheDay:(NSInteger)cacheDay;
++ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType cacheDay:(NSInteger)cacheDay rtype:(RequestType)rtype;
 
 
 

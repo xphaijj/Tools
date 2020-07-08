@@ -27,6 +27,12 @@ typedef enum FileType { //文件类型
     M_FILE
 }FileType;
 
+typedef enum RequestType {//网络请求类型
+    REQUEST_NORMAL,
+    REQUEST_RAC,
+    REQUEST_PRO,
+}RequestType;
+
 typedef enum MethodType {//方法类型
     TYPE_PROPERTY,//属性解析
     TYPE_INIT,//初始化
@@ -41,9 +47,7 @@ typedef enum MethodType {//方法类型
     
 #pragma mark ++ Request
     TYPE_NOTES,//获取注释
-    TYPE_RACSIGNAL,//订阅者模式
     TYPE_NORMALREQUEST,//普通网络请求
-    TYPE_NORMALRAC,//订阅者普通网络请求
     TYPE_METHOD,//获取方法名
     TYPE_REQUEST,//网络请求的实现
     TYPE_QUERY,//query参数
