@@ -367,10 +367,8 @@ static NSDictionary *configDictionary;
                 [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
             }
             [result appendFormat:@" iparams:(NSDictionary *)iparams"];
-            if (methodType == TYPE_NORMALREQUEST) {
-                if (rtype == REQUEST_NORMAL) {
-                    [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
-                }
+            if (rtype == REQUEST_NORMAL) {
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
             } else {
                 [result appendFormat:@";"];
             }
@@ -444,10 +442,8 @@ static NSDictionary *configDictionary;
             }
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
             
-            if (methodType == TYPE_METHOD) {
-                if (rtype == REQUEST_NORMAL) {
-                    [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
-                }
+            if (rtype == REQUEST_NORMAL) {
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
             } else {
                 [result appendFormat:@";"];
             }
