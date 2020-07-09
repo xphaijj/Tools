@@ -351,15 +351,15 @@ static NSDictionary *configDictionary;
                 }
             } else if (rtype == REQUEST_RAC) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(RACSignal *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(RACSignal *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_PRO) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(FBLPromise *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(FBLPromise *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             }
             //判断是否是上传接口  上传接口需要提取出来单独处理
@@ -370,7 +370,7 @@ static NSDictionary *configDictionary;
             if (rtype == REQUEST_NORMAL) {
                 [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
             } else {
-                [result appendFormat:@";"];
+                [result appendFormat:@" returnValue:(%@ * __strong *)returnValue;", returnType];
             }
         }
             break;
@@ -384,15 +384,15 @@ static NSDictionary *configDictionary;
                 }
             } else if (rtype == REQUEST_RAC) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(RACSignal *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(RACSignal *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_PRO) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
-                    [result appendFormat:@"+(FBLPromise *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(FBLPromise *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             }
             
@@ -445,7 +445,7 @@ static NSDictionary *configDictionary;
             if (rtype == REQUEST_NORMAL) {
                 [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
             } else {
-                [result appendFormat:@";"];
+                [result appendFormat:@" returnValue:(%@ * __strong *)returnValue;", returnType];
             }
         }
             break;
@@ -707,7 +707,7 @@ static NSDictionary *configDictionary;
                     } else if (rtype == REQUEST_PRO) {
                         [result appendFormat:@" {\n"];
                         [result appendFormat:@"\t@weakify(self);\n"];
-                        [result appendFormat:@"\tFBLPromise *promoise = [FBLPromise async:^(FBLPromiseFulfillBlock  _Nonnull fulfill, FBLPromiseRejectBlock  _Nonnull reject) {\n"];
+                        [result appendFormat:@"\tFBLPromise<NSDictionary *> *promoise = [FBLPromise async:^(FBLPromiseFulfillBlock  _Nonnull fulfill, FBLPromiseRejectBlock  _Nonnull reject) {\n"];
                         [result appendFormat:@"\t\t@strongify(self);\n"];
                         if ([configDictionary[@"baseurl"] boolValue]) {
                             [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
@@ -762,6 +762,7 @@ static NSDictionary *configDictionary;
                         }
                         [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
                         [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
+                        [result appendFormat:@"\t\t\t*returnValue = data;\n"];
                         [result appendFormat:@"\t\t\t[subscriber sendNext:@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData}];\n"];
                         [result appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
                         [result appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
@@ -777,7 +778,7 @@ static NSDictionary *configDictionary;
                     } else if (rtype == REQUEST_PRO) {
                         [result appendFormat:@" {\n"];
                         [result appendFormat:@"\t@weakify(self);\n"];
-                        [result appendFormat:@"\tFBLPromise *promoise = [FBLPromise async:^(FBLPromiseFulfillBlock  _Nonnull fulfill, FBLPromiseRejectBlock  _Nonnull reject) {\n"];
+                        [result appendFormat:@"\tFBLPromise<NSDictionary *> *promoise = [FBLPromise async:^(FBLPromiseFulfillBlock  _Nonnull fulfill, FBLPromiseRejectBlock  _Nonnull reject) {\n"];
                         [result appendFormat:@"\t\t@strongify(self);\n"];
                         if ([configDictionary[@"baseurl"] boolValue]) {
                             [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
@@ -790,6 +791,7 @@ static NSDictionary *configDictionary;
                         }
                         [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
                         [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
+                        [result appendFormat:@"\t\t\t*returnValue = data;\n"];
                         [result appendFormat:@"\t\t\tfulfill(@{@\"result\":result, @\"data\":data, @\"sourceData\":sourceData});\n"];
                         [result appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
                         [result appendFormat:@"\t\t\treject(error);\n"];
