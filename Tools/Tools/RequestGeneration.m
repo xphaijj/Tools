@@ -512,6 +512,12 @@ static NSDictionary *configDictionary;
                         
                         [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, id result) = ^(NSURLSessionDataTask *task, id result) {\n"];
                         [result appendFormat:@"\t\tNSInteger duration = ([[NSDate date] timeIntervalSince1970]-startTime)*1000;\n"];
+                        [result appendFormat:@"\t\tif ([result isKindOfClass:NSData.class]) {\n"];
+                        [result appendFormat:@"\t\t\tresult = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];\n"];
+                        [result appendFormat:@"\t\t}\n"];
+                        [result appendFormat:@"\t\tif ([result isKindOfClass:NSString.class]) {\n"];
+                        [result appendFormat:@"\t\t\tresult = [result mj_keyValues];\n"];
+                        [result appendFormat:@"\t\t}\n"];
                         if (cacheDay != 0) {
                             [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
                             if (cacheDay != -1) {
