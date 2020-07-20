@@ -492,7 +492,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\tNSMutableDictionary *extraData = [[NSMutableDictionary alloc] init];\n"];
                         [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"requestAction\":@\"%@\"} extraData:extraData])];\n", interfacename];
                         [result appendFormat:@"\t[requestParams addEntriesFromDictionary:iparams];\n"];
-                        [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@] extraData:extraData];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
+                        [result appendFormat:@"\tNSString *baseUrl = [PHRequest baseURL:[NSString stringWithFormat:@\"%%@/%@/%%@\", BASE_URL, %@] baseParams:requestParams extraData:extraData];\n", baseURL, [configDictionary[@"baseurl"] boolValue]?@"baseurl":@"@\"\""];
                         
                         [result appendFormat:@"\tNSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];\n"];
                         [result appendFormat:@"\tBOOL hasRequest = NO;\n"];
