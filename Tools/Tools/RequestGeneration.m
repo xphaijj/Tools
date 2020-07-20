@@ -530,7 +530,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t}\n"];
                         }
                         
-                        [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" result:result baseUrl:baseUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                        [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" task:task result:result baseUrl:baseUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         [result appendFormat:@"\t\tif (decryptResult == nil) {\n"];
                         [result appendFormat:@"\t\t\treturn ;\n"];
                         [result appendFormat:@"\t\t}\n"];
