@@ -502,6 +502,10 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t}\n"];
                         [result appendFormat:@"//\tYLT_Log(@\"%%@ %%@\", baseUrl, extraData);\n"];
                         
+                        NSString *pathString = [self allPramaFromContents:contents withType:TYPE_PATH fileType:fileType cacheDay:cacheDay rtype:rtype];
+                        if (pathString.length > 1) {
+                            [result appendString:pathString];
+                        }
                         [result appendFormat:@"\tNSString *uploadUrl = baseUrl;\n"];
                         NSString *queryString = [self allPramaFromContents:contents withType:TYPE_QUERY fileType:fileType cacheDay:cacheDay rtype:rtype];
                         if (queryString.length > 1) {
@@ -848,7 +852,7 @@ static NSDictionary *configDictionary;
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {
         NSString *lineString = [contents objectAtIndex:i];
-        NSString *regexLine = @"^(?:[\\s]*)(class|required|optional|repeated|upload|query)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
+        NSString *regexLine = @"^(?:[\\s]*)(class|required|optional|repeated|upload|query|path)(?:[\\s]*)(\\S+)(?:[\\s]*)(\\S+)(?:[\\s]*)=(?:[\\s]*)(\\S+)(?:[\\s]*);([\\S\\s]*)$";
         NSArray *lineList = [lineString arrayOfCaptureComponentsMatchedByRegex:regexLine];
         
         if (lineList.count == 0) {
@@ -928,6 +932,12 @@ static NSDictionary *configDictionary;
                     case TYPE_QUERY: {
                         if ([style isEqualToString:@"query"]) {
                             [result appendFormat:@"\tqueryParams[@\"%@\"] = requestParams[@\"%@\"];\n", keyname, keyname];
+                        }
+                    }
+                        break;
+                    case TYPE_PATH: {
+                        if ([style isEqualToString:@"path"]) {
+                            [result appendFormat:@"\tbaseurl = [NSString stringWithFormat:@\"%%@/%%@\", baseurl, requestParams[@\"%@\"]];\n", keyname];
                         }
                     }
                         break;

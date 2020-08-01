@@ -26,7 +26,7 @@
     
     NSString *flag = @"optional";
     if ([self.inType isEqualToString:@"path"]) {
-        NSLog(@"---- %@  %@", self.inType, self.type);
+        flag = @"path";
     } else if ([self.inType isEqualToString:@"query"]) {
         flag = @"query";
     } else if ([self.type isEqualToString:@"array"] && [self.sourceData.allKeys containsObject:@"items"]) {

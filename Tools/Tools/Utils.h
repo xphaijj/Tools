@@ -51,6 +51,7 @@ typedef enum MethodType {//方法类型
     TYPE_METHOD,//获取方法名
     TYPE_REQUEST,//网络请求的实现
     TYPE_QUERY,//query参数
+    TYPE_PATH,//path参数
 }MethodType;
 
 typedef enum TypeIndex {//增删改查 的选择索引
