@@ -937,7 +937,7 @@ static NSDictionary *configDictionary;
                         break;
                     case TYPE_PATH: {
                         if ([style isEqualToString:@"path"]) {
-                            [result appendFormat:@"\tbaseurl = [NSString stringWithFormat:@\"%%@/%%@\", baseurl, requestParams[@\"%@\"]];\n", keyname];
+                            [result appendFormat:@"\tbaseUrl = [NSString stringWithFormat:@\"%%@/%%@\", baseUrl, requestParams[@\"%@\"]];\n", keyname];
                         }
                     }
                         break;
