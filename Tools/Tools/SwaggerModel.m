@@ -25,7 +25,9 @@
     }
     
     NSString *flag = @"optional";
-    if ([self.inType isEqualToString:@"query"]) {
+    if ([self.inType isEqualToString:@"path"]) {
+        NSLog(@"---- %@  %@", self.inType, self.type);
+    } else if ([self.inType isEqualToString:@"query"]) {
         flag = @"query";
     } else if ([self.type isEqualToString:@"array"] && [self.sourceData.allKeys containsObject:@"items"]) {
         NSString *ref = [[self.sourceData objectForKey:@"items"] objectForKey:@"$ref"];

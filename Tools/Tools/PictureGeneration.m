@@ -44,9 +44,7 @@
     }
 }
 
-+ (void)saveImage:(NSImage *)image path:(NSString *)path
-{
-    NSLog(@"-- %f -- %f", image.size.width, image.size.height);
++ (void)saveImage:(NSImage *)image path:(NSString *)path {
     NSBitmapImageRep *rep = [[NSBitmapImageRep alloc]
                              initWithBitmapDataPlanes:NULL
                              pixelsWide:image.size.width

@@ -42,7 +42,6 @@ int main(int argc, const char * argv[]) {
                         outputPath = [outputPath substringToIndex:([outputPath rangeOfString:@"/" options:NSBackwardsSearch].location+1)];
                         if ([sourcePath hasSuffix:@".md"]) {
                             [SwaggerToJson generationSourcePath:sourcePath outputPath:outputPath config:nil];
-                            NSLog(@"start");
                             sourcePath = [NSString stringWithFormat:@"%@/source.h", outputPath];
                             NSDictionary *config = [Utils configDictionary:sourcePath];
                             generation(sourcePath, outputPath, config);
@@ -85,7 +84,6 @@ int main(int argc, const char * argv[]) {
 }
 
 void generation(NSString *sourcePath, NSString *outputPath, NSDictionary *config) {
-    NSLog(@"\n\tsourcePath = %@ \n\toutputPath = %@\n", sourcePath, outputPath);
     [ModelGeneration generationSourcePath:sourcePath outputPath:outputPath config:config];
     [DBGeneration generationSourcePath:sourcePath outputPath:outputPath config:config];
     [RequestGeneration generationSourcePath:sourcePath outputPath:outputPath config:config];    
