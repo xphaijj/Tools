@@ -116,7 +116,6 @@ typedef NS_ENUM(NSUInteger, Code) {
         @autoreleasepool {
             NSString *classname = [contents objectAtIndex:1];
             NSMutableString *enumString = [[NSMutableString alloc] initWithString:[contents objectAtIndex:2]];
-            NSLog(@"%@", contents);
             NSArray<NSString *> *enumList = [enumString componentsSeparatedByString:@"\n"];
             [enumList enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 NSString *regexStr = @"(?:[\\s])(\\S+)(?:[\\s])=(?:[\\s])(\\S+),(\\S+)";
