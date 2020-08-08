@@ -110,6 +110,24 @@ typedef NS_ENUM(NSUInteger, Code) {
         }
     }
     
+    regex = @"enumStr(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(?:\\s*?)";
+    list = [sourceString arrayOfCaptureComponentsMatchedByRegex:regex];
+    for (NSArray *contents in list) {
+        @autoreleasepool {
+            NSString *classname = [contents objectAtIndex:1];
+            NSMutableString *enumString = [[NSMutableString alloc] initWithString:[contents objectAtIndex:2]];
+            NSLog(@"%@", contents);
+            NSArray<NSString *> *enumList = [enumString componentsSeparatedByString:@"\n"];
+            [enumList enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                NSString *regexStr = @"(?:[\\s])(\\S+)(?:[\\s])=(?:[\\s])(\\S+),(\\S+)";
+                NSArray *ll = [obj arrayOfCaptureComponentsMatchedByRegex:regexStr].firstObject;
+                if (ll.count >= 3) {
+                    [result appendFormat:@"static NSString *const %@_%@ = @\"%@\";%@\n", classname, ll[1], ll[2], ll.lastObject];
+                }
+            }];
+        }
+    }
+    
     return result;
 }
 
