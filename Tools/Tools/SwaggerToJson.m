@@ -93,7 +93,6 @@
                     responseKey = [NSString stringWithFormat:@"%@(list)", responseKey];
                 }
                 responseKey = [self convertKey:responseKey];
-                
                 model.responseObj = responseKey;
                 [allRequests addObject:model];
             }];
@@ -109,6 +108,15 @@
                 NSMutableArray<SwaggerParam *> *properties = [[NSMutableArray alloc] init];
                 if ([obj.allKeys containsObject:@"properties"]) {
                     [properties addObjectsFromArray:[self dcodeProperties:[obj objectForKey:@"properties"]]];
+                }
+                if ([allModels.allKeys containsObject:[self convertKey:key]]) {
+                    [allModels[[self convertKey:key]] enumerateObjectsUsingBlock:^(SwaggerParam * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        NSString *preStr = [NSString stringWithFormat:@"self.key == '%@'", obj.key];
+                        NSPredicate *predicate = [NSPredicate predicateWithFormat:preStr];
+                        if (![properties filteredArrayUsingPredicate:predicate].firstObject) {
+                            [properties addObject:obj];
+                        }
+                    }];
                 }
                 [allModels setObject:properties forKey:[self convertKey:key]];
             }
