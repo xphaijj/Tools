@@ -20,7 +20,7 @@
     if (!self.key || !self.type) {
         return @"";
     }
-    if ([self.key isEqualToString:@"data"] || [self.key isEqualToString:@"msg"] || [self.key isEqualToString:@"code"]) {
+    if ([self.key isEqualToString:@"msg"] || [self.key isEqualToString:@"code"]) {
         return @"";
     }
     
