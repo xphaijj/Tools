@@ -496,7 +496,7 @@ static NSDictionary *configDictionary;
                         
                         [result appendFormat:@"\tNSTimeInterval startTime = [[NSDate date] timeIntervalSince1970];\n"];
                         [result appendFormat:@"\tBOOL hasRequest = NO;\n"];
-                        [result appendFormat:@"\tNSDictionary *parameters = ([PHRequest baseUrl:baseUrl uploadParams:requestParams currentTime:startTime extraData:extraData hasRequest:&hasRequest success:success failure:failure]);\n"];
+                        [result appendFormat:@"\tNSMutableDictionary *parameters = ([PHRequest baseUrl:baseUrl showHUD:showHUD uploadParams:requestParams currentTime:startTime extraData:extraData hasRequest:&hasRequest success:success failure:failure]);\n"];
                         [result appendFormat:@"\tif (hasRequest) {\n"];
                         [result appendFormat:@"\t\t return nil;\n"];
                         [result appendFormat:@"\t}\n"];
@@ -511,7 +511,7 @@ static NSDictionary *configDictionary;
                         if (queryString.length > 1) {
                             [result appendFormat:@"\tNSMutableDictionary *queryParams = [[NSMutableDictionary alloc] init];\n"];
                             [result appendString:queryString];
-                            [result appendFormat:@"\tuploadUrl = [NSString stringWithFormat:@\"%%@?%%@\", baseUrl, AFQueryStringFromParameters(parameters)];\n"];
+                            [result appendFormat:@"\tuploadUrl = [NSString stringWithFormat:@\"%%@?%%@\", baseUrl, AFQueryStringFromParameters(queryParams)];\n"];
                         }
                         
                         [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, id result) = ^(NSURLSessionDataTask *task, id result) {\n"];
@@ -932,6 +932,7 @@ static NSDictionary *configDictionary;
                     case TYPE_QUERY: {
                         if ([style isEqualToString:@"query"]) {
                             [result appendFormat:@"\tqueryParams[@\"%@\"] = requestParams[@\"%@\"];\n", keyname, keyname];
+                            [result appendFormat:@"\t[parameters removeObjectForKey:@\"%@\"];\n", keyname];
                         }
                     }
                         break;

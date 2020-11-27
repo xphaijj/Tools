@@ -156,9 +156,9 @@
             NSString *key = allList[i];
             NSMutableArray<SwaggerParam *> *obj = [allModels objectForKey:key];
             if (obj.count == 2) {
-                if ([obj.firstObject.key isEqualToString:@"message"] && [obj.lastObject.key isEqualToString:@"code"]) {
+                if ([obj.firstObject.key isEqualToString:@"msg"] && [obj.lastObject.key isEqualToString:@"code"]) {
                     continue;
-                } else if ([obj.firstObject.key isEqualToString:@"code"] && [obj.lastObject.key isEqualToString:@"message"]) {
+                } else if ([obj.firstObject.key isEqualToString:@"code"] && [obj.lastObject.key isEqualToString:@"msg"]) {
                     continue;
                 }
             }
