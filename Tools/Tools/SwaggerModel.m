@@ -62,7 +62,7 @@
     NSArray<NSString *> *list = [[_operationPath componentsSeparatedByString:@"/"] reverseObjectEnumerator].allObjects;
     _operationPath = @"";
     __block BOOL sstop = NO;
-    _operationId = [NSString stringWithFormat:@"_%@", [self.basePath.md5String substringToIndex:8]];
+    _operationId = [NSString stringWithFormat:@"_%@", [[NSString stringWithFormat:@"%@%@", self.basePath, _operationId].md5String substringToIndex:8]];
     [list enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj && obj.length != 0) {
             _operationId = [NSString stringWithFormat:@"%@%@", obj, _operationId];
@@ -94,7 +94,7 @@
             _basePath = [_basePath stringByReplacingOccurrencesOfString:lastParams withString:@""];
         }
     }
-    _basePath = [NSString stringWithFormat:@"%@%@", _basePath, _operationId];
+    
     return _basePath;
 }
 
