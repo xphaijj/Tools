@@ -541,7 +541,7 @@ static NSDictionary *configDictionary;
                         [result appendString:@"//\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, extraData, decryptResult);\n"];
                         
                         [result appendFormat:@"\t\tBaseCollection *res = [BaseCollection mj_objectWithKeyValues:decryptResult];\n"];
-                        [result appendString:@"\t\tid data = decryptResult[@\"body\"];\n"];
+                        [result appendString:@"\t\tid data = decryptResult[@\"data\"];\n"];
                         
                         [result appendFormat:@"\t\tif (success) {\n"];
                         if (![returnType isEqualToString:@"BaseCollection"] && ![returnType isEqualToString:@"NSDictionary"]) {

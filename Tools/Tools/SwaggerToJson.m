@@ -72,7 +72,11 @@
                         } else {
                             SwaggerParam *params = [[SwaggerParam alloc] init];
                             params.key = [parameters objectForKey:@"name"];
-                            params.type = [parameters objectForKey:@"type"];
+                            if ([parameters.allKeys containsObject:@"type"]) {
+                                params.type = [parameters objectForKey:@"type"];
+                            } else if ([parameters.allKeys containsObject:@"schema"]) {
+                                params.type = [[parameters objectForKey:@"schema"] objectForKey:@"type"];
+                            }
                             params.summary = [parameters objectForKey:@"description"];
                             if ([parameters.allKeys containsObject:@"in"]) {
                                 params.inType = parameters[@"in"];

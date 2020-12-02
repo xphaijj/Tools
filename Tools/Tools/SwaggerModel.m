@@ -94,7 +94,7 @@
             _basePath = [_basePath stringByReplacingOccurrencesOfString:lastParams withString:@""];
         }
     }
-    
+    _basePath = [NSString stringWithFormat:@"%@%@", _basePath, _operationId];
     return _basePath;
 }
 
