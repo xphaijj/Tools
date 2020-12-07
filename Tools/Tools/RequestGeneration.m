@@ -368,7 +368,7 @@ static NSDictionary *configDictionary;
             }
             [result appendFormat:@" iparams:(NSDictionary *)iparams"];
             if (rtype == REQUEST_NORMAL) {
-                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
             } else {
                 [result appendFormat:@" returnValue:(%@ * __strong *)returnValue;", returnType];
             }
@@ -443,7 +443,7 @@ static NSDictionary *configDictionary;
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
             
             if (rtype == REQUEST_NORMAL) {
-                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
             } else {
                 [result appendFormat:@" returnValue:(%@ * __strong *)returnValue;", returnType];
             }
@@ -701,7 +701,7 @@ static NSDictionary *configDictionary;
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
-                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
+                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"data\"] = data;\n"];
@@ -732,7 +732,7 @@ static NSDictionary *configDictionary;
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
-                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
+                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"data\"] = data;\n"];
@@ -779,7 +779,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
                         [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
-                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
+                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
                         [result appendFormat:@"\t\t\t*returnValue = data;\n"];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
@@ -812,7 +812,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
                         [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
-                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, id sourceData) {\n", returnType];
+                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
                         [result appendFormat:@"\t\t\t*returnValue = data;\n"];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
