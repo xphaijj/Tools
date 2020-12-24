@@ -534,7 +534,7 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t}\n"];
                         }
                         
-                        [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" task:task result:result baseUrl:baseUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                        [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" task:task result:result baseUrl:uploadUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         [result appendFormat:@"\t\tif (decryptResult == nil) {\n"];
                         [result appendFormat:@"\t\t\treturn ;\n"];
                         [result appendFormat:@"\t\t}\n"];
@@ -670,7 +670,7 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
                         [result appendFormat:@"\t\tYLT_LogError(@\"%%@ %%@ %%@\", baseUrl, extraData, task);\n"];
                         [result appendFormat:@"\t\tNSInteger duration = ([[NSDate date] timeIntervalSince1970]-startTime)*1000;\n"];
-                        [result appendFormat:@"\t\t([PHRequest responseTitle:@\"%@\" error:error baseUrl:baseUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                        [result appendFormat:@"\t\t([PHRequest responseTitle:@\"%@\" error:error baseUrl:uploadUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         
                         if (!hideHud) {
                             [result appendFormat:@"\t\tif (showHUD) {\n"];
