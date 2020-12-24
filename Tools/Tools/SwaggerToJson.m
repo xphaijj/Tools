@@ -46,59 +46,61 @@
             NSDictionary<NSString *, NSDictionary *> *paths = dic[@"paths"];
             // 遍历path 找出所有的网络请求
             [paths enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary<NSString *, NSDictionary *> *obj, BOOL * _Nonnull stop) {
-                SwaggerModel *model = [[SwaggerModel alloc] init];
-                if ([key hasPrefix:@"/front/"]) {
-                    model.basePath = [NSString stringWithFormat:@"%@%@", sourceObj[@"basePath"], key];
-                } else {
-                    model.basePath = [NSString stringWithFormat:@"%@", key];
-                }
-                model.pre = sourceObj[@"pre"];
-                model.method = [obj.allKeys.firstObject lowercaseString];//获取get、post
-                NSDictionary *more = [obj objectForKey:model.method];
-                model.summary = [more objectForKey:@"summary"];
-                model.operationId = [more objectForKey:@"operationId"];
-                
-                [[more objectForKey:@"parameters"] enumerateObjectsUsingBlock:^(NSDictionary *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    NSDictionary *parameters = obj;
-                    //解析请求参数
-                    if (parameters.count != 0) {
-                        //上传参数不为空
-                        NSString *ref = [[parameters objectForKey:@"schema"] objectForKey:@"$ref"];
-                        if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
-                            NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
-                            if ([pagrams.allKeys containsObject:@"properties"]) {
-                                [model.params addObjectsFromArray:[self dcodeProperties:[pagrams objectForKey:@"properties"]]];
-                            }
-                        } else {
-                            SwaggerParam *params = [[SwaggerParam alloc] init];
-                            params.key = [parameters objectForKey:@"name"];
-                            if ([parameters.allKeys containsObject:@"type"]) {
-                                params.type = [parameters objectForKey:@"type"];
-                            } else if ([parameters.allKeys containsObject:@"schema"]) {
-                                params.type = [[parameters objectForKey:@"schema"] objectForKey:@"type"];
-                            }
-                            params.summary = [parameters objectForKey:@"description"];
-                            if ([parameters.allKeys containsObject:@"in"]) {
-                                params.inType = parameters[@"in"];
-                            }
-                            params.sourceData = parameters;
-                            [model.params addObject:params];
-                        }
+                [obj.allKeys enumerateObjectsUsingBlock:^(NSString * _Nonnull method, NSUInteger idx, BOOL * _Nonnull stop) {
+                    SwaggerModel *model = [[SwaggerModel alloc] init];
+                    if ([key hasPrefix:@"/front/"]) {
+                        model.basePath = [NSString stringWithFormat:@"%@%@", sourceObj[@"basePath"], key];
+                    } else {
+                        model.basePath = [NSString stringWithFormat:@"%@", key];
                     }
+                    model.pre = sourceObj[@"pre"];
+                    model.method = method;//获取get、post
+                    NSDictionary *more = [obj objectForKey:model.method];
+                    model.summary = [more objectForKey:@"summary"];
+                    model.operationId = [more objectForKey:@"operationId"];
+                    
+                    [[more objectForKey:@"parameters"] enumerateObjectsUsingBlock:^(NSDictionary *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        NSDictionary *parameters = obj;
+                        //解析请求参数
+                        if (parameters.count != 0) {
+                            //上传参数不为空
+                            NSString *ref = [[parameters objectForKey:@"schema"] objectForKey:@"$ref"];
+                            if (ref && [ref isKindOfClass:[NSString class]] && ref.length != 0) {
+                                NSDictionary *pagrams = [self dcodeSourceDic:dic router:ref];
+                                if ([pagrams.allKeys containsObject:@"properties"]) {
+                                    [model.params addObjectsFromArray:[self dcodeProperties:[pagrams objectForKey:@"properties"]]];
+                                }
+                            } else {
+                                SwaggerParam *params = [[SwaggerParam alloc] init];
+                                params.key = [parameters objectForKey:@"name"];
+                                if ([parameters.allKeys containsObject:@"type"]) {
+                                    params.type = [parameters objectForKey:@"type"];
+                                } else if ([parameters.allKeys containsObject:@"schema"]) {
+                                    params.type = [[parameters objectForKey:@"schema"] objectForKey:@"type"];
+                                }
+                                params.summary = [parameters objectForKey:@"description"];
+                                if ([parameters.allKeys containsObject:@"in"]) {
+                                    params.inType = parameters[@"in"];
+                                }
+                                params.sourceData = parameters;
+                                [model.params addObject:params];
+                            }
+                        }
+                    }];
+                    
+                    //解析返回参数
+                    BOOL isList = NO;
+                    NSString *ref = [[[[more objectForKey:@"responses"] objectForKey:@"200"] objectForKey:@"schema"] objectForKey:@"$ref"];
+                    ref = [[ref componentsSeparatedByString:@"/"] lastObject];
+                    NSString *responseKey = ref;
+                    if ([ref hasPrefix:@"Resp«List«"]) {
+                        isList = YES;
+                        responseKey = [NSString stringWithFormat:@"%@(list)", responseKey];
+                    }
+                    responseKey = [self convertKey:responseKey];
+                    model.responseObj = responseKey;
+                    [allRequests addObject:model];
                 }];
-                
-                //解析返回参数
-                BOOL isList = NO;
-                NSString *ref = [[[[more objectForKey:@"responses"] objectForKey:@"200"] objectForKey:@"schema"] objectForKey:@"$ref"];
-                ref = [[ref componentsSeparatedByString:@"/"] lastObject];
-                NSString *responseKey = ref;
-                if ([ref hasPrefix:@"Resp«List«"]) {
-                    isList = YES;
-                    responseKey = [NSString stringWithFormat:@"%@(list)", responseKey];
-                }
-                responseKey = [self convertKey:responseKey];
-                model.responseObj = responseKey;
-                [allRequests addObject:model];
             }];
             //遍历所有的model
             NSDictionary<NSString *, NSDictionary *> *definitions = dic[@"definitions"];
