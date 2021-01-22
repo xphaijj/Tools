@@ -347,19 +347,19 @@ static NSDictionary *configDictionary;
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(NSURLSessionDataTask *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_RAC) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_PRO) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             }
             //判断是否是上传接口  上传接口需要提取出来单独处理
@@ -380,19 +380,19 @@ static NSDictionary *configDictionary;
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(NSURLSessionDataTask *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(NSURLSessionDataTask *)%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(NSURLSessionDataTask *)%@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_RAC) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(RACSignal<NSDictionary *> *)rac%@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             } else if (rtype == REQUEST_PRO) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 } else {
-                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                    [result appendFormat:@"+(FBLPromise<NSDictionary *> *)promise%@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                 }
             }
             
@@ -695,7 +695,7 @@ static NSDictionary *configDictionary;
                         if ([configDictionary[@"baseurl"] boolValue]) {
                             [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         } else {
-                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         }
                         //判断是否是上传接口  上传接口需要提取出来单独处理
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
@@ -726,7 +726,7 @@ static NSDictionary *configDictionary;
                         if ([configDictionary[@"baseurl"] boolValue]) {
                             [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         } else {
-                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         }
                         //判断是否是上传接口  上传接口需要提取出来单独处理
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
@@ -755,7 +755,7 @@ static NSDictionary *configDictionary;
                         if ([configDictionary[@"baseurl"] boolValue]) {
                             [result appendFormat:@"\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         } else {
-                            [result appendFormat:@"\tNSURLSessionDataTask *task = [self %@RequestShowHUD:showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                            [result appendFormat:@"\tNSURLSessionDataTask *task = [self %@:showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         }
                         //判断是否是上传接口  上传接口需要提取出来单独处理
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
@@ -772,7 +772,7 @@ static NSDictionary *configDictionary;
                         if ([configDictionary[@"baseurl"] boolValue]) {
                             [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         } else {
-                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         }
                         //判断是否是上传接口  上传接口需要提取出来单独处理
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
@@ -805,7 +805,7 @@ static NSDictionary *configDictionary;
                         if ([configDictionary[@"baseurl"] boolValue]) {
                             [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         } else {
-                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@RequestShowHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                            [result appendFormat:@"\t\tNSURLSessionDataTask *task = [self %@:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
                         }
                         //判断是否是上传接口  上传接口需要提取出来单独处理
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
