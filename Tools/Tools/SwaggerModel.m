@@ -16,11 +16,11 @@
     return (self.key && self.type);
 }
 
-- (NSString *)codeString {
+- (NSString *)codeString:(BOOL)isRequest {
     if (!self.key || !self.type) {
         return @"";
     }
-    if ([self.key isEqualToString:@"msg"] || [self.key isEqualToString:@"code"]) {
+    if (isRequest == NO && ([self.key isEqualToString:@"msg"] || [self.key isEqualToString:@"code"])) {
         return @"";
     }
     

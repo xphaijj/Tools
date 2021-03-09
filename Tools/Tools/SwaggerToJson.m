@@ -142,7 +142,7 @@
                 NSStringCompareOptions comparisonOptions = NSCaseInsensitiveSearch|NSNumericSearch|NSWidthInsensitiveSearch|NSForcedOrderingSearch;
                 return ([obj1.key compare:obj2.key options:comparisonOptions]);
             }] enumerateObjectsUsingBlock:^(SwaggerParam * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                [h appendString:obj.codeString];
+                [h appendString:[obj codeString:YES]];
             }];
             [h appendFormat:@"}"];
             if ([configData.allKeys containsObject:@"cache"]) {
@@ -171,7 +171,7 @@
             
             [h appendFormat:@"message %@ : BaseCollection {\n", key];
             [obj enumerateObjectsUsingBlock:^(SwaggerParam * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                [h appendString:obj.codeString];
+                [h appendString:[obj codeString:NO]];
             }];
             [h appendFormat:@"}\n\n"];
         }

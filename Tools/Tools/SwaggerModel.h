@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isValid;
 
-- (NSString *)codeString;
+- (NSString *)codeString:(BOOL)isRequest;
 
 @end
 
