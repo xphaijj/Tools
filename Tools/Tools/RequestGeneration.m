@@ -368,9 +368,9 @@ static NSDictionary *configDictionary;
             }
             [result appendFormat:@" iparams:(NSDictionary *)iparams"];
             if (rtype == REQUEST_NORMAL) {
-                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *> *requestList, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;", returnType];
             } else {
-                [result appendFormat:@" returnValue:(%@ * __strong *)returnValue;", returnType];
+                [result appendFormat:@" returnValue:(NSMutableArray<%@ *> * __strong *)returnValue;", returnType];
             }
         }
             break;
@@ -443,9 +443,9 @@ static NSDictionary *configDictionary;
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
             
             if (rtype == REQUEST_NORMAL) {
-                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *>  *requestData, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
             } else {
-                [result appendFormat:@" returnValue:(%@ * __strong *)returnValue;", returnType];
+                [result appendFormat:@" returnValue:(NSMutableArray<%@ *> * __strong *)returnValue;", returnType];
             }
         }
             break;
@@ -534,8 +534,8 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t}\n"];
                         }
                         
-                        [result appendFormat:@"\t\tid decryptResult = ([PHRequest responseTitle:@\"%@\" task:task result:result baseUrl:uploadUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
-                        [result appendFormat:@"\t\tif (decryptResult == nil) {\n"];
+                        [result appendFormat:@"\t\tNSMutableDictionary *decryptResult = ([PHRequest responseTitle:@\"%@\" task:task result:result baseUrl:uploadUrl parameters:requestParams duration:duration extraData:extraData]);\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+                        [result appendFormat:@"\t\tif (decryptResult == nil || ![decryptResult isKindOfClass:NSDictionary.class]) {\n"];
                         [result appendFormat:@"\t\t\treturn ;\n"];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendString:@"//\t\tYLT_Log(@\"%@ %@ %@\", baseUrl, extraData, decryptResult);\n"];
@@ -544,34 +544,32 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t\tid data = decryptResult[@\"data\"];\n"];
                         
                         [result appendFormat:@"\t\tif (success) {\n"];
+                        [result appendFormat:@"\t\t\tNSMutableArray<%@ *> *info = nil;\n", returnType];
                         if (![returnType isEqualToString:@"BaseCollection"] && ![returnType isEqualToString:@"NSDictionary"]) {
                             if (returnIsValueType) {
                                 [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSObject class]]) {\n"];
-                                [result appendFormat:@"\t\t\t\tNSMutableArray<%@ *> *info = @[data].mutableCopy;\n", modelname];
-                                [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
-                                [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
+                                [result appendFormat:@"\t\t\t\tinfo = @[data].mutableCopy;\n"];
                             } else {
                                 if (returnIsList) {//返回的数据类型是数组
                                     [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                                    [result appendFormat:@"\t\t\t\tNSMutableArray<%@ *> *info = @[[%@ mj_objectWithKeyValues:data]].mutableCopy;\n", modelname, modelname];
-                                    [result appendString:@"\t\t\t\tsuccess(task, res, info, result);\n"];
-                                    [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
+                                    [result appendFormat:@"\t\t\t\tinfo = @[[%@ mj_objectWithKeyValues:data]].mutableCopy;\n", modelname];
                                     [result appendString:@"\t\t\t} else if ([data isKindOfClass:[NSArray class]]) {\n"];
-                                    [result appendFormat:@"\t\t\t\tNSMutableArray *resultList = [%@ mj_objectArrayWithKeyValuesArray:data];\n", modelname];
-                                    [result appendFormat:@"\t\t\t\tsuccess(task, res, resultList, decryptResult);\n"];
-                                    [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:resultList sourceData:decryptResult error:nil];\n"];
+                                    [result appendFormat:@"\t\t\t\tinfo = [%@ mj_objectArrayWithKeyValuesArray:data];\n", modelname];
                                 } else {
-                                    [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSDictionary class]]) {\n"];
-                                    [result appendFormat:@"\t\t\t\t%@ *info = [%@ mj_objectWithKeyValues:data];\n", returnType, returnType];
-                                    [result appendString:@"\t\t\t\tsuccess(task, res, info, decryptResult);\n"];
-                                    [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
+                                    [result appendFormat:@"\t\t\tif ([data isKindOfClass:NSArray.class]) {\n"];
+                                    [result appendFormat:@"\t\t\t\tinfo = [%@ mj_objectArrayWithKeyValuesArray:data];\n", returnType];
+                                    [result appendFormat:@"\t\t\t} else if ([decryptResult.allKeys containsObject:@\"list\"] && [decryptResult[@\"list\"] isKindOfClass:NSArray.class]) {\n"];
+                                    [result appendFormat:@"\t\t\t\tinfo = [%@ mj_objectArrayWithKeyValuesArray:decryptResult[@\"list\"]];\n", returnType];
+                                    [result appendFormat:@"\t\t\t} else if ([data isKindOfClass:[NSDictionary class]]) {\n"];
+                                    [result appendFormat:@"\t\t\t\tinfo = @[[%@ mj_objectWithKeyValues:data]].mutableCopy;\n", returnType];
                                 }
                             }
                             
                             [result appendFormat:@"\t\t\t} else {\n"];
-                            [result appendString:@"\t\t\t\tsuccess(task, res, data, decryptResult);\n"];
-                            [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:data sourceData:decryptResult error:nil];\n"];
+                            [result appendString:@"\t\t\t\tinfo = data;\n"];
                             [result appendFormat:@"\t\t\t}\n"];
+                            [result appendString:@"\t\t\tsuccess(task, res, info, decryptResult);\n"];
+                            [result appendFormat:@"\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
                         } else {
                             [result appendString:@"\t\t\tsuccess(task, res, data, decryptResult);\n"];
                             [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:data sourceData:decryptResult error:nil];\n"];
@@ -701,10 +699,10 @@ static NSDictionary *configDictionary;
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
-                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
+                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *> *requestList, NSDictionary *sourceData) {\n", returnType];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
-                        [result appendFormat:@"\t\t\ttaskResult[@\"data\"] = data;\n"];
+                        [result appendFormat:@"\t\t\ttaskResult[@\"requestList\"] = requestList;\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"sourceData\"] = sourceData;\n"];
                         [result appendFormat:@"\t\t\t[subscriber sendNext:taskResult];\n"];
                         [result appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
@@ -732,10 +730,10 @@ static NSDictionary *configDictionary;
                         if ([requestType isEqualToString:@"upload"] || [requestType isEqualToString:@"iupload"]) {
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
-                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
+                        [result appendFormat:@" iparams:(NSDictionary *)iparams success:^(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *> *requestList, NSDictionary *sourceData) {\n", returnType];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
-                        [result appendFormat:@"\t\t\ttaskResult[@\"data\"] = data;\n"];
+                        [result appendFormat:@"\t\t\ttaskResult[@\"requestList\"] = requestList;\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"sourceData\"] = sourceData;\n"];
                         [result appendFormat:@"\t\t\tfulfill(taskResult);\n"];
                         [result appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
@@ -779,11 +777,11 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
                         [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
-                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
-                        [result appendFormat:@"\t\t\t*returnValue = data;\n"];
+                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *> *requestList, NSDictionary *sourceData) {\n", returnType];
+                        [result appendFormat:@"\t\t\t*returnValue = requestList;\n"];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
-                        [result appendFormat:@"\t\t\ttaskResult[@\"data\"] = data;\n"];
+                        [result appendFormat:@"\t\t\ttaskResult[@\"requestList\"] = requestList;\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"sourceData\"] = sourceData;\n"];
                         [result appendFormat:@"\t\t\t[subscriber sendNext:taskResult];\n"];
                         [result appendFormat:@"\t\t\t[subscriber sendCompleted];\n"];
@@ -812,11 +810,11 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@" formDataBlock:(void(^)(id<AFMultipartFormData> formData))formDataBlock"];
                         }
                         [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
-                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, %@ *data, NSDictionary *sourceData) {\n", returnType];
-                        [result appendFormat:@"\t\t\t*returnValue = data;\n"];
+                        [result appendFormat:@" success:^(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *> *requestList, NSDictionary *sourceData) {\n", returnType];
+                        [result appendFormat:@"\t\t\t*returnValue = requestList;\n"];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *taskResult = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"result\"] = result;\n"];
-                        [result appendFormat:@"\t\t\ttaskResult[@\"data\"] = data;\n"];
+                        [result appendFormat:@"\t\t\ttaskResult[@\"requestList\"] = requestList;\n"];
                         [result appendFormat:@"\t\t\ttaskResult[@\"sourceData\"] = sourceData;\n"];
                         [result appendFormat:@"\t\t\tfulfill(taskResult);\n"];
                         [result appendFormat:@"\t\t} failure:^(NSURLSessionDataTask *task, NSError *error) {\n"];
