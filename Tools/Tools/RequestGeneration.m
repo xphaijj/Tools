@@ -622,7 +622,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t\tNSMutableDictionary *notificationInfo = [NSMutableDictionary dictionary];\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"parameters\"] = parameters;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"info\"] = info;\n"];
-                        [result appendFormat:@"\t\t\tnotificationInfo[@\"result\"] = result;\n"];
+                        [result appendFormat:@"\t\t\tnotificationInfo[@\"result\"] = res;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"sourceData\"] = decryptResult;\n"];
                         [result appendFormat:@"\t\t\t[NSNotificationCenter.defaultCenter postNotificationName:%@_notification object:notificationInfo];\n", interface];
                         [result appendFormat:@"\t\t}\n"];
