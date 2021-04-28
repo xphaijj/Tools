@@ -177,6 +177,8 @@ static NSDictionary *configDictionary;
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
             }
+            NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
+            [result appendFormat:@"/// %@\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
             [result appendFormat:@"static NSString *const %@_notification = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
         }
     }
@@ -197,6 +199,8 @@ static NSDictionary *configDictionary;
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
             }
+            NSArray *contents = [[items objectAtIndex:5] componentsSeparatedByString:@"\n"];
+            [result appendFormat:@"/// %@\n", [[contents firstObject] stringByReplacingOccurrencesOfString:@"/" withString:@""]];
             [result appendFormat:@"static NSString *const %@_notification = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
         }
     }
