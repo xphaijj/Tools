@@ -177,7 +177,7 @@ static NSDictionary *configDictionary;
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
             }
-            [result appendFormat:@"static NSString *const Notification%@ = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+            [result appendFormat:@"static NSString *const %@_notification = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
         }
     }
     
@@ -197,7 +197,7 @@ static NSDictionary *configDictionary;
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
                 [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
             }
-            [result appendFormat:@"static NSString *const Notification%@ = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+            [result appendFormat:@"static NSString *const %@_notification = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
         }
     }
     return result;
@@ -620,7 +620,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"info\"] = info;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"result\"] = result;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"sourceData\"] = decryptResult;\n"];
-                        [result appendFormat:@"\t\t\t[NSNotificationCenter.defaultCenter postNotificationName:%@_Notification object:notificationInfo];\n", interface];
+                        [result appendFormat:@"\t\t\t[NSNotificationCenter.defaultCenter postNotificationName:%@_notification object:notificationInfo];\n", interface];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendString:@"\t};\n"];
                         if (cacheDay != 0) {
