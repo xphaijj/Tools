@@ -69,6 +69,7 @@ static NSDictionary *configDictionary;
     
     
     enumList = [Utils enumList:sourceString];
+    [h appendString:[self notificationOfRequest:sourceString]];
     
     //导入基本的 实现
     [h appendString:[self classOfRequest:H_FILE rtype:REQUEST_NORMAL]];
@@ -120,7 +121,7 @@ static NSDictionary *configDictionary;
             [result appendFormat:@"#import <AFNetworking/AFNetworking.h>\n"];
             [result appendFormat:@"#import <FBLPromises/FBLPromises.h>\n"];
             [result appendFormat:@"#import \"PHRequest.h\"\n"];
-            [result appendFormat:@"#import \"%@Model.h\"\n", configDictionary[@"filename"]];
+            [result appendFormat:@"#import \"%@Model.h\"\n\n", configDictionary[@"filename"]];
         }
             break;
         case M_FILE:
@@ -156,6 +157,49 @@ static NSDictionary *configDictionary;
             break;
     }
     
+    return result;
+}
+
++ (NSString *)notificationOfRequest:(NSString *)sourceString {
+    NSMutableString *result = [[NSMutableString alloc] init];
+    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d)?(?:\\s*?)";
+    NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
+    /** 生成通知的名称定义 */
+    @autoreleasepool {
+        for (NSArray *items in requestList) {
+            NSString *interface = [items objectAtIndex:2];
+            NSMutableString *interfacename = (NSMutableString *)interface;
+            NSString *regex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
+            NSArray *nameList = [[interface arrayOfCaptureComponentsMatchedByRegex:regex] firstObject];
+            if (nameList.count >= 3) {
+                interface = [nameList objectAtIndex:1];
+                interfacename = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
+                [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
+                [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
+            }
+            [result appendFormat:@"static NSString *const Notification%@ = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+        }
+    }
+    
+    /// 匹配带路径的网络请求
+    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d)?(?:\\s*?)";
+    requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
+    /** 生成通知的名称定义 */
+    @autoreleasepool {
+        for (NSArray *items in requestList) {
+            NSString *interface = [items objectAtIndex:2];
+            NSMutableString *interfacename = (NSMutableString *)interface;
+            NSString *regex = @"^(?:[\\s]*)(?:[\\s]*)(\\S+)(?:[\\s]*)((?:\\()\\S+(?:\\)))";
+            NSArray *nameList = [[interface arrayOfCaptureComponentsMatchedByRegex:regex] firstObject];
+            if (nameList.count >= 3) {
+                interface = [nameList objectAtIndex:1];
+                interfacename = [[NSMutableString alloc] initWithString:[nameList objectAtIndex:2]];
+                [interfacename deleteCharactersInRange:[interfacename rangeOfString:@"("]];
+                [interfacename deleteCharactersInRange:[interfacename rangeOfString:@")"]];
+            }
+            [result appendFormat:@"static NSString *const Notification%@ = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+        }
+    }
     return result;
 }
 
@@ -376,9 +420,6 @@ static NSDictionary *configDictionary;
             break;
         case TYPE_METHOD:
         {
-            if (fileType == H_FILE) {
-                [result appendFormat:@"static NSString *const Notification%@ = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
-            }
             if (rtype == REQUEST_NORMAL) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(NSURLSessionDataTask *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
