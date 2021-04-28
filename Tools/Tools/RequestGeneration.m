@@ -588,7 +588,7 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t\tid data = decryptResult[@\"data\"];\n"];
                         
                         [result appendFormat:@"\t\tif (success) {\n"];
-                        [result appendFormat:@"\t\t\tNSMutableArray<%@ *> *info = nil;\n", returnType];
+                        [result appendFormat:@"\t\t\tNSMutableArray<%@ *> *info = data;\n", returnType];
                         if (![returnType isEqualToString:@"BaseCollection"] && ![returnType isEqualToString:@"NSDictionary"]) {
                             if (returnIsValueType) {
                                 [result appendFormat:@"\t\t\tif ([data isKindOfClass:[NSObject class]]) {\n"];
@@ -612,12 +612,14 @@ static NSDictionary *configDictionary;
                             [result appendFormat:@"\t\t\t} else {\n"];
                             [result appendString:@"\t\t\t\tinfo = data;\n"];
                             [result appendFormat:@"\t\t\t}\n"];
-                            [result appendString:@"\t\t\tsuccess(task, res, info, decryptResult);\n"];
-                            [result appendFormat:@"\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
-                        } else {
-                            [result appendString:@"\t\t\tsuccess(task, res, data, decryptResult);\n"];
-                            [result appendFormat:@"\t\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:data sourceData:decryptResult error:nil];\n"];
                         }
+                        [result appendString:@"\t\t\tsuccess(task, res, info, decryptResult);\n"];
+                        [result appendFormat:@"\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
+                        [result appendFormat:@"\t\t\tNSMutableDictionary *notificationInfo = [NSMutableDictionary dictionary];\n"];
+                        [result appendFormat:@"\t\t\tnotificationInfo[@\"parameters\"] = parameters;\n"];
+                        [result appendFormat:@"\t\t\tnotificationInfo[@\"info\"] = info;\n", interface];
+                        [result appendFormat:@"\t\t\tnotificationInfo[@\"sourceData\"] = decryptResult;\n", interface];
+                        [result appendFormat:@"\t\t\t[NSNotificationCenter.defaultCenter postNotificationName:Notification%@ object:notificationInfo];\n", interface];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendString:@"\t};\n"];
                         if (cacheDay != 0) {
