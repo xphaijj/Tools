@@ -620,7 +620,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"info\"] = info;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"result\"] = result;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"sourceData\"] = decryptResult;\n"];
-                        [result appendFormat:@"\t\t\t[NSNotificationCenter.defaultCenter postNotificationName:Notification%@ object:notificationInfo];\n", interface];
+                        [result appendFormat:@"\t\t\t[NSNotificationCenter.defaultCenter postNotificationName:%@_Notification object:notificationInfo];\n", interface];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendString:@"\t};\n"];
                         if (cacheDay != 0) {
