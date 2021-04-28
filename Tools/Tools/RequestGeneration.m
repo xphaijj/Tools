@@ -376,6 +376,9 @@ static NSDictionary *configDictionary;
             break;
         case TYPE_METHOD:
         {
+            if (fileType == H_FILE) {
+                [result appendFormat:@"static NSString *const Notification%@ = @\"%@\";\n", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""], [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
+            }
             if (rtype == REQUEST_NORMAL) {
                 if ([configDictionary[@"baseurl"] boolValue]) {
                     [result appendFormat:@"+(NSURLSessionDataTask *)%@URL:(NSString *)baseurl showHUD:(BOOL)showHUD", [interfacename stringByReplacingOccurrencesOfString:@"/" withString:@""]];
