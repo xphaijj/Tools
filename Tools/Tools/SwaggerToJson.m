@@ -37,13 +37,7 @@
         NSString *urlString = [sourceObj objectForKey:@"path"];
         //遍历请求网络
         NSURL *url = [NSURL URLWithString:urlString];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        if ([sourceObj.allKeys containsObject:@"params"]) {
-            NSDictionary *headerDic = sourceObj[@"params"];
-            [headerDic enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *obj, BOOL * _Nonnull stop) {
-                [request setValue:obj forHTTPHeaderField:key];
-            }];
-        }
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
         NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
         dispatch_group_enter(group);
         NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse * response, NSError *error) {
