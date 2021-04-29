@@ -20,7 +20,7 @@
     if (!self.key || !self.type) {
         return @"";
     }
-    if (isRequest == NO && ([self.key isEqualToString:@"msg"] || [self.key isEqualToString:@"code"])) {
+    if (isRequest == NO && ([self.key isEqualToString:@"msg"] || [self.key isEqualToString:@"code"] || [self.key isEqualToString:@"subCode"] || [self.key isEqualToString:@"subMsg"] || [self.key isEqualToString:@"pageSize"] || [self.key isEqualToString:@"hasNextPage"] || [self.key isEqualToString:@"hasPreviousPage"] || [self.key isEqualToString:@"total"] || [self.key isEqualToString:@"pageNum"])) {
         return @"";
     }
     
