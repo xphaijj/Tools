@@ -268,7 +268,7 @@ static NSDictionary *configDictionary;
  **/
 + (NSString *)messageFromSourceString:(NSString *)sourceString fileType:(FileType)fileType rtype:(RequestType)rtype {
     NSMutableString *result = [[NSMutableString alloc] init];
-    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d)?(?:\\s*?)";
+    NSString *regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d+(\\.\\d+)?)?(?:\\s*?)";
     NSArray *requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -281,8 +281,8 @@ static NSDictionary *configDictionary;
                 returnType = @"BaseCollection";
             }
             NSArray *contents = [[items objectAtIndex:4] componentsSeparatedByString:@"\n"];
-            NSInteger cacheDay = [[items objectAtIndex:6] integerValue];//是否需要保存,保存多少天
-            if (cacheDay == 0 && [[items objectAtIndex:6] isEqualToString:@"0"]) {
+            CGFloat cacheDay = [[items objectAtIndex:6] floatValue];//是否需要保存,保存多少天
+            if (cacheDay <= 0.001 && [[items objectAtIndex:6] isEqualToString:@"0"]) {
                 cacheDay = -1;
             }
 
@@ -294,7 +294,7 @@ static NSDictionary *configDictionary;
     }
     
     /// 匹配带路径的网络请求
-    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d)?(?:\\s*?)";
+    regexRequest = @"request (get|post|upload|put|delete|iget|ipost|iupload|iput|idelete|patch|ipatch)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s+)(\\S+)(?:\\s*)\\{([\\s\\S]*?)\\}(\\d+(\\.\\d+)?)?(?:\\s*?)";
     requestList = [sourceString arrayOfCaptureComponentsMatchedByRegex:regexRequest];
     @autoreleasepool {
         for (NSArray *items in requestList) {
@@ -308,11 +308,10 @@ static NSDictionary *configDictionary;
             }
             NSString *baseUrl = [items objectAtIndex:4];
             NSArray *contents = [[items objectAtIndex:5] componentsSeparatedByString:@"\n"];
-            NSInteger cacheDay = [[items objectAtIndex:6] integerValue];//是否需要保存,保存多少天
-            if (cacheDay == 0 && [[items objectAtIndex:6] isEqualToString:@"0"]) {
+            CGFloat cacheDay = [[items objectAtIndex:6] floatValue];//是否需要保存,保存多少天
+            if (cacheDay <= 0.001 && [[items objectAtIndex:6] isEqualToString:@"0"]) {
                 cacheDay = -1;
             }
-
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_NOTES cacheDay:cacheDay rtype:rtype]];
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_METHOD cacheDay:cacheDay rtype:rtype]];
             [result appendString:[self generationFileType:fileType baseURL:baseUrl requestType:requestType methodName:interface returnType:returnType contents:contents methodType:TYPE_REQUEST cacheDay:cacheDay rtype:rtype]];
@@ -333,7 +332,7 @@ static NSDictionary *configDictionary;
  * @prama  methodType:方法类型
  * @prama  contents:接口参数
  */
-+ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType cacheDay:(NSInteger)cacheDay rtype:(RequestType)rtype {
++ (NSString *)generationFileType:(FileType)fileType baseURL:(NSString *)baseURL requestType:(NSString *)requestType methodName:(NSString *)interface returnType:(NSString *)returnType contents:(NSArray *)contents methodType:(MethodType)methodType cacheDay:(CGFloat)cacheDay rtype:(RequestType)rtype {
     NSMutableString *result = [[NSMutableString alloc] init];
     
     NSMutableString *interfacename = (NSMutableString *)interface;
@@ -530,13 +529,6 @@ static NSDictionary *configDictionary;
                         BOOL hideHud = [requestType hasPrefix:@"i"];
                         [result appendFormat:@"{\n"];
                         
-                        if (!hideHud) {
-                            [result appendFormat:@"\tif (showHUD) {\n"];
-                            [result appendFormat:@"\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
-                            [result appendFormat:@"\t\t\t[PHRequest showRequestHUD];\n"];
-                            [result appendFormat:@"\t\t});\n"];
-                            [result appendFormat:@"\t}\n"];
-                        }
                         [result appendFormat:@"\tNSMutableDictionary *extraData = [[NSMutableDictionary alloc] init];\n"];
                         [result appendFormat:@"\tNSMutableDictionary *requestParams = [[NSMutableDictionary alloc] initWithDictionary:([PHRequest baseParams:@{@\"requestAction\":@\"%@\"} extraData:extraData])];\n", interfacename];
                         [result appendFormat:@"\t[requestParams addEntriesFromDictionary:iparams];\n"];
@@ -570,7 +562,7 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\tif ([result isKindOfClass:NSString.class]) {\n"];
                         [result appendFormat:@"\t\t\tresult = [result mj_keyValues];\n"];
                         [result appendFormat:@"\t\t}\n"];
-                        if (cacheDay != 0) {
+                        if (cacheDay > 0.001) {
                             [result appendString:@"\t\tif (task) {//说明是从网络请求返回的数据\n"];
                             if (cacheDay != -1) {
                                 [result appendFormat:@"\t\t\t[NSUserDefaults.standardUserDefaults setFloat:NSDate.date.timeIntervalSince1970 forKey:[NSString stringWithFormat:@\"Request%%@Time\", baseUrl]];\n"];
@@ -627,20 +619,28 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t\t[NSNotificationCenter.defaultCenter postNotificationName:%@_notification object:notificationInfo];\n", interface];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendString:@"\t};\n"];
-                        if (cacheDay != 0) {
+                        if (cacheDay > 0.001) {
                             [result appendString:@"\tif ([NSUserDefaults.standardUserDefaults.dictionaryRepresentation.allKeys containsObject:[NSString stringWithFormat:@\"Request%@\", uploadUrl]]) {\n"];
                             [result appendString:@"\t\tid result = [NSUserDefaults.standardUserDefaults objectForKey:[NSString stringWithFormat:@\"Request%@\", uploadUrl]];\n"];
                             [result appendString:@"\t\tcallback(nil, result);\n"];
                             if (cacheDay != -1) {
                                 [result appendString:@"\t\t//判断是否缓存是否过期，如果没有过期，继续使用本地缓存\n"];
                                 [result appendFormat:@"\t\tNSTimeInterval cacheTime = [NSUserDefaults.standardUserDefaults floatForKey:[NSString stringWithFormat:@\"Request%%@Time\", baseUrl]];\n"];
-                                [result appendFormat:@"\t\tif ([[NSDate date] timeIntervalSince1970]-cacheTime<%zd*24.*3600.) {\n", cacheDay];
+                                [result appendFormat:@"\t\tif ([[NSDate date] timeIntervalSince1970]-cacheTime<%.2f*24.*3600.) {\n", cacheDay];
                                 [result appendFormat:@"\t\t\treturn nil;\n"];
                                 [result appendFormat:@"\t\t}\n"];
                             }
                             [result appendString:@"\t}\n"];
                         }
                         
+                        
+                        if (!hideHud) {
+                            [result appendFormat:@"\tif (showHUD) {\n"];
+                            [result appendFormat:@"\t\tdispatch_async(dispatch_get_main_queue(), ^{\n"];
+                            [result appendFormat:@"\t\t\t[PHRequest showRequestHUD];\n"];
+                            [result appendFormat:@"\t\t});\n"];
+                            [result appendFormat:@"\t}\n"];
+                        }
                         if ([requestType isEqualToString:@"get"] || [requestType isEqualToString:@"iget"]) {
                             [result appendFormat:@"\tNSURLSessionDataTask *op = [[PHRequest sharedClient:@\"%@\"] GET:uploadUrl parameters:parameters headers:nil progress:^(NSProgress * uploadProgress) {\n", interfacename];
                             
@@ -897,7 +897,7 @@ static NSDictionary *configDictionary;
  * @prama  methodType:方法类型
  * @prama  fileType:[H_FILE:h文件  M_FILE: m文件]
  */
-+ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType cacheDay:(NSInteger)cacheDay rtype:(RequestType)rtype {
++ (NSString *)allPramaFromContents:(NSArray *)contents withType:(MethodType)methodType fileType:(FileType)fileType cacheDay:(CGFloat)cacheDay rtype:(RequestType)rtype {
     NSMutableString *result = [[NSMutableString alloc] init];
     for (int i = 0; i < contents.count; i++) {
         NSString *lineString = [contents objectAtIndex:i];
