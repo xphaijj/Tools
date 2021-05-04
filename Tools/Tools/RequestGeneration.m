@@ -565,7 +565,7 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\tvoid(^callback)(NSURLSessionDataTask *task, id result) = ^(NSURLSessionDataTask *task, id result) {\n"];
                         [result appendFormat:@"\t\tNSInteger duration = ([[NSDate date] timeIntervalSince1970]-startTime)*1000;\n"];
                         [result appendFormat:@"\t\tif ([result isKindOfClass:NSData.class]) {\n"];
-                        [result appendFormat:@"\t\t\tresult = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];\n"];
+                        [result appendFormat:@"\t\t\tresult = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingAllowFragments error:nil];\n"];
                         [result appendFormat:@"\t\t}\n"];
                         [result appendFormat:@"\t\tif ([result isKindOfClass:NSString.class]) {\n"];
                         [result appendFormat:@"\t\t\tresult = [result mj_keyValues];\n"];
@@ -575,7 +575,7 @@ static NSDictionary *configDictionary;
                             if (cacheDay != -1) {
                                 [result appendFormat:@"\t\t\t[NSUserDefaults.standardUserDefaults setFloat:NSDate.date.timeIntervalSince1970 forKey:[NSString stringWithFormat:@\"Request%%@Time\", baseUrl]];\n"];
                             }
-                            [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults setObject:result forKey:[NSString stringWithFormat:@\"Request%@\", baseUrl]];\n"];
+                            [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults setObject:[NSJSONSerialization dataWithJSONObject:result options:NSJSONWritingPrettyPrinted error:nil] forKey:[NSString stringWithFormat:@\"Request%@\", uploadUrl]];\n"];
                             [result appendString:@"\t\t\t[NSUserDefaults.standardUserDefaults synchronize];\n"];
                             [result appendString:@"\t\t} else {\n"];
                             [result appendFormat:@"\t\t\tduration = 0;\n"];
@@ -628,8 +628,8 @@ static NSDictionary *configDictionary;
                         [result appendFormat:@"\t\t}\n"];
                         [result appendString:@"\t};\n"];
                         if (cacheDay != 0) {
-                            [result appendString:@"\tif ([NSUserDefaults.standardUserDefaults.dictionaryRepresentation.allKeys containsObject:[NSString stringWithFormat:@\"Request%@\", baseUrl]]) {\n"];
-                            [result appendString:@"\t\tid result = [NSUserDefaults.standardUserDefaults objectForKey:[NSString stringWithFormat:@\"Request%@\", baseUrl]];\n"];
+                            [result appendString:@"\tif ([NSUserDefaults.standardUserDefaults.dictionaryRepresentation.allKeys containsObject:[NSString stringWithFormat:@\"Request%@\", uploadUrl]]) {\n"];
+                            [result appendString:@"\t\tid result = [NSUserDefaults.standardUserDefaults objectForKey:[NSString stringWithFormat:@\"Request%@\", uploadUrl]];\n"];
                             [result appendString:@"\t\tcallback(nil, result);\n"];
                             if (cacheDay != -1) {
                                 [result appendString:@"\t\t//判断是否缓存是否过期，如果没有过期，继续使用本地缓存\n"];
