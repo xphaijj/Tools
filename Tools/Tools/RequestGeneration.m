@@ -490,7 +490,7 @@ static NSDictionary *configDictionary;
             [result appendString:[self allPramaFromContents:contents withType:methodType fileType:fileType cacheDay:cacheDay rtype:rtype]];
             
             if (rtype == REQUEST_NORMAL) {
-                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *>  *requestData, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
+                [result appendFormat:@" success:(void (^)(NSURLSessionDataTask *task, BaseCollection *result, NSMutableArray<%@ *>  *requestList, NSDictionary *sourceData))success failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure; ", returnType];
             } else {
                 [result appendFormat:@" returnValue:(NSMutableArray<%@ *> * __strong *)returnValue;", returnType];
             }
