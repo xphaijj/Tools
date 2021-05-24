@@ -612,7 +612,7 @@ static NSDictionary *configDictionary;
                         [result appendString:@"\t\t\tsuccess(task, res, info, decryptResult);\n"];
                         [result appendFormat:@"\t\t\t[PHRequest responseBaseUrl:baseUrl uploadParams:parameters sessionDataTask:task baseCollection:res data:info sourceData:decryptResult error:nil];\n"];
                         [result appendFormat:@"\t\t\tNSMutableDictionary *notificationInfo = [NSMutableDictionary dictionary];\n"];
-                        [result appendFormat:@"\t\t\tnotificationInfo[@\"parameters\"] = queryParams;\n"];
+                        [result appendFormat:@"\t\t\tnotificationInfo[@\"parameters\"] = requestParams;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"info\"] = info;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"result\"] = res;\n"];
                         [result appendFormat:@"\t\t\tnotificationInfo[@\"sourceData\"] = decryptResult;\n"];
